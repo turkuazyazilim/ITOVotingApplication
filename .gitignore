@@ -3,3 +3,11 @@
 ################################################################################
 
 /.vs
+/src/ITOVotingApplication.Business/bin/Debug/net8.0
+/src/ITOVotingApplication.Business/obj/Debug/net8.0
+/src/ITOVotingApplication.Core/bin/Debug/net8.0
+/src/ITOVotingApplication.Core/obj/Debug/net8.0
+/src/ITOVotingApplication.Data/bin/Debug/net8.0
+/src/ITOVotingApplication.Data/obj/Debug/net8.0
+/src/ITOVotingApplication.Web/bin/Debug/net8.0
+/src/ITOVotingApplication.Web/obj/Debug/net8.0
