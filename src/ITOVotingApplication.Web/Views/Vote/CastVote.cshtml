@@ -1,0 +1,54 @@
+﻿@model ITOVotingApplication.Web.Models.CastVoteViewModel
+@{
+    ViewData["Title"] = "Oy Kullan";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-vote-yea"></i> Oy Kullanma İşlemi</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>Seçmen:</strong> @Model.ContactName<br>
+                        <strong>Firma:</strong> @Model.CompanyName
+                    </div>
+
+                    <form asp-action="CastVote" method="post">
+                        <input type="hidden" asp-for="ContactId" />
+                        <input type="hidden" asp-for="ContactName" />
+                        <input type="hidden" asp-for="CompanyName" />
+                        <input type="hidden" asp-for="BallotBoxId" value="1" />
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"
+                                      placeholder="Opsiyonel açıklama girebilirsiniz..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Dikkat!</strong> Oy kullanma işlemi geri alınamaz.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i> Oyu Kaydet
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

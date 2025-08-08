@@ -1,0 +1,214 @@
+﻿@model ITOVotingApplication.Web.Models.VoteDashboardViewModel
+@{
+    ViewData["Title"] = "Oy Kullandırma";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4">Oy Kullandırma Sistemi</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">Oy Kullandırma</li>
+    </ol>
+
+    <!-- İstatistikler -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Toplam Seçmen</h5>
+                    <h2>@(Model.VoteResults?.EligibleVoters ?? 0)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Oy Kullanan</h5>
+                    <h2>@(Model.VoteResults?.TotalVotes ?? 0)</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Oy Kullanmayan</h5>
+                    <h2>@((Model.VoteResults?.EligibleVoters ?? 0) - (Model.VoteResults?.TotalVotes ?? 0))</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Katılım Oranı</h5>
+                    <h2>%@((Model.VoteResults?.TurnoutPercentage ?? 0).ToString("F1"))</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TC Kimlik No ile Arama -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-search"></i> Seçmen Sorgulama
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" id="identitySearch" class="form-control form-control-lg"
+                               placeholder="TC Kimlik Numarası Giriniz" maxlength="11" />
+                        <button class="btn btn-primary btn-lg" type="button" onclick="searchContact()">
+                            <i class="fas fa-search"></i> Sorgula
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <a asp-action="Results" class="btn btn-info btn-lg w-100">
+                        <i class="fas fa-chart-bar"></i> Sonuçları Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seçmen Bilgileri -->
+    <div id="voterInfo" class="card mb-4" style="display:none;">
+        <div class="card-header bg-primary text-white">
+            <i class="fas fa-user"></i> Seçmen Bilgileri
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Ad Soyad:</strong> <span id="voterName"></span></p>
+                    <p><strong>Firma:</strong> <span id="voterCompany"></span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Oy Durumu:</strong> <span id="voteStatus"></span></p>
+                    <p><strong>Oy Kullanabilir:</strong> <span id="eligibleStatus"></span></p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button id="castVoteBtn" class="btn btn-success btn-lg" onclick="castVote()">
+                    <i class="fas fa-vote-yea"></i> Oy Kullan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oy Kullanabilecek Seçmenler Listesi -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-users"></i> Oy Kullanmayan Seçmenler
+        </div>
+        <div class="card-body">
+            @if (Model.EligibleVoters?.Any() == true)
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>TC Kimlik No</th>
+                                <th>Ad Soyad</th>
+                                <th>Firma</th>
+                                <th>Telefon</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var voter in Model.EligibleVoters.Where(v => !v.HasVoted))
+                            {
+                                <tr>
+                                    <td>@voter.IdentityNum</td>
+                                    <td>@voter.FullName</td>
+                                    <td>@voter.CompanyTitle</td>
+                                    <td>@voter.MobilePhone</td>
+                                    <td>
+                                        <a asp-action="CastVote" asp-route-contactId="@voter.Id"
+                                           class="btn btn-sm btn-success">
+                                            <i class="fas fa-vote-yea"></i> Oy Kullan
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Oy kullanmayan seçmen bulunmamaktadır.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentContactId = null;
+
+        function searchContact() {
+            const identityNum = $('#identitySearch').val();
+
+            if (identityNum.length !== 11) {
+                alert('Lütfen geçerli bir TC Kimlik Numarası giriniz (11 haneli)');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("SearchContact", "Vote")',
+                type: 'GET',
+                data: { identityNum: identityNum },
+                success: function(result) {
+                    if (result.success) {
+                        currentContactId = result.data.id;
+                        $('#voterName').text(result.data.fullName);
+                        $('#voterCompany').text(result.data.companyTitle);
+
+                        if (result.data.hasVoted) {
+                            $('#voteStatus').html('<span class="badge bg-success">Oy Kullandı</span>');
+                            $('#castVoteBtn').prop('disabled', true).text('Oy Kullanıldı');
+                        } else {
+                            $('#voteStatus').html('<span class="badge bg-warning">Oy Kullanmadı</span>');
+                            $('#castVoteBtn').prop('disabled', false).html('<i class="fas fa-vote-yea"></i> Oy Kullan');
+                        }
+
+                        if (result.data.eligibleToVote) {
+                            $('#eligibleStatus').html('<span class="badge bg-success">Evet</span>');
+                        } else {
+                            $('#eligibleStatus').html('<span class="badge bg-danger">Hayır</span>');
+                            $('#castVoteBtn').prop('disabled', true);
+                        }
+
+                        $('#voterInfo').show();
+                    } else {
+                        alert(result.message || 'Seçmen bulunamadı');
+                        $('#voterInfo').hide();
+                    }
+                },
+                error: function() {
+                    alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                }
+            });
+        }
+
+        function castVote() {
+            if (currentContactId) {
+                window.location.href = '@Url.Action("CastVote", "Vote")' + '?contactId=' + currentContactId;
+            }
+        }
+
+        // Enter tuşu ile arama
+        $('#identitySearch').keypress(function(e) {
+            if (e.which == 13) {
+                searchContact();
+                return false;
+            }
+        });
+
+        // Sadece rakam girişi
+        $('#identitySearch').on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
+}

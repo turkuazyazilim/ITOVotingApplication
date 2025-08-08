@@ -1,8 +1,8 @@
-﻿@* VotingApplication.Web/Views/Admin/CreateCompany.cshtml *@
-@model ITOVotingApplication.Web.Models.CreateCompanyViewModel
+﻿@model ITOVotingApplication.Web.Models.CreateCompanyViewModel
 @{
     ViewData["Title"] = "Yeni Firma Ekle";
 }
+
 <div class="container-fluid">
     <h1 class="mt-4">Yeni Firma Ekle</h1>
     <ol class="breadcrumb mb-4">
@@ -150,27 +150,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Kaydet
-                    </button>
-                    <a asp-action="Companies" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> İptal
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

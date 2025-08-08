@@ -31,10 +31,10 @@
 		public string Title { get; set; }
 		public string CompanyType { get; set; }
 		public string TradeRegistrationNumber { get; set; }
-		public decimal Capital { get; set; }
+		public decimal? Capital { get; set; }
 		public string RegistrationAddress { get; set; }
 		public string Degree { get; set; }
-		public DateTime MemberRegistrationDate { get; set; }
+		public DateTime? MemberRegistrationDate { get; set; }
 		public string ProfessionalGroup { get; set; }
 		public string NaceCode { get; set; }
 		public string OfficePhone { get; set; }

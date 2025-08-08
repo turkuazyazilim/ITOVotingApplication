@@ -1,8 +1,5 @@
-﻿// VotingApplication.Web/Controllers/AccountController.cs
-using ITOVotingApplication.Business.Interfaces;
+﻿using ITOVotingApplication.Business.Interfaces;
 using ITOVotingApplication.Core.DTOs.Auth;
-using ITOVotingApplication.Core.DTOs.Vote;
-using ITOVotingApplication.Core.DTOs.Contact;
 using ITOVotingApplication.Web.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,138 +7,191 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace VotingApplication.Web.Controllers
+namespace ITOVotingApplication.Web.Controllers
 {
-	[Authorize(Roles = "Admin,SandikGorevlisi,BallotOfficer")]
-	public class VoteController : Controller
+	public class AccountController : Controller
 	{
-		private readonly IVoteService _voteService;
-		private readonly IContactService _contactService;
-		private readonly ICompanyService _companyService;
+		private readonly IAuthService _authService;
+		private readonly ILogger<AccountController> _logger;
 
-		public VoteController(
-			IVoteService voteService,
-			IContactService contactService,
-			ICompanyService companyService)
+		public AccountController(IAuthService authService, ILogger<AccountController> logger)
 		{
-			_voteService = voteService;
-			_contactService = contactService;
-			_companyService = companyService;
+			_authService = authService;
+			_logger = logger;
 		}
 
+		// GET: /Account/Login
 		[HttpGet]
-		public async Task<IActionResult> Index()
+		[AllowAnonymous]
+		public IActionResult Login(string returnUrl = null)
 		{
-			var eligibleVoters = await _contactService.GetEligibleVotersAsync(1); // Default ballot box 1
-			var voteResults = await _voteService.GetVoteResultsAsync(1);
+			// Store the return URL to redirect after successful login
+			
+			ViewData["ReturnUrl"] = returnUrl;
 
-			var model = new VoteDashboardViewModel
+			// If user is already authenticated, redirect to appropriate page
+			if (User.Identity.IsAuthenticated)
 			{
-				UserName = User.Identity.Name,
-				FullName = User.FindFirst("FullName")?.Value,
-				EligibleVoters = eligibleVoters.Data ?? new List<ContactDto>(),
-				VoteResults = voteResults.Data,
-				BallotBoxId = 1
-			};
+				if (User.IsInRole("Admin"))
+				{
+					return RedirectToAction("Index", "Admin");
+				}
+				else if (User.IsInRole("SandikGorevlisi") || User.IsInRole("BallotOfficer"))
+				{
+					return RedirectToAction("Index", "Vote");
+				}
 
-			return View(model);
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> CastVote(int contactId)
-		{
-			var contact = await _contactService.GetByIdAsync(contactId);
-
-			if (!contact.Success)
-			{
-				TempData["Error"] = "Yetkili kişi bulunamadı.";
-				return RedirectToAction(nameof(Index));
+				return RedirectToAction("Index", "Home");
 			}
 
-			var model = new CastVoteViewModel
+			return View(new LoginViewModel());
+		}
+
+		// POST: /Account/Login
+		[HttpPost]
+		[AllowAnonymous]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+		{
+			ViewData["ReturnUrl"] = returnUrl;
+
+			if (!ModelState.IsValid)
 			{
-				ContactId = contactId,
-				ContactName = contact.Data.FullName,
-				CompanyName = contact.Data.CompanyTitle,
-				BallotBoxId = 1 // Default ballot box
+				return View(model);
+			}
+
+			var loginDto = new LoginDto
+			{
+				UserName = model.UserName,
+				Password = model.Password
 			};
 
+			var result = await _authService.LoginAsync(loginDto);
+
+			if (result.Success)
+			{
+				// Create claims for the authenticated user
+				var claims = new List<Claim>
+				{
+					new Claim(ClaimTypes.NameIdentifier, result.Data.User.Id.ToString()),
+					new Claim(ClaimTypes.Name, result.Data.User.UserName),
+					new Claim(ClaimTypes.Email, result.Data.User.Email),
+					new Claim("FullName", result.Data.User.FirstName + " " + result.Data.User.LastName)
+				};
+
+				// Add role claims
+				if (result.Data.User.Roles != null)
+				{
+					foreach (var role in result.Data.User.Roles)
+					{
+						claims.Add(new Claim(ClaimTypes.Role, role));
+					}
+				}
+
+				// Create the identity and principal
+				var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+				var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+				// Sign in the user with cookie authentication
+				await HttpContext.SignInAsync(
+					CookieAuthenticationDefaults.AuthenticationScheme,
+					claimsPrincipal,
+					new AuthenticationProperties
+					{
+						IsPersistent = model.RememberMe,
+						ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(60)
+					});
+
+				_logger.LogInformation($"User {model.UserName} logged in successfully.");
+
+				// Redirect based on user role
+				if (result.Data.User.Roles.Contains("Admin"))
+				{
+					return RedirectToAction("Index", "Admin");
+				}
+				else if (result.Data.User.Roles.Contains("SandikGorevlisi") ||
+						 result.Data.User.Roles.Contains("BallotOfficer"))
+				{
+					return RedirectToAction("Index", "Vote");
+				}
+
+				// Redirect to return URL or home
+				if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+				{
+					return Redirect(returnUrl);
+				}
+
+				return RedirectToAction("Index", "Home");
+			}
+
+			// If login failed, show error
+			ModelState.AddModelError(string.Empty, result.Message ?? "Kullanıcı adı veya şifre hatalı.");
 			return View(model);
 		}
 
+		// POST: /Account/Logout
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> CastVote(CastVoteViewModel model)
+		public async Task<IActionResult> Logout()
+		{
+			await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+			_logger.LogInformation($"User {User.Identity.Name} logged out.");
+
+			return RedirectToAction("Login", "Account");
+		}
+
+		// GET: /Account/AccessDenied
+		[HttpGet]
+		public IActionResult AccessDenied()
+		{
+			return View();
+		}
+
+		// GET: /Account/Register (Optional - if registration is needed)
+		[HttpGet]
+		[AllowAnonymous]
+		public IActionResult Register()
+		{
+			if (User.Identity.IsAuthenticated)
+			{
+				return RedirectToAction("Index", "Home");
+			}
+
+			return View(new RegisterViewModel());
+		}
+
+		// POST: /Account/Register
+		[HttpPost]
+		[AllowAnonymous]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Register(RegisterViewModel model)
 		{
 			if (!ModelState.IsValid)
 			{
 				return View(model);
 			}
 
-			var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
-
-			var dto = new CastVoteDto
+			var registerDto = new RegisterDto
 			{
-				ContactId = model.ContactId,
-				BallotBoxId = model.BallotBoxId,
-				Description = model.Description
+				UserName = model.UserName,
+				Password = model.Password,
+				Email = model.Email,
+				FirstName = model.FirstName,
+				LastName = model.LastName
 			};
 
-			var result = await _voteService.CastVoteAsync(dto, userId);
+			var result = await _authService.RegisterAsync(registerDto);
 
 			if (result.Success)
 			{
-				TempData["Success"] = "Oy başarıyla kaydedildi.";
-				return RedirectToAction(nameof(Index));
+				_logger.LogInformation($"New user {model.UserName} registered successfully.");
+
+				// Optionally auto-login after registration
+				return RedirectToAction("Login", new { message = "Kayıt başarılı! Giriş yapabilirsiniz." });
 			}
 
-			ModelState.AddModelError(string.Empty, result.Message);
+			ModelState.AddModelError(string.Empty, result.Message ?? "Kayıt işlemi başarısız.");
 			return View(model);
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> Results()
-		{
-			var results = await _voteService.GetAllVoteResultsAsync();
-
-			var model = new VoteResultsViewModel
-			{
-				Results = results.Data ?? new List<VoteResultDto>()
-			};
-
-			return View(model);
-		}
-
-		[HttpGet]
-		public async Task<IActionResult> SearchContact(string identityNum)
-		{
-			if (string.IsNullOrWhiteSpace(identityNum))
-			{
-				return Json(new { success = false, message = "TC Kimlik No giriniz." });
-			}
-
-			var contact = await _contactService.GetByIdentityNumAsync(identityNum);
-
-			if (contact.Success)
-			{
-				// Check if already voted
-				var hasVoted = await _voteService.CheckIfVotedAsync(contact.Data.Id, 1);
-
-				return Json(new
-				{
-					success = true,
-					data = new
-					{
-						contact.Data.Id,
-						contact.Data.FullName,
-						contact.Data.CompanyTitle,
-						contact.Data.EligibleToVote,
-						HasVoted = hasVoted.Data
-					}
-				});
-			}
-
-			return Json(new { success = false, message = contact.Message });
 		}
 	}
 }
