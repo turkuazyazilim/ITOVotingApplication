@@ -1,0 +1,176 @@
+﻿@* VotingApplication.Web/Views/Admin/CreateCompany.cshtml *@
+@model ITOVotingApplication.Web.Models.CreateCompanyViewModel
+@{
+    ViewData["Title"] = "Yeni Firma Ekle";
+}
+<div class="container-fluid">
+    <h1 class="mt-4">Yeni Firma Ekle</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+        <li class="breadcrumb-item"><a asp-action="Companies">Firmalar</a></li>
+        <li class="breadcrumb-item active">Yeni Firma</li>
+    </ol>
+
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-building me-1"></i>
+            Firma Bilgileri
+        </div>
+        <div class="card-body">
+            <form asp-action="CreateCompany" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="RegistrationNumber" class="form-label"></label>
+                            <input asp-for="RegistrationNumber" class="form-control" />
+                            <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="TaxNumber" class="form-label"></label>
+                            <input asp-for="TaxNumber" class="form-control" />
+                            <span asp-validation-for="TaxNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label"></label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="CompanyType" class="form-label"></label>
+                            <select asp-for="CompanyType" class="form-select">
+                                <option value="">Seçiniz...</option>
+                                <option value="AS">A.Ş.</option>
+                                <option value="LTD">Ltd. Şti.</option>
+                                <option value="SAHIS">Şahıs</option>
+                                <option value="KOOP">Kooperatif</option>
+                            </select>
+                            <span asp-validation-for="CompanyType" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="TradeRegistrationNumber" class="form-label"></label>
+                            <input asp-for="TradeRegistrationNumber" class="form-control" />
+                            <span asp-validation-for="TradeRegistrationNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="Capital" class="form-label"></label>
+                            <input asp-for="Capital" class="form-control" />
+                            <span asp-validation-for="Capital" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="MemberRegistrationDate" class="form-label"></label>
+                            <input asp-for="MemberRegistrationDate" class="form-control" />
+                            <span asp-validation-for="MemberRegistrationDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="RegistrationAddress" class="form-label"></label>
+                    <textarea asp-for="RegistrationAddress" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="RegistrationAddress" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="OfficePhone" class="form-label"></label>
+                            <input asp-for="OfficePhone" class="form-control" />
+                            <span asp-validation-for="OfficePhone" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="MobilePhone" class="form-label"></label>
+                            <input asp-for="MobilePhone" class="form-control" />
+                            <span asp-validation-for="MobilePhone" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="WebSite" class="form-label"></label>
+                            <input asp-for="WebSite" class="form-control" />
+                            <span asp-validation-for="WebSite" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="ProfessionalGroup" class="form-label"></label>
+                            <input asp-for="ProfessionalGroup" class="form-control" />
+                            <span asp-validation-for="ProfessionalGroup" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="NaceCode" class="form-label"></label>
+                            <input asp-for="NaceCode" class="form-control" />
+                            <span asp-validation-for="NaceCode" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Kaydet
+                    </button>
+                    <a asp-action="Companies" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> İptal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Kaydet
+                    </button>
+                    <a asp-action="Companies" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> İptal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

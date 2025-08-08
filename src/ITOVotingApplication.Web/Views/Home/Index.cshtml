@@ -1,0 +1,32 @@
+﻿@* VotingApplication.Web/Views/Home/Index.cshtml *@
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="container-fluid">
+    <h1 class="mt-4">Hoş Geldiniz</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">Ana Sayfa</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Seçim Sistemi
+                </div>
+                <div class="card-body">
+                    <h5>Merhaba @User.FindFirst("FullName")?.Value</h5>
+                    <p>Seçim sistemine hoş geldiniz. Sol menüden işlemlerinizi gerçekleştirebilirsiniz.</p>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-user"></i> Kullanıcı: @User.Identity.Name<br>
+                        <i class="fas fa-envelope"></i> E-posta: @User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value<br>
+                        <i class="fas fa-shield-alt"></i> Roller: @string.Join(", ", User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

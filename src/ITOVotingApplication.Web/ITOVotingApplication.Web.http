@@ -1,0 +1,6 @@
+@ITOVotingApplication.Web_HostAddress = http://localhost:5031
+
+GET {{ITOVotingApplication.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
