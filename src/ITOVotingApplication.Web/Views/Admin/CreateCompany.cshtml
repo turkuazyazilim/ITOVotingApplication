@@ -21,28 +21,20 @@
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label asp-for="RegistrationNumber" class="form-label"></label>
-                            <input asp-for="RegistrationNumber" class="form-control" />
-                            <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label asp-for="TaxNumber" class="form-label"></label>
-                            <input asp-for="TaxNumber" class="form-control" />
-                            <span asp-validation-for="TaxNumber" class="text-danger"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
                     <div class="col-md-8">
                         <div class="mb-3">
                             <label asp-for="Title" class="form-label"></label>
                             <input asp-for="Title" class="form-control" />
                             <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="RegistrationNumber" class="form-label"></label>
+                                <input asp-for="RegistrationNumber" class="form-control" />
+                                <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -66,6 +58,20 @@
                             <label asp-for="TradeRegistrationNumber" class="form-label"></label>
                             <input asp-for="TradeRegistrationNumber" class="form-control" />
                             <span asp-validation-for="TradeRegistrationNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mb-3">
+                            <label asp-for="Degree" class="form-label"></label>
+                            <select asp-for="Degree" class="form-select">
+                                <option value="">Seçiniz...</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                            <span asp-validation-for="Degree" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -122,22 +128,39 @@
                             <span asp-validation-for="WebSite" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="mb-3">
-                            <label asp-for="ProfessionalGroup" class="form-label"></label>
-                            <input asp-for="ProfessionalGroup" class="form-control" />
-                            <span asp-validation-for="ProfessionalGroup" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <label asp-for="NaceCode" class="form-label"></label>
-                            <input asp-for="NaceCode" class="form-control" />
+                            <select asp-for="NaceCode" asp-items="ViewBag.NaceCodes" class="form-select">
+                                <option value="">-- NACE Kodu Seçiniz --</option>
+                            </select>
                             <span asp-validation-for="NaceCode" class="text-danger"></span>
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="ProfessionalGroup" class="form-label"></label>
+                            <select asp-for="ProfessionalGroup" asp-items="ViewBag.ProfessionalGroups" class="form-select">
+                                <option value="">-- Meslek Grubu Seçiniz --</option>
+                            </select>
+                            <span asp-validation-for="ProfessionalGroup" class="text-danger"></span>
+                        </div>
+                    </div>
                 </div>
-
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="IsActive" class="form-label"></label>
+                            <div class="form-check form-switch">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                <label class="form-check-label" for="IsActive">
+                                    @(Model?.IsActive == true ? "Aktif" : "Pasif")
+                                </label>
+                            </div>
+                            <span asp-validation-for="IsActive" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
                 <div class="mt-4">
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i> Kaydet
@@ -150,3 +173,14 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Update the status label when checkbox changes
+        document.getElementById('IsActive').addEventListener('change', function() {
+            const label = this.nextElementSibling;
+            label.textContent = this.checked ? 'Aktif' : 'Pasif';
+        });
+    </script>
+}

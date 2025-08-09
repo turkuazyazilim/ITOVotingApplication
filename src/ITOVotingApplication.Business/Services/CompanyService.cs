@@ -121,15 +121,6 @@ namespace ITOVotingApplication.Business.Services
 					return ApiResponse<CompanyDto>.ErrorResult("Bu sicil numarası ile kayıtlı firma bulunmaktadır.");
 				}
 
-				// Check for duplicate tax number
-				existingCompany = await _unitOfWork.Companies
-					.SingleOrDefaultAsync(c => c.TaxNumber == dto.TaxNumber);
-
-				if (existingCompany != null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Bu vergi numarası ile kayıtlı firma bulunmaktadır.");
-				}
-
 				// Validate company type
 				var companyType = await _unitOfWork.CompanyTypes
 					.SingleOrDefaultAsync(ct => ct.CompanyTypeCode == dto.CompanyType);

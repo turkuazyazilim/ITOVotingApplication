@@ -2,38 +2,40 @@
 
 namespace ITOVotingApplication.Web.Models
 {
+	// CreateCompanyViewModel.cs - Updated model
+
 	public class CreateCompanyViewModel
 	{
 		[Required(ErrorMessage = "Sicil numarası zorunludur.")]
-		[Display(Name = "Sicil No")]
+		[Display(Name = "Sicil Numarası")]
 		public string RegistrationNumber { get; set; }
 
-		[Required(ErrorMessage = "Vergi numarası zorunludur.")]
-		[Display(Name = "Vergi No")]
-		public string TaxNumber { get; set; }
-
-		[Required(ErrorMessage = "Firma ünvanı zorunludur.")]
-		[Display(Name = "Ünvan")]
+		[Required(ErrorMessage = "Firma unvanı zorunludur.")]
+		[Display(Name = "Firma Unvanı")]
 		public string Title { get; set; }
 
-		[Required(ErrorMessage = "Firma tipi zorunludur.")]
-		[Display(Name = "Firma Tipi")]
+		[Required(ErrorMessage = "Şirket tipi zorunludur.")]
+		[Display(Name = "Şirket Tipi")]
 		public string CompanyType { get; set; }
 
 		[Display(Name = "Ticaret Sicil No")]
 		public string TradeRegistrationNumber { get; set; }
 
 		[Display(Name = "Sermaye")]
-		public decimal? Capital { get; set; }
+		[DataType(DataType.Currency)]
+		public decimal Capital { get; set; }
 
 		[Display(Name = "Kayıt Adresi")]
 		public string RegistrationAddress { get; set; }
 
+		[Required(ErrorMessage = "Derece zorunludur.")]
 		[Display(Name = "Derece")]
+		[Range(1, 5, ErrorMessage = "Derece 1-5 arasında olmalıdır.")]
 		public string Degree { get; set; }
 
 		[Display(Name = "Üyelik Kayıt Tarihi")]
-		public DateTime? MemberRegistrationDate { get; set; }
+		[DataType(DataType.Date)]
+		public DateTime MemberRegistrationDate { get; set; } = DateTime.Now;
 
 		[Display(Name = "Meslek Grubu")]
 		public string ProfessionalGroup { get; set; }
@@ -42,19 +44,21 @@ namespace ITOVotingApplication.Web.Models
 		public string NaceCode { get; set; }
 
 		[Display(Name = "İş Telefonu")]
-		[Phone(ErrorMessage = "Geçerli bir telefon numarası giriniz.")]
+		[Phone]
 		public string OfficePhone { get; set; }
 
 		[Display(Name = "Cep Telefonu")]
-		[Phone(ErrorMessage = "Geçerli bir telefon numarası giriniz.")]
+		[Phone]
 		public string MobilePhone { get; set; }
 
 		[Display(Name = "E-posta")]
-		[EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
+		[EmailAddress]
 		public string Email { get; set; }
 
 		[Display(Name = "Web Sitesi")]
-		[Url(ErrorMessage = "Geçerli bir URL giriniz.")]
-		public string WebSite { get; set; }
+		public string WebSite { get; set; } // Optional - no Required attribute
+
+		[Display(Name = "Durum")]
+		public bool IsActive { get; set; } = true; // Default active
 	}
 }

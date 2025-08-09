@@ -41,6 +41,7 @@
 		public string MobilePhone { get; set; }
 		public string Email { get; set; }
 		public string WebSite { get; set; }
+		public bool IsActive { get; set; }
 	}
 
 	public class UpdateCompanyDto : CreateCompanyDto

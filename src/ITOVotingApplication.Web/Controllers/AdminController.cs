@@ -2,9 +2,11 @@
 using ITOVotingApplication.Core.DTOs.Common;
 using ITOVotingApplication.Core.DTOs.Company;
 using ITOVotingApplication.Core.DTOs.User;
+using ITOVotingApplication.Core.Interfaces;
 using ITOVotingApplication.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace VotingApplication.Web.Controllers
 {
@@ -14,15 +16,18 @@ namespace VotingApplication.Web.Controllers
 		private readonly ICompanyService _companyService;
 		private readonly IContactService _contactService;
 		private readonly IUserService _userService;
+		private readonly IUnitOfWork _unitOfWork;
 
 		public AdminController(
 			ICompanyService companyService,
 			IContactService contactService,
-			IUserService userService)
+			IUserService userService,
+			IUnitOfWork unitOfWork)
 		{
 			_companyService = companyService;
 			_contactService = contactService;
 			_userService = userService;
+			_unitOfWork = unitOfWork;
 		}
 
 		public IActionResult Index()
@@ -63,9 +68,11 @@ namespace VotingApplication.Web.Controllers
 		}
 
 		[HttpGet]
-		public IActionResult CreateCompany()
+		public async Task<IActionResult> CreateCompany()
 		{
-			return View();
+			await PrepareViewBag();
+
+			return View(new CreateCompanyViewModel());
 		}
 
 		[HttpPost]
@@ -74,13 +81,15 @@ namespace VotingApplication.Web.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
+				// Reload dropdowns if validation fails
+				await PrepareViewBag();
 				return View(model);
 			}
 
 			var dto = new CreateCompanyDto
 			{
 				RegistrationNumber = model.RegistrationNumber,
-				TaxNumber = model.TaxNumber,
+				TaxNumber = "1111111111",
 				Title = model.Title,
 				CompanyType = model.CompanyType,
 				TradeRegistrationNumber = model.TradeRegistrationNumber,
@@ -93,7 +102,8 @@ namespace VotingApplication.Web.Controllers
 				OfficePhone = model.OfficePhone,
 				MobilePhone = model.MobilePhone,
 				Email = model.Email,
-				WebSite = model.WebSite
+				WebSite = model.WebSite,
+				IsActive = model.IsActive // Add IsActive property
 			};
 
 			var result = await _companyService.CreateAsync(dto);
@@ -104,7 +114,7 @@ namespace VotingApplication.Web.Controllers
 				return RedirectToAction(nameof(Companies));
 			}
 
-			ModelState.AddModelError(string.Empty, result.Message);
+			await PrepareViewBag();
 			return View(model);
 		}
 
@@ -197,6 +207,22 @@ namespace VotingApplication.Web.Controllers
 
 			TempData["Error"] = result.Message;
 			return View(new ContactListViewModel());
+		}
+
+		private async Task PrepareViewBag()
+		{
+			var naceCodes = await _unitOfWork.NaceCodes.GetAllAsync();
+
+			ViewBag.NaceCodes = naceCodes.Select(n => new SelectListItem
+			{
+				Value = n.Code,
+				Text = $"{n.Code} - {n.NaceDescription}"
+			}).ToList();
+
+			ViewBag.ProfessionalGroups = new List<SelectListItem>
+			{
+				new SelectListItem { Value = "5", Text = "5 - BİLGİ TEKNOLOJİLERİ" }
+			};
 		}
 	}
 }
