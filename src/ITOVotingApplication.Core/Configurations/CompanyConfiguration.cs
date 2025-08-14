@@ -59,6 +59,10 @@ namespace ITOVotingApplication.Data.Configurations
 			builder.Property(e => e.WebSite)
 				.HasMaxLength(100);
 
+			builder.Property(e => e.IsActive);
+
+			builder.Property(e => e.Has2022AuthorizationCertificate);
+
 			// Relationships
 			builder.HasOne(d => d.CompanyTypeNavigation)
 				.WithMany(p => p.Companies)

@@ -19,6 +19,7 @@
 		public string WebSite { get; set; }
 		public int? ActiveContactId { get; set; }
 		public bool IsActive { get; set; }
+		public bool Has2022AuthorizationCertificate { get; set; }
 
 		// Navigation Properties
 		public virtual CompanyType CompanyTypeNavigation { get; set; }

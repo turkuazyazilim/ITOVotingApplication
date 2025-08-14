@@ -22,6 +22,7 @@
 		public int? ActiveContactId { get; set; }
 		public string ActiveContactName { get; set; }
 		public bool IsActive { get; set; }
+		public bool Has2022AuthorizationCertificate { get; set; }
 	}
 
 	public class CreateCompanyDto
@@ -42,12 +43,13 @@
 		public string Email { get; set; }
 		public string WebSite { get; set; }
 		public bool IsActive { get; set; }
+		public bool Has2022AuthorizationCertificate { get; set; }
 	}
 
 	public class UpdateCompanyDto : CreateCompanyDto
 	{
 		public int Id { get; set; }
 		public int? ActiveContactId { get; set; }
-		public bool IsActive { get; set; }
+		
 	}
 }
