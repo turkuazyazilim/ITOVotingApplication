@@ -12,5 +12,6 @@ namespace ITOVotingApplication.Business.Interfaces
 		Task<ApiResponse<bool>> DeleteAsync(int id);
 		Task<ApiResponse<List<CompanyDto>>> GetActiveCompaniesAsync();
 		Task<ApiResponse<CompanyDto>> GetByRegistrationNumberAsync(string registrationNumber);
+		Task<ApiResponse<int>> GetCountAsync(bool onlyActive = true);
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using ITOVotingApplication.Business.Interfaces;
 using ITOVotingApplication.Core.DTOs.Common;
 using ITOVotingApplication.Core.DTOs.Company;
+using ITOVotingApplication.Core.DTOs.Contact;
 using ITOVotingApplication.Core.DTOs.User;
 using ITOVotingApplication.Core.Interfaces;
 using ITOVotingApplication.Web.Models;
@@ -208,7 +209,82 @@ namespace VotingApplication.Web.Controllers
 			TempData["Error"] = result.Message;
 			return View(new ContactListViewModel());
 		}
+		[HttpGet]
+		public async Task<IActionResult> CreateContact()
+		{
+			await PrepareContactViewBag();
+			return View(new CreateContactViewModel());
+		}
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> CreateContact(CreateContactViewModel model)
+		{
+			if (!ModelState.IsValid)
+			{
+				await PrepareContactViewBag();
+				return View(model);
+			}
 
+			var dto = new CreateContactDto
+			{
+				CompanyId = model.CompanyId,
+				FirstName = model.FirstName,
+				LastName = model.LastName,
+				IdentityNum = model.IdentityNum,
+				AuthorizationType = model.AuthorizationType,
+				CommitteeId = model.CommitteeId,
+				MobilePhone = model.MobilePhone,
+				Email = model.Email,
+				EligibleToVote = model.EligibleToVote
+			};
+
+			var result = await _contactService.CreateAsync(dto);
+
+			if (result.Success)
+			{
+				TempData["Success"] = "Yetkili kişi başarıyla oluşturuldu.";
+				return RedirectToAction(nameof(Contacts));
+			}
+
+			ModelState.AddModelError(string.Empty, result.Message);
+			await PrepareContactViewBag();
+			return View(model);
+		}
+		private async Task PrepareContactViewBag()
+		{
+			// Firmaları yükle
+			var companiesRequest = new PagedRequest
+			{
+				PageSize = 100,
+				PageNumber = 1
+			};
+
+			var companiesResult = await _companyService.GetAllAsync(companiesRequest);
+
+			ViewBag.Companies = companiesResult.Success && companiesResult.Data != null
+				? companiesResult.Data.Items.Select(c => new SelectListItem
+				{
+					Value = c.Id.ToString(),
+					Text = $"{c.RegistrationNumber} - {c.Title}"
+				}).ToList()
+				: new List<SelectListItem>();
+
+			// Komiteleri yükle  
+			var committees = await _unitOfWork.Committees.GetAllAsync();
+			ViewBag.Committees = committees.Select(c => new SelectListItem
+			{
+				Value = c.Id.ToString(),
+				Text = c.CommitteeDescription
+			}).ToList();
+
+			// Yetki tiplerini yükle
+			ViewBag.AuthorizationTypes = new List<SelectListItem>
+			{
+				new SelectListItem { Value = "1", Text = "Firma Yetkilisi" },
+				new SelectListItem { Value = "2", Text = "Vekil" },
+				new SelectListItem { Value = "3", Text = "Temsilci" }
+			};
+		}
 		private async Task PrepareViewBag()
 		{
 			var naceCodes = await _unitOfWork.NaceCodes.GetAllAsync();

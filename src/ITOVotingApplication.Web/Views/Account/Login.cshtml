@@ -1,8 +1,6 @@
-﻿@* VotingApplication.Web/Views/Account/Login.cshtml *@
-@model ITOVotingApplication.Web.Models.LoginViewModel
-@{
+﻿@{
     ViewData["Title"] = "Giriş Yap";
-    Layout = null; // Login sayfası için özel layout kullanmıyoruz
+    Layout = null; // Login sayfası için layout kullanmıyoruz
 }
 
 <!DOCTYPE html>
@@ -10,158 +8,376 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Seçim Sistemi</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-container {
-            width: 100%;
-            max-width: 1200px;
-            padding: 20px;
-        }
-
-        .card {
-            border-radius: 1rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 1rem 1rem 0 0 !important;
-            padding: 1.5rem;
-        }
-
-        .form-floating > label {
-            color: #6c757d;
-        }
-
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 12px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
-
-            .btn-primary:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            }
-
-        .alert {
-            border-radius: 0.5rem;
-        }
-    </style>
+    <title>@ViewData["Title"] - Seçim Uygulaması</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 </head>
-<body>
-    <div class="login-container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="card shadow-lg border-0 rounded-lg">
-                    <div class="card-header text-white">
-                        <h3 class="text-center font-weight-light my-4">
-                            <i class="fas fa-vote-yea me-2"></i>Seçim Sistemi
-                        </h3>
-                        <p class="text-center mb-0 small">Lütfen giriş yapınız</p>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'7\' cy=\'7\' r=\'1\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-md relative">
+
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <!-- Logo Container -->
+                <div class="flex justify-center mb-6">
+                    <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i data-lucide="vote" class="h-12 w-12 text-white"></i>
                     </div>
-                    <div class="card-body p-4">
-                        <form method="post" action="/Account/Login">
-                            @Html.AntiForgeryToken()
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    Seçim Uygulaması
+                </h1>
+                <p class="text-gray-600">
+                    Güvenli oy kullanma sistemi
+                </p>
+            </div>
 
-                            @if (!ViewData.ModelState.IsValid)
-                            {
-                                <div class="alert alert-danger" role="alert">
-                                    <div asp-validation-summary="All"></div>
-                                </div>
-                            }
+            <!-- Login Card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-2">
+                        Hoş Geldiniz
+                    </h2>
+                    <p class="text-gray-600 text-sm">
+                        Devam etmek için lütfen giriş yapın
+                    </p>
+                </div>
 
-                            <div class="form-floating mb-3">
-                                <input type="text" name="UserName" id="UserName" class="form-control"
-                                       placeholder="Kullanıcı Adı" required autofocus />
-                                <label for="UserName">
-                                    <i class="fas fa-user text-muted"></i> Kullanıcı Adı
-                                </label>
-                            </div>
-
-                            <div class="form-floating mb-3">
-                                <input type="password" name="Password" id="Password" class="form-control"
-                                       placeholder="Şifre" required />
-                                <label for="Password">
-                                    <i class="fas fa-lock text-muted"></i> Şifre
-                                </label>
-                            </div>
-
-                            <div class="form-check mb-3">
-                                <input type="checkbox" name="RememberMe" id="RememberMe"
-                                       class="form-check-input" value="true" />
-                                <input type="hidden" name="RememberMe" value="false" />
-                                <label for="RememberMe" class="form-check-label">
-                                    Beni Hatırla
-                                </label>
-                            </div>
-
-                            @if (ViewData["ReturnUrl"] != null)
-                            {
-                                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
-                            }
-
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
-                                </button>
-                            </div>
-                        </form>
+                <!-- Error Message -->
+                <div id="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 hidden">
+                    <div class="flex items-center">
+                        <i data-lucide="alert-circle" class="h-5 w-5 text-red-500 mr-2"></i>
+                        <p class="text-red-700 text-sm" id="errorText"></p>
                     </div>
-                    <div class="card-footer text-center py-3 bg-light">
-                        <div class="small text-muted">© @DateTime.Now.Year Seçim Uygulaması</div>
-                        <div class="small mt-2">
-                            <span class="text-muted">Sorunlar için IT desteğe başvurun</span>
+                </div>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 hidden">
+                    <div class="flex items-center">
+                        <i data-lucide="check-circle" class="h-5 w-5 text-green-500 mr-2"></i>
+                        <p class="text-green-700 text-sm" id="successText"></p>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" asp-controller="Account" asp-action="Login" method="post" class="space-y-6">
+                    @Html.AntiForgeryToken()
+
+                    <!-- ReturnUrl için hidden field -->
+                    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                    <!-- Username -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Kullanıcı Adı
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="text"
+                                   id="username"
+                                   name="username"
+                                   class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                   placeholder="Kullanıcı adınızı girin"
+                                   required
+                                   autocomplete="username">
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Şifre
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
+                            </div>
+                            <input type="password"
+                                   id="password"
+                                   name="password"
+                                   class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                   placeholder="Şifrenizi girin"
+                                   required
+                                   autocomplete="current-password">
+                            <button type="button"
+                                    onclick="togglePassword()"
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center transition-colors">
+                                <i data-lucide="eye" id="eyeIcon" class="h-5 w-5 text-gray-400 hover:text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input id="remember-me"
+                                   name="remember-me"
+                                   type="checkbox"
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-all">
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700 cursor-pointer select-none">
+                                Beni hatırla
+                            </label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                                Şifremi unuttum
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit"
+                            id="loginButton"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-[1.02]">
+                        <span id="loginButtonText" class="flex items-center">
+                            <i data-lucide="log-in" class="h-4 w-4 mr-2"></i>
+                            Giriş Yap
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">Veya</span>
                         </div>
                     </div>
                 </div>
 
-                @if (!ViewData.ModelState.IsValid)
-                {
-                    <div class="mt-3">
-                        <div class="alert alert-info">
-                            <small>
-                                <i class="fas fa-info-circle"></i>
-                                Giriş yapamıyorsanız kullanıcı adı ve şifrenizi kontrol edin.
-                            </small>
+                <!-- Demo Credentials -->
+                <div class="mt-6">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-blue-900">Demo Hesap</p>
+                                <p class="text-xs text-blue-700 mt-1">
+                                    <span class="font-mono">admin / admin123</span>
+                                </p>
+                            </div>
+                            <button type="button"
+                                    onclick="fillDemoCredentials()"
+                                    class="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors bg-white px-3 py-1 rounded-md border border-blue-300 hover:bg-blue-50">
+                                Doldur
+                            </button>
                         </div>
                     </div>
-                }
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-8">
+                <p class="text-sm text-gray-500">
+                    © 2025 Seçim Uygulaması. Tüm hakları saklıdır.
+                </p>
+                <div class="mt-2 flex justify-center space-x-6">
+                    <a href="#" class="text-xs text-gray-400 hover:text-gray-500 transition-colors">
+                        Gizlilik Politikası
+                    </a>
+                    <a href="#" class="text-xs text-gray-400 hover:text-gray-500 transition-colors">
+                        Kullanım Şartları
+                    </a>
+                    <a href="#" class="text-xs text-gray-400 hover:text-gray-500 transition-colors">
+                        İletişim
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="text-gray-700">Giriş yapılıyor...</span>
+        </div>
+    </div>
 
     <script>
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            $('.alert').fadeOut('slow');
-        }, 5000);
+        // Initialize Lucide icons
+        lucide.createIcons();
 
-        // Focus on username field
-        $(document).ready(function() {
-            $('#UserName').focus();
+        // Get return URL from query string
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('returnUrl') || '/Dashboard';
+
+        let isPasswordVisible = false;
+
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            isPasswordVisible = !isPasswordVisible;
+
+            if (isPasswordVisible) {
+                passwordInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+
+            lucide.createIcons();
+        }
+
+        function fillDemoCredentials() {
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'admin123';
+
+            // Add a nice animation effect
+            const inputs = [document.getElementById('username'), document.getElementById('password')];
+            inputs.forEach(input => {
+                input.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                setTimeout(() => {
+                    input.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+                }, 1000);
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const successDiv = document.getElementById('successMessage');
+
+            successDiv.classList.add('hidden');
+            errorText.textContent = message;
+            errorDiv.classList.remove('hidden');
+
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+
+            errorDiv.classList.add('hidden');
+            successText.textContent = message;
+            successDiv.classList.remove('hidden');
+        }
+
+        function setLoading(loading) {
+            const button = document.getElementById('loginButton');
+            const buttonText = document.getElementById('loginButtonText');
+            const overlay = document.getElementById('loadingOverlay');
+            const inputs = document.querySelectorAll('input');
+
+            if (loading) {
+                button.disabled = true;
+                inputs.forEach(input => input.disabled = true);
+                overlay.classList.remove('hidden');
+                buttonText.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Giriş yapılıyor...
+                    </div>
+                `;
+            } else {
+                button.disabled = false;
+                inputs.forEach(input => input.disabled = false);
+                overlay.classList.add('hidden');
+                buttonText.innerHTML = `
+                    <i data-lucide="log-in" class="h-4 w-4 mr-2"></i>
+                    Giriş Yap
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+
+            if (!username || !password) {
+                showError('Kullanıcı adı ve şifre gereklidir');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        rememberMe: rememberMe
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Store token and user info
+                    localStorage.setItem('token', result.data.token);
+                    localStorage.setItem('user', JSON.stringify(result.data.user));
+
+                    if (rememberMe) {
+                        localStorage.setItem('rememberMe', 'true');
+                    }
+
+                    showSuccess('Giriş başarılı! Yönlendiriliyorsunuz...');
+
+                // Redirect based on user role
+                setTimeout(() => {
+                    const user = result.data.user;
+                    if (user.roles && user.roles.includes('Admin')) {
+                        window.location.href = '/Dashboard/Index'; // veya sadece '/Dashboard'
+                    } else if (user.roles && (user.roles.includes('SandikGorevlisi') || user.roles.includes('BallotOfficer'))) {
+                        window.location.href = '/Vote';
+                    } else {
+                        window.location.href = returnUrl;
+                    }
+                }, 1000);
+                } else {
+                    showError(result.message || 'Kullanıcı adı veya şifre hatalı');
+                }
+            } catch (error) {
+                showError('Bağlantı hatası. Lütfen tekrar deneyin.');
+                console.error('Login error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Form submit handler
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+        // Enter key support for form
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clear any existing tokens on page load
+            if (!localStorage.getItem('rememberMe')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
+
+            // Focus on username field
+            document.getElementById('username').focus();
+        });
+
+        // Mobile responsive adjustments
+        window.addEventListener('resize', function() {
+            if (window.innerWidth < 640) {
+                document.querySelector('.max-w-md').classList.remove('max-w-md');
+                document.querySelector('.max-w-md').classList.add('max-w-sm');
+            }
         });
     </script>
 </body>

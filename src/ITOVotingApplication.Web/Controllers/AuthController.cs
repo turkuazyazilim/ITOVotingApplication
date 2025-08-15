@@ -1,5 +1,6 @@
 ﻿using ITOVotingApplication.Business.Interfaces;
 using ITOVotingApplication.Core.DTOs.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ITOVotingApplication.Web.Controllers
@@ -16,14 +17,17 @@ namespace ITOVotingApplication.Web.Controllers
 		}
 
 		[HttpPost("login")]
+		[AllowAnonymous]
 		public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
 		{
 			var result = await _authService.LoginAsync(loginDto);
 
-			if (!result.Success)
-				return BadRequest(result);
+			if (result.Success)
+			{
+				return Ok(result);
+			}
 
-			return Ok(result);
+			return BadRequest(result);
 		}
 
 		[HttpPost("register")]
@@ -46,6 +50,32 @@ namespace ITOVotingApplication.Web.Controllers
 				return BadRequest(result);
 
 			return Ok(result);
+		}
+
+		[HttpPost("logout")]
+		[Authorize]
+		public async Task<IActionResult> Logout()
+		{
+			var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+			if (int.TryParse(userId, out int id))
+			{
+				await _authService.LogoutAsync(id);
+			}
+
+			return Ok(new { success = true, message = "Çıkış başarılı" });
+		}
+
+		[HttpGet("check")]
+		[Authorize]
+		public IActionResult CheckAuth()
+		{
+			return Ok(new
+			{
+				success = true,
+				user = User.Identity.Name,
+				isAuthenticated = User.Identity.IsAuthenticated
+			});
 		}
 	}
 }

@@ -18,7 +18,26 @@ namespace ITOVotingApplication.Business.Services
 			_unitOfWork = unitOfWork;
 			_mapper = mapper;
 		}
+		public async Task<ApiResponse<int>> GetVoteCountAsync(int? ballotBoxId = null)
+		{
+			try
+			{
+				var query = _unitOfWork.VoteTransactions.Query();
 
+				if (ballotBoxId.HasValue)
+				{
+					query = query.Where(v => v.BallotBoxId == ballotBoxId.Value);
+				}
+
+				var count = await query.CountAsync();
+
+				return ApiResponse<int>.SuccessResult(count);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<int>.ErrorResult($"Oy sayısı getirme hatası: {ex.Message}");
+			}
+		}
 		public async Task<ApiResponse<VoteDto>> CastVoteAsync(CastVoteDto voteDto, int userId)
 		{
 			try

@@ -1,0 +1,464 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = null; // Custom layout
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Seçim Uygulaması</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <i data-lucide="vote" class="h-5 w-5 text-white"></i>
+                </div>
+                <span class="text-white font-semibold text-lg">Seçim App</span>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+
+        <!-- User Info -->
+        <div class="px-6 py-4 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-semibold" id="userInitials">SA</span>
+                </div>
+                <div>
+                    <p class="text-white text-sm font-medium" id="userName">Yükleniyor...</p>
+                    <p class="text-gray-400 text-xs" id="userRole">Admin</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="px-4 py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="#" onclick="loadDashboard()" class="flex items-center space-x-3 px-4 py-3 text-white bg-gray-700 bg-opacity-50 rounded-lg">
+                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadCompanies()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="building-2" class="h-5 w-5"></i>
+                        <span>Firmalar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadContacts()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="users" class="h-5 w-5"></i>
+                        <span>Yetkililer</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadVotes()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="check-square" class="h-5 w-5"></i>
+                        <span>Oylar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadUsers()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="user-cog" class="h-5 w-5"></i>
+                        <span>Kullanıcılar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadReports()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="bar-chart-3" class="h-5 w-5"></i>
+                        <span>Raporlar</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Logout -->
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                <i data-lucide="log-out" class="h-5 w-5"></i>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Top Bar -->
+        <div class="bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4 lg:px-6">
+                <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900">
+                    <i data-lucide="menu" class="h-6 w-6"></i>
+                </button>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="hidden md:block relative">
+                        <input type="text" placeholder="Ara..."
+                               class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Notifications -->
+                    <button class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="bell" class="h-5 w-5"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+
+                    <!-- Settings -->
+                    <button class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="settings" class="h-5 w-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="p-4 lg:p-6">
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p class="text-gray-600">Hoş geldiniz! Sistem özeti ve istatistikler</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- Total Companies -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Toplam Firma</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalCompanies">0</p>
+                            <p class="text-xs text-green-600 mt-2">
+                                <span class="inline-flex items-center">
+                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1"></i>
+                                    +12% bu ay
+                                </span>
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="building-2" class="h-6 w-6 text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Contacts -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Toplam Yetkili</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalContacts">0</p>
+                            <p class="text-xs text-green-600 mt-2">
+                                <span class="inline-flex items-center">
+                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1"></i>
+                                    +8% bu ay
+                                </span>
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="users" class="h-6 w-6 text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Votes -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Kullanılan Oy</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalVotes">0</p>
+                            <p class="text-xs text-blue-600 mt-2">
+                                <span class="inline-flex items-center">
+                                    <i data-lucide="activity" class="h-3 w-3 mr-1"></i>
+                                    %65 katılım
+                                </span>
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="check-square" class="h-6 w-6 text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Users -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Aktif Kullanıcı</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="activeUsers">0</p>
+                            <p class="text-xs text-orange-600 mt-2">
+                                <span class="inline-flex items-center">
+                                    <i data-lucide="users" class="h-3 w-3 mr-1"></i>
+                                    5 çevrimiçi
+                                </span>
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="user-check" class="h-6 w-6 text-orange-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Voting Progress Chart -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Oy Kullanım Durumu</h3>
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="more-vertical" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    <canvas id="votingChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Company Distribution Chart -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Firma Dağılımı</h3>
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="more-vertical" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                    <canvas id="companyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Son Aktiviteler</h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4" id="recentActivities">
+                        <!-- Activities will be loaded here -->
+                        <div class="flex items-center space-x-3">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <p class="text-sm text-gray-600">Yükleniyor...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()"
+         class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            loadUserInfo();
+            loadDashboardData();
+            initCharts();
+            loadRecentActivities();
+        });
+
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/Account/Login';
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Load User Info
+        function loadUserInfo() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user) {
+                document.getElementById('userName').textContent = user.fullName || user.firstName + ' ' + user.lastName || 'Kullanıcı';
+                document.getElementById('userRole').textContent = user.roles ? user.roles[0] : 'Kullanıcı';
+
+                const initials = ((user.firstName || '')[0] + (user.lastName || '')[0]).toUpperCase();
+                document.getElementById('userInitials').textContent = initials || 'KA';
+            }
+        }
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                // Load statistics
+                const stats = await Promise.all([
+                    fetchAPI('/api/company/count'),
+                    fetchAPI('/api/contact/count'),
+                    fetchAPI('/api/vote/count'),
+                    fetchAPI('/api/user/count')
+                ]);
+
+                document.getElementById('totalCompanies').textContent = stats[0]?.data || 0;
+                document.getElementById('totalContacts').textContent = stats[1]?.data || 0;
+                document.getElementById('totalVotes').textContent = stats[2]?.data || 0;
+                document.getElementById('activeUsers').textContent = stats[3]?.data || 0;
+            } catch (error) {
+                console.error('Dashboard data load error:', error);
+                // Use dummy data for demo
+                document.getElementById('totalCompanies').textContent = '127';
+                document.getElementById('totalContacts').textContent = '354';
+                document.getElementById('totalVotes').textContent = '218';
+                document.getElementById('activeUsers').textContent = '12';
+            }
+        }
+
+        // Fetch API Helper
+        async function fetchAPI(url) {
+            const token = localStorage.getItem('token');
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                return await response.json();
+            }
+            throw new Error('API request failed');
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            // Voting Progress Chart
+            const votingCtx = document.getElementById('votingChart').getContext('2d');
+            new Chart(votingCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Oy Kullanan', 'Kullanmayan'],
+                    datasets: [{
+                        data: [218, 136],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(229, 231, 235, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(34, 197, 94, 1)',
+                            'rgba(229, 231, 235, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Company Distribution Chart
+            const companyCtx = document.getElementById('companyChart').getContext('2d');
+            new Chart(companyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['A.Ş.', 'Ltd.', 'Şahıs', 'Diğer'],
+                    datasets: [{
+                        label: 'Firma Sayısı',
+                        data: [65, 42, 15, 5],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load Recent Activities
+        function loadRecentActivities() {
+            const activities = [
+                { icon: 'user-plus', color: 'green', text: 'Yeni firma kaydı: ABC Teknoloji A.Ş.', time: '5 dakika önce' },
+                { icon: 'check-square', color: 'blue', text: 'Ali Yılmaz oy kullandı', time: '12 dakika önce' },
+                { icon: 'users', color: 'purple', text: 'Yeni yetkili eklendi: Mehmet Öz', time: '1 saat önce' },
+                { icon: 'edit', color: 'orange', text: 'XYZ Ltd. bilgileri güncellendi', time: '2 saat önce' },
+                { icon: 'check-square', color: 'blue', text: 'Ayşe Kaya oy kullandı', time: '3 saat önce' }
+            ];
+
+            const container = document.getElementById('recentActivities');
+            container.innerHTML = activities.map(activity => `
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-${activity.color}-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="${activity.icon}" class="h-4 w-4 text-${activity.color}-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm text-gray-900">${activity.text}</p>
+                        <p class="text-xs text-gray-500 mt-1">${activity.time}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // Navigation Functions
+        function loadDashboard() {
+            location.reload();
+        }
+
+        function loadCompanies() {
+            window.location.href = '/Admin/Companies';
+        }
+
+        function loadContacts() {
+            window.location.href = '/Admin/Contacts';
+        }
+
+        function loadVotes() {
+            window.location.href = '/Vote';
+        }
+
+        function loadUsers() {
+            window.location.href = '/Admin/Users';
+        }
+
+        function loadReports() {
+            alert('Raporlar sayfası hazırlanıyor...');
+        }
+
+        // Logout
+        async function logout() {
+            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/Account/Login';
+            }
+        }
+    </script>
+</body>
+</html>

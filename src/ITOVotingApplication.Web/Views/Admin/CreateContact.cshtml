@@ -1,0 +1,359 @@
+﻿@{
+    ViewData["Title"] = "Yeni Yetkili Kişi";
+}
+
+<!-- Page Header -->
+<div class="mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Yeni Yetkili Kişi</h1>
+            <p class="mt-1 text-gray-600">Firma yetkilisi ekleyin ve yönetin</p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+            <button onclick="window.history.back()"
+                    class="inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Geri Dön</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="p-6">
+        <form id="contactForm">
+            <!-- Firma Seçimi -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Firma Bilgileri</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Firma *</label>
+                        <select id="companyId" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Firma Seçin...</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Yetkili kişinin bağlı olduğu firmayı seçin</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kişisel Bilgiler -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Kişisel Bilgiler</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ad *</label>
+                        <input type="text" id="firstName" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Yetkili kişinin adı">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Soyad *</label>
+                        <input type="text" id="lastName" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Yetkili kişinin soyadı">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">TC Kimlik No *</label>
+                        <input type="text" id="identityNum" required maxlength="11" pattern="[0-9]{11}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="11 haneli TC kimlik numarası">
+                        <p class="text-xs text-gray-500 mt-1">11 haneli TC kimlik numarasını giriniz</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Yetki Tipi *</label>
+                        <select id="authorizationType" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Seçiniz...</option>
+                            <option value="1">Firma Yetkilisi</option>
+                            <option value="2">Vekil</option>
+                            <option value="3">Temsilci</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- İletişim Bilgileri -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">İletişim Bilgileri</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cep Telefonu</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="phone" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <input type="tel" id="mobilePhone"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="0 (5__) ___ __ __">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="mail" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <input type="email" id="email"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="ornek@firma.com">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Komite Bilgileri -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Komite ve Oy Durumu</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Komite</label>
+                        <select id="committeeId"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Komite Seçin (Opsiyonel)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="flex items-center space-x-2 mt-6">
+                            <input type="checkbox" id="eligibleToVote" checked
+                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm font-medium text-gray-700">Oy kullanmaya yetkili</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-6 border-t border-gray-200">
+                <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+                    * işaretli alanlar zorunludur
+                </div>
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                    <button type="button" onclick="clearForm()"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-center">
+                        Temizle
+                    </button>
+                    <button type="submit"
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <span class="flex items-center justify-center space-x-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span>Kaydet</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Success Message -->
+<div id="successMessage" class="hidden fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3">
+    <i data-lucide="check-circle" class="w-5 h-5"></i>
+    <span>Yetkili kişi başarıyla oluşturuldu!</span>
+</div>
+
+<!-- Error Message -->
+<div id="errorMessage" class="hidden fixed top-20 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3">
+    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+    <span id="errorText">Bir hata oluştu!</span>
+</div>
+
+@section Scripts {
+    <script>
+        let companies = [];
+        let committees = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCompanies();
+            loadCommittees();
+
+            // Form submit
+            document.getElementById('contactForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveContact();
+            });
+
+            // TC Kimlik input formatting
+            document.getElementById('identityNum').addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // Phone input formatting
+            document.getElementById('mobilePhone').addEventListener('input', function(e) {
+                let value = this.value.replace(/[^0-9]/g, '');
+                if (value.length > 0) {
+                    let formatted = '';
+                    if (value.length >= 1) formatted = '0 (' + value.substring(0, 3);
+                    if (value.length >= 4) formatted += ') ' + value.substring(3, 6);
+                    if (value.length >= 7) formatted += ' ' + value.substring(6, 8);
+                    if (value.length >= 9) formatted += ' ' + value.substring(8, 10);
+                    this.value = formatted;
+                }
+            });
+        });
+
+        // Load companies
+        async function loadCompanies() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/Auth/Login';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/company?pageSize=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    companies = result.data?.items || [];
+                    populateCompanies();
+                }
+            } catch (error) {
+                console.error('Load companies error:', error);
+            }
+        }
+
+        // Load committees
+        async function loadCommittees() {
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch('/api/committee', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    committees = result.data || [];
+                    populateCommittees();
+                }
+            } catch (error) {
+                console.error('Load committees error:', error);
+            }
+        }
+
+        // Populate companies dropdown
+        function populateCompanies() {
+            const select = document.getElementById('companyId');
+            select.innerHTML = '<option value="">Firma Seçin...</option>';
+
+            companies.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company.id;
+                option.textContent = `${company.registrationNumber} - ${company.title}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Populate committees dropdown
+        function populateCommittees() {
+            const select = document.getElementById('committeeId');
+            select.innerHTML = '<option value="">Komite Seçin (Opsiyonel)</option>';
+
+            committees.forEach(committee => {
+                const option = document.createElement('option');
+                option.value = committee.id;
+                option.textContent = committee.committeeDescription;
+                select.appendChild(option);
+            });
+        }
+
+        // Save contact
+        async function saveContact() {
+            const token = localStorage.getItem('token');
+
+            const contactData = {
+                companyId: parseInt(document.getElementById('companyId').value),
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                identityNum: document.getElementById('identityNum').value,
+                authorizationType: parseInt(document.getElementById('authorizationType').value),
+                committeeId: document.getElementById('committeeId').value ?
+                    parseInt(document.getElementById('committeeId').value) : null,
+                mobilePhone: document.getElementById('mobilePhone').value.replace(/[^0-9]/g, ''),
+                email: document.getElementById('email').value,
+                eligibleToVote: document.getElementById('eligibleToVote').checked
+            };
+
+            // Validation
+            if (!contactData.companyId) {
+                showError('Lütfen firma seçiniz.');
+                return;
+            }
+
+            if (!contactData.firstName || !contactData.lastName) {
+                showError('Ad ve soyad alanları zorunludur.');
+                return;
+            }
+
+            if (!contactData.identityNum || contactData.identityNum.length !== 11) {
+                showError('TC Kimlik numarası 11 haneli olmalıdır.');
+                return;
+            }
+
+            if (!contactData.authorizationType) {
+                showError('Yetki tipi seçiniz.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(contactData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showSuccess();
+                    setTimeout(() => {
+                        clearForm();
+                    }, 2000);
+                } else {
+                    showError(result.message || 'Kayıt başarısız.');
+                }
+            } catch (error) {
+                console.error('Save contact error:', error);
+                showError('Hata: ' + error.message);
+            }
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('contactForm').reset();
+        }
+
+        // Show success message
+        function showSuccess() {
+            const msg = document.getElementById('successMessage');
+            msg.classList.remove('hidden');
+            setTimeout(() => {
+                msg.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            const msg = document.getElementById('errorMessage');
+            const text = document.getElementById('errorText');
+            text.textContent = message;
+            msg.classList.remove('hidden');
+            setTimeout(() => {
+                msg.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    </script>
+}

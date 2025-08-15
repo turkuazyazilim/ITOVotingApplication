@@ -11,5 +11,6 @@ namespace ITOVotingApplication.Business.Interfaces
 		Task<ApiResponse<List<VoteDto>>> GetVotesByCompanyAsync(int companyId);
 		Task<ApiResponse<VoteResultDto>> GetVoteResultsAsync(int ballotBoxId);
 		Task<ApiResponse<List<VoteResultDto>>> GetAllVoteResultsAsync();
+		Task<ApiResponse<int>> GetVoteCountAsync(int? ballotBoxId = null);
 	}
 }

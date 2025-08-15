@@ -20,7 +20,38 @@ namespace ITOVotingApplication.Business.Services
 			_unitOfWork = unitOfWork;
 			_mapper = mapper;
 		}
+		public async Task<ApiResponse<int>> GetActiveUserCountAsync()
+		{
+			try
+			{
+				var count = await _unitOfWork.Users
+					.Query()
+					.Where(u => u.IsActive)
+					.CountAsync();
 
+				return ApiResponse<int>.SuccessResult(count);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<int>.ErrorResult($"Aktif kullanıcı sayısı getirme hatası: {ex.Message}");
+			}
+		}
+
+		public async Task<ApiResponse<int>> GetTotalUserCountAsync()
+		{
+			try
+			{
+				var count = await _unitOfWork.Users
+					.Query()
+					.CountAsync();
+
+				return ApiResponse<int>.SuccessResult(count);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<int>.ErrorResult($"Toplam kullanıcı sayısı getirme hatası: {ex.Message}");
+			}
+		}
 		public async Task<ApiResponse<UserDto>> GetByIdAsync(int id)
 		{
 			try

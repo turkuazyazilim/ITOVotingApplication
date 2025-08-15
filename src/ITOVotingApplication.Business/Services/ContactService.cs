@@ -18,7 +18,26 @@ namespace ITOVotingApplication.Business.Services
 			_unitOfWork = unitOfWork;
 			_mapper = mapper;
 		}
+		public async Task<ApiResponse<int>> GetCountAsync(bool onlyEligible = false)
+		{
+			try
+			{
+				var query = _unitOfWork.Contacts.Query();
 
+				if (onlyEligible)
+				{
+					query = query.Where(c => c.EligibleToVote);
+				}
+
+				var count = await query.CountAsync();
+
+				return ApiResponse<int>.SuccessResult(count);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<int>.ErrorResult($"Yetkili sayısı getirme hatası: {ex.Message}");
+			}
+		}
 		public async Task<ApiResponse<ContactDto>> GetByIdAsync(int id)
 		{
 			try

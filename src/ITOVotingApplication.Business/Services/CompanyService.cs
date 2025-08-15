@@ -42,7 +42,61 @@ namespace ITOVotingApplication.Business.Services
 				return ApiResponse<CompanyDto>.ErrorResult($"Firma getirme hatası: {ex.Message}");
 			}
 		}
+		public async Task<ApiResponse<int>> GetCountAsync(bool onlyActive = true)
+		{
+			try
+			{
+				var query = _unitOfWork.Companies.Query();
 
+				if (onlyActive)
+				{
+					query = query.Where(c => c.IsActive);
+				}
+
+				var count = await query.CountAsync();
+
+				return ApiResponse<int>.SuccessResult(count);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<int>.ErrorResult($"Firma sayısı getirme hatası: {ex.Message}");
+			}
+		}
+		public async Task<ApiResponse<CompanyStatisticsDto>> GetStatisticsAsync()
+		{
+			try
+			{
+				var statistics = new CompanyStatisticsDto
+				{
+					TotalCompanies = await _unitOfWork.Companies.Query().CountAsync(),
+					ActiveCompanies = await _unitOfWork.Companies.Query().Where(c => c.IsActive).CountAsync(),
+					InactiveCompanies = await _unitOfWork.Companies.Query().Where(c => !c.IsActive).CountAsync(),
+
+					// Firma tiplerine göre dağılım
+					CompanyTypeDistribution = await _unitOfWork.Companies.Query()
+						.GroupBy(c => c.CompanyType)
+						.Select(g => new CompanyTypeStatistic
+						{
+							Type = g.Key,
+							Count = g.Count()
+						})
+						.ToListAsync(),
+
+					// Son eklenen firmalar
+					RecentlyAdded = await _unitOfWork.Companies.Query()
+						.OrderByDescending(c => c.Id)
+						.Take(5)
+						.Select(c => new { c.Title, c.RegistrationNumber })
+						.ToListAsync()
+				};
+
+				return ApiResponse<CompanyStatisticsDto>.SuccessResult(statistics);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<CompanyStatisticsDto>.ErrorResult($"İstatistik getirme hatası: {ex.Message}");
+			}
+		}
 		public async Task<ApiResponse<PagedResult<CompanyDto>>> GetAllAsync(PagedRequest request)
 		{
 			try
@@ -299,6 +353,20 @@ namespace ITOVotingApplication.Business.Services
 			{
 				return ApiResponse<CompanyDto>.ErrorResult($"Firma getirme hatası: {ex.Message}");
 			}
+		}
+		public class CompanyStatisticsDto
+		{
+			public int TotalCompanies { get; set; }
+			public int ActiveCompanies { get; set; }
+			public int InactiveCompanies { get; set; }
+			public List<CompanyTypeStatistic> CompanyTypeDistribution { get; set; }
+			public object RecentlyAdded { get; set; }
+		}
+
+		public class CompanyTypeStatistic
+		{
+			public string Type { get; set; }
+			public int Count { get; set; }
 		}
 	}
 }

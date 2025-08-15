@@ -72,12 +72,12 @@ namespace ITOVotingApplication.Web.Controllers
 			{
 				// Create claims for the authenticated user
 				var claims = new List<Claim>
-				{
-					new Claim(ClaimTypes.NameIdentifier, result.Data.User.Id.ToString()),
-					new Claim(ClaimTypes.Name, result.Data.User.UserName),
-					new Claim(ClaimTypes.Email, result.Data.User.Email),
-					new Claim("FullName", result.Data.User.FirstName + " " + result.Data.User.LastName)
-				};
+		{
+			new Claim(ClaimTypes.NameIdentifier, result.Data.User.Id.ToString()),
+			new Claim(ClaimTypes.Name, result.Data.User.UserName),
+			new Claim(ClaimTypes.Email, result.Data.User.Email),
+			new Claim("FullName", result.Data.User.FirstName + " " + result.Data.User.LastName)
+		};
 
 				// Add role claims
 				if (result.Data.User.Roles != null)
@@ -104,24 +104,25 @@ namespace ITOVotingApplication.Web.Controllers
 
 				_logger.LogInformation($"User {model.UserName} logged in successfully.");
 
-				// Redirect based on user role
-				if (result.Data.User.Roles.Contains("Admin"))
+				// Redirect based on user role - ÖNEMLİ: RedirectToAction kullanın
+				if (result.Data.User.Roles != null && result.Data.User.Roles.Contains("Admin"))
 				{
-					return RedirectToAction("Index", "Admin");
+					return RedirectToAction("Index", "Dashboard");
 				}
-				else if (result.Data.User.Roles.Contains("SandikGorevlisi") ||
-						 result.Data.User.Roles.Contains("BallotOfficer"))
+				else if (result.Data.User.Roles != null &&
+						(result.Data.User.Roles.Contains("SandikGorevlisi") ||
+						 result.Data.User.Roles.Contains("BallotOfficer")))
 				{
 					return RedirectToAction("Index", "Vote");
 				}
 
-				// Redirect to return URL or home
+				// Redirect to return URL or dashboard
 				if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
 				{
 					return Redirect(returnUrl);
 				}
 
-				return RedirectToAction("Index", "Home");
+				return RedirectToAction("Index", "Dashboard");
 			}
 
 			// If login failed, show error

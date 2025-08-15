@@ -14,5 +14,7 @@ namespace ITOVotingApplication.Business.Interfaces
 		Task<ApiResponse<bool>> AssignRoleAsync(int userId, List<int> roleIds);
 		Task<ApiResponse<List<string>>> GetUserRolesAsync(int userId);
 		Task<ApiResponse<bool>> ValidateUserAsync(string userName, string password);
+		Task<ApiResponse<int>> GetActiveUserCountAsync();
+		Task<ApiResponse<int>> GetTotalUserCountAsync();
 	}
 }
