@@ -1,0 +1,683 @@
+﻿@{
+    ViewData["Title"] = "Yetkili Yönetimi";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Seçim Uygulaması</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/dataTables.tailwindcss.min.js"></script>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Sidebar (Dashboard'dan kopyalanacak) -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <i data-lucide="vote" class="h-5 w-5 text-white"></i>
+                </div>
+                <span class="text-white font-semibold text-lg">Seçim App</span>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+
+        <!-- User Info -->
+        <div class="px-6 py-4 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-semibold" id="userInitials">SA</span>
+                </div>
+                <div>
+                    <p class="text-white text-sm font-medium" id="userName">Yükleniyor...</p>
+                    <p class="text-gray-400 text-xs" id="userRole">Admin</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="px-4 py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="/Dashboard" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Companies" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="building-2" class="h-5 w-5"></i>
+                        <span>Firmalar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Contacts" class="flex items-center space-x-3 px-4 py-3 text-white bg-gray-700 bg-opacity-50 rounded-lg">
+                        <i data-lucide="users" class="h-5 w-5"></i>
+                        <span>Yetkililer</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Vote" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="check-square" class="h-5 w-5"></i>
+                        <span>Oylar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Users" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="user-cog" class="h-5 w-5"></i>
+                        <span>Kullanıcılar</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Logout -->
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                <i data-lucide="log-out" class="h-5 w-5"></i>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Top Bar -->
+        <div class="bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4 lg:px-6">
+                <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900">
+                    <i data-lucide="menu" class="h-6 w-6"></i>
+                </button>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="hidden md:block relative">
+                        <input type="text" id="globalSearch" placeholder="Yetkili ara..."
+                               class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Add New Contact Button -->
+                    <button onclick="window.location.href='/Admin/CreateContact'" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                        <i data-lucide="user-plus" class="h-4 w-4"></i>
+                        <span>Yeni Yetkili</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="p-4 lg:p-6">
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Yetkili Yönetimi</h1>
+                <p class="text-gray-600">Firma yetkililerini görüntüleyin ve yönetin</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Toplam Yetkili</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalContacts">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="users" class="h-5 w-5 text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Oy Kullanan</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="votedContacts">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="check-square" class="h-5 w-5 text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Oy Kullanmayan</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="notVotedContacts">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="x-square" class="h-5 w-5 text-orange-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Oy Yetkisi Olan</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="eligibleContacts">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="shield-check" class="h-5 w-5 text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Firma</label>
+                        <select id="companyFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tüm Firmalar</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Oy Durumu</label>
+                        <select id="voteStatusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <option value="voted">Oy Kullanan</option>
+                            <option value="notVoted">Oy Kullanmayan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Yetki Durumu</label>
+                        <select id="eligibilityFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <option value="eligible">Yetkili</option>
+                            <option value="notEligible">Yetkisiz</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="applyFilters()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i data-lucide="filter" class="h-4 w-4 inline mr-2"></i>
+                            Filtrele
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contacts Table -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4">
+                    <table id="contactsTable" class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4">Yetkili</th>
+                                <th class="text-left py-3 px-4">Firma</th>
+                                <th class="text-left py-3 px-4">TC Kimlik No</th>
+                                <th class="text-left py-3 px-4">İletişim</th>
+                                <th class="text-center py-3 px-4">Oy Durumu</th>
+                                <th class="text-center py-3 px-4">Yetki</th>
+                                <th class="text-center py-3 px-4">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactsTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Contact Modal -->
+    <div id="editContactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Yetkili Düzenle</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="editContactForm" class="p-6">
+                <input type="hidden" id="editContactId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ad</label>
+                        <input type="text" id="editFirstName" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Soyad</label>
+                        <input type="text" id="editLastName" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">TC Kimlik No</label>
+                        <input type="text" id="editIdentityNum" maxlength="11" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                        <input type="tel" id="editMobilePhone"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                        <input type="email" id="editEmail"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="editEligibleToVote" class="rounded border-gray-300 text-blue-600">
+                            <span class="text-sm font-medium text-gray-700">Oy kullanma yetkisi</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()"
+         class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+
+    <script>
+        let allContacts = [];
+        let dataTable = null;
+        const token = localStorage.getItem('token');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication first
+            if (!token) {
+                window.location.href = '/Account/Login';
+                return;
+            }
+
+            lucide.createIcons();
+            loadUserInfo();
+            loadCompanies();
+            loadContacts();
+        });
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Load User Info
+        function loadUserInfo() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user) {
+                document.getElementById('userName').textContent = user.fullName || user.firstName + ' ' + user.lastName || 'Kullanıcı';
+                document.getElementById('userRole').textContent = user.roles ? user.roles[0] : 'Kullanıcı';
+
+                const initials = ((user.firstName || '')[0] + (user.lastName || '')[0]).toUpperCase();
+                document.getElementById('userInitials').textContent = initials || 'KA';
+            }
+        }
+
+        // Load Companies for Filter
+        async function loadCompanies() {
+            try {
+                const response = await fetch('/api/company?pageSize=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const companies = result.data?.items || [];
+
+                    const select = document.getElementById('companyFilter');
+                    companies.forEach(company => {
+                        const option = document.createElement('option');
+                        option.value = company.id;
+                        option.textContent = company.title;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading companies:', error);
+            }
+        }
+
+        // Load Contacts
+        async function loadContacts() {
+            try {
+                const response = await fetch('/api/contact?pageSize=500', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    allContacts = result.data?.items || [];
+                    updateStatistics();
+                    renderTable();
+                } else {
+                    console.error('Failed to load contacts');
+                    // Use demo data
+                    allContacts = getDemoContacts();
+                    updateStatistics();
+                    renderTable();
+                }
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                // Use demo data
+                allContacts = getDemoContacts();
+                updateStatistics();
+                renderTable();
+            }
+        }
+
+        // Update Statistics
+        function updateStatistics() {
+            const total = allContacts.length;
+            const voted = allContacts.filter(c => c.hasVoted).length;
+            const notVoted = total - voted;
+            const eligible = allContacts.filter(c => c.eligibleToVote).length;
+
+            document.getElementById('totalContacts').textContent = total;
+            document.getElementById('votedContacts').textContent = voted;
+            document.getElementById('notVotedContacts').textContent = notVoted;
+            document.getElementById('eligibleContacts').textContent = eligible;
+        }
+
+        // Render Table
+        function renderTable() {
+            const tbody = document.getElementById('contactsTableBody');
+
+            tbody.innerHTML = allContacts.map(contact => `
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 px-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-xs font-medium text-gray-600">
+                                    ${contact.firstName[0]}${contact.lastName[0]}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">${contact.firstName} ${contact.lastName}</p>
+                                <p class="text-xs text-gray-500">${contact.authorizationTypeDescription || 'Yetkili'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <p class="text-sm text-gray-900">${contact.companyTitle}</p>
+                    </td>
+                    <td class="py-3 px-4">
+                        <p class="text-sm text-gray-900 font-mono">${contact.identityNum}</p>
+                    </td>
+                    <td class="py-3 px-4">
+                        <p class="text-sm text-gray-900">${contact.mobilePhone || '-'}</p>
+                        <p class="text-xs text-gray-500">${contact.email || '-'}</p>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        ${contact.hasVoted ?
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Kullandı</span>' :
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">Kullanmadı</span>'
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        ${contact.eligibleToVote ?
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Yetkili</span>' :
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Yetkisiz</span>'
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="editContact(${contact.id})"
+                                    class="text-blue-600 hover:text-blue-800">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="deleteContact(${contact.id})"
+                                    class="text-red-600 hover:text-red-800">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+
+            // Initialize DataTable
+            if (dataTable) {
+                dataTable.destroy();
+            }
+
+            dataTable = $('#contactsTable').DataTable({
+                pageLength: 25,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                },
+                dom: 'rtip',
+                order: [[0, 'asc']]
+            });
+
+            // Global search
+            $('#globalSearch').on('keyup', function() {
+                dataTable.search(this.value).draw();
+            });
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            const companyId = document.getElementById('companyFilter').value;
+            const voteStatus = document.getElementById('voteStatusFilter').value;
+            const eligibility = document.getElementById('eligibilityFilter').value;
+
+            let filtered = [...allContacts];
+
+            if (companyId) {
+                filtered = filtered.filter(c => c.companyId == companyId);
+            }
+
+            if (voteStatus === 'voted') {
+                filtered = filtered.filter(c => c.hasVoted);
+            } else if (voteStatus === 'notVoted') {
+                filtered = filtered.filter(c => !c.hasVoted);
+            }
+
+            if (eligibility === 'eligible') {
+                filtered = filtered.filter(c => c.eligibleToVote);
+            } else if (eligibility === 'notEligible') {
+                filtered = filtered.filter(c => !c.eligibleToVote);
+            }
+
+            // Update table with filtered data
+            const tbody = document.getElementById('contactsTableBody');
+            tbody.innerHTML = filtered.map(contact => /* same row template */).join('');
+            lucide.createIcons();
+        }
+
+        // Edit Contact
+        function editContact(id) {
+            const contact = allContacts.find(c => c.id === id);
+            if (contact) {
+                document.getElementById('editContactId').value = contact.id;
+                document.getElementById('editFirstName').value = contact.firstName;
+                document.getElementById('editLastName').value = contact.lastName;
+                document.getElementById('editIdentityNum').value = contact.identityNum;
+                document.getElementById('editMobilePhone').value = contact.mobilePhone || '';
+                document.getElementById('editEmail').value = contact.email || '';
+                document.getElementById('editEligibleToVote').checked = contact.eligibleToVote;
+
+                document.getElementById('editContactModal').classList.remove('hidden');
+                lucide.createIcons();
+            }
+        }
+
+        // Close Edit Modal
+        function closeEditModal() {
+            document.getElementById('editContactModal').classList.add('hidden');
+        }
+
+        // Handle Edit Form Submit
+        document.getElementById('editContactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const contactId = document.getElementById('editContactId').value;
+            const updateData = {
+                id: parseInt(contactId),
+                firstName: document.getElementById('editFirstName').value,
+                lastName: document.getElementById('editLastName').value,
+                identityNum: document.getElementById('editIdentityNum').value,
+                mobilePhone: document.getElementById('editMobilePhone').value,
+                email: document.getElementById('editEmail').value,
+                eligibleToVote: document.getElementById('editEligibleToVote').checked
+            };
+
+            try {
+                const response = await fetch(`/api/contact/${contactId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    closeEditModal();
+                    loadContacts();
+                    alert('Yetkili başarıyla güncellendi!');
+                } else {
+                    alert('Güncelleme başarısız!');
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                alert('Bir hata oluştu!');
+            }
+        });
+
+        // Delete Contact
+        async function deleteContact(id) {
+            if (!confirm('Bu yetkiliyi silmek istediğinizden emin misiniz?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/contact/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    loadContacts();
+                    alert('Yetkili başarıyla silindi!');
+                } else {
+                    alert('Silme işlemi başarısız!');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Bir hata oluştu!');
+            }
+        }
+
+        // Get Demo Contacts
+        function getDemoContacts() {
+            return [
+                {
+                    id: 1,
+                    firstName: 'Ahmet',
+                    lastName: 'Yılmaz',
+                    companyId: 1,
+                    companyTitle: 'ABC Teknoloji A.Ş.',
+                    identityNum: '12345678901',
+                    mobilePhone: '0532 123 4567',
+                    email: 'ahmet.yilmaz@abc.com',
+                    eligibleToVote: true,
+                    hasVoted: true,
+                    authorizationTypeDescription: 'Firma Yetkilisi'
+                },
+                {
+                    id: 2,
+                    firstName: 'Ayşe',
+                    lastName: 'Kaya',
+                    companyId: 2,
+                    companyTitle: 'XYZ Ltd. Şti.',
+                    identityNum: '98765432109',
+                    mobilePhone: '0533 987 6543',
+                    email: 'ayse.kaya@xyz.com',
+                    eligibleToVote: true,
+                    hasVoted: false,
+                    authorizationTypeDescription: 'Vekil'
+                },
+                {
+                    id: 3,
+                    firstName: 'Mehmet',
+                    lastName: 'Demir',
+                    companyId: 3,
+                    companyTitle: 'DEF Sanayi A.Ş.',
+                    identityNum: '11122233344',
+                    mobilePhone: '0534 555 6677',
+                    email: 'mehmet.demir@def.com',
+                    eligibleToVote: true,
+                    hasVoted: false,
+                    authorizationTypeDescription: 'Firma Yetkilisi'
+                },
+                {
+                    id: 4,
+                    firstName: 'Fatma',
+                    lastName: 'Öztürk',
+                    companyId: 1,
+                    companyTitle: 'ABC Teknoloji A.Ş.',
+                    identityNum: '55566677788',
+                    mobilePhone: '0535 444 3322',
+                    email: 'fatma.ozturk@abc.com',
+                    eligibleToVote: false,
+                    hasVoted: false,
+                    authorizationTypeDescription: 'Temsilci'
+                },
+                {
+                    id: 5,
+                    firstName: 'Ali',
+                    lastName: 'Çelik',
+                    companyId: 4,
+                    companyTitle: 'GHI İnşaat Ltd.',
+                    identityNum: '99988877766',
+                    mobilePhone: '0536 222 1111',
+                    email: 'ali.celik@ghi.com',
+                    eligibleToVote: true,
+                    hasVoted: true,
+                    authorizationTypeDescription: 'Firma Yetkilisi'
+                }
+            ];
+        }
+
+        // Logout
+        async function logout() {
+            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/Account/Login';
+            }
+        }
+    </script>
+</body>
+</html>

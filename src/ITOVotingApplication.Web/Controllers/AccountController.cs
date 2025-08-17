@@ -23,7 +23,7 @@ namespace ITOVotingApplication.Web.Controllers
 		// GET: /Account/Login
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Login(string returnUrl = null)
+		public async Task<IActionResult> Login(string returnUrl = null)
 		{
 			// Store the return URL to redirect after successful login
 			
@@ -34,7 +34,7 @@ namespace ITOVotingApplication.Web.Controllers
 			{
 				if (User.IsInRole("Admin"))
 				{
-					return RedirectToAction("Index", "Admin");
+					return RedirectToAction("Index", "Dashboard");
 				}
 				else if (User.IsInRole("SandikGorevlisi") || User.IsInRole("BallotOfficer"))
 				{
@@ -44,6 +44,9 @@ namespace ITOVotingApplication.Web.Controllers
 				return RedirectToAction("Index", "Home");
 			}
 
+			//await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+			//return RedirectToAction("Login", "Account");
 			return View(new LoginViewModel());
 		}
 
@@ -131,7 +134,7 @@ namespace ITOVotingApplication.Web.Controllers
 		}
 
 		// POST: /Account/Logout
-		[HttpPost]
+		[HttpGet]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout()
 		{

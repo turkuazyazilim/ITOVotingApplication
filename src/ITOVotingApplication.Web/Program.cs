@@ -54,10 +54,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-	options.LoginPath = "/Account/Login";
+	options.LoginPath = "/Account/Login";  // Auth/Login deðil, Account/Login olmalý
 	options.LogoutPath = "/Account/Logout";
 	options.AccessDeniedPath = "/Account/AccessDenied";
 	options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+	options.SlidingExpiration = true;
 })
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
@@ -132,6 +133,15 @@ app.UseSession();
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Account}/{action=Login}/{id?}");
+
+app.MapControllerRoute(
+	name: "dashboard",
+	pattern: "Dashboard/{action=Index}/{id?}",
+	defaults: new { controller = "Dashboard", action = "Index" });
+
+app.MapControllerRoute(
+	name: "dashboard",
+	pattern: "{controller=Account}/{action=Logout}");
 
 app.MapControllers(); // API endpoints için
 

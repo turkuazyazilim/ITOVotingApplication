@@ -33,12 +33,13 @@ namespace VotingApplication.Web.Controllers
 
 		public IActionResult Index()
 		{
-			var model = new AdminDashboardViewModel
-			{
-				UserName = User.Identity.Name,
-				FullName = User.FindFirst("FullName")?.Value
-			};
-			return View(model);
+			//var model = new AdminDashboardViewModel
+			//{
+			//	UserName = User.Identity.Name,
+			//	FullName = User.FindFirst("FullName")?.Value
+			//};
+			//return View(model);
+			return null;
 		}
 
 		// Company Management
@@ -185,36 +186,12 @@ namespace VotingApplication.Web.Controllers
 
 		// Contact Management
 		[HttpGet]
-		public async Task<IActionResult> Contacts(int page = 1, string search = "")
-		{
-			var request = new PagedRequest
-			{
-				PageNumber = page,
-				PageSize = 10,
-				SearchTerm = search
-			};
-
-			var result = await _contactService.GetAllAsync(request);
-
-			if (result.Success)
-			{
-				var model = new ContactListViewModel
-				{
-					Contacts = result.Data,
-					SearchTerm = search
-				};
-				return View(model);
-			}
-
-			TempData["Error"] = result.Message;
-			return View(new ContactListViewModel());
-		}
-		[HttpGet]
 		public async Task<IActionResult> CreateContact()
 		{
 			await PrepareContactViewBag();
 			return View(new CreateContactViewModel());
 		}
+
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> CreateContact(CreateContactViewModel model)
@@ -250,6 +227,32 @@ namespace VotingApplication.Web.Controllers
 			await PrepareContactViewBag();
 			return View(model);
 		}
+
+		[HttpGet]
+		public async Task<IActionResult> Contacts(int page = 1, string search = "")
+		{
+			var request = new PagedRequest
+			{
+				PageNumber = page,
+				PageSize = 10,
+				SearchTerm = search
+			};
+
+			var result = await _contactService.GetAllAsync(request);
+
+			if (result.Success)
+			{
+				var model = new ContactListViewModel
+				{
+					Contacts = result.Data,
+					SearchTerm = search
+				};
+				return View(model);
+			}
+
+			TempData["Error"] = result.Message;
+			return View(new ContactListViewModel());
+		}
 		private async Task PrepareContactViewBag()
 		{
 			// Firmaları yükle
@@ -279,11 +282,11 @@ namespace VotingApplication.Web.Controllers
 
 			// Yetki tiplerini yükle
 			ViewBag.AuthorizationTypes = new List<SelectListItem>
-			{
-				new SelectListItem { Value = "1", Text = "Firma Yetkilisi" },
-				new SelectListItem { Value = "2", Text = "Vekil" },
-				new SelectListItem { Value = "3", Text = "Temsilci" }
-			};
+	{
+		new SelectListItem { Value = "1", Text = "Firma Yetkilisi" },
+		new SelectListItem { Value = "2", Text = "Vekil" },
+		new SelectListItem { Value = "3", Text = "Temsilci" }
+	};
 		}
 		private async Task PrepareViewBag()
 		{

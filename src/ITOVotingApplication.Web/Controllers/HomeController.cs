@@ -10,7 +10,7 @@ namespace VotingApplication.Web.Controllers
 		{
 			if (User.IsInRole("Admin"))
 			{
-				return RedirectToAction("Index", "Admin");
+				return RedirectToAction("Index", "Dashboard");
 			}
 			else if (User.IsInRole("SandikGorevlisi") || User.IsInRole("BallotOfficer"))
 			{

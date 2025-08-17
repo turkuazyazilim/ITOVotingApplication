@@ -1,127 +1,1175 @@
-﻿@* VotingApplication.Web/Views/Admin/Companies.cshtml *@
-@model ITOVotingApplication.Web.Models.CompanyListViewModel
-@{
+﻿@{
     ViewData["Title"] = "Firma Yönetimi";
+    Layout = null;
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4">Firma Yönetimi</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
-        <li class="breadcrumb-item active">Firmalar</li>
-    </ol>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Seçim Uygulaması</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/dataTables.tailwindcss.min.js"></script>
+    <!-- Chart.js for statistics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <div class="row">
-                <div class="col-md-6">
-                    <i class="fas fa-building me-1"></i>
-                    Firma Listesi
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <i data-lucide="vote" class="h-5 w-5 text-white"></i>
                 </div>
-                <div class="col-md-6 text-end">
-                    <a asp-action="CreateCompany" class="btn btn-success btn-sm">
-                        <i class="fas fa-plus"></i> Yeni Firma Ekle
-                    </a>
+                <span class="text-white font-semibold text-lg">Seçim App</span>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+
+        <!-- User Info -->
+        <div class="px-6 py-4 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-semibold" id="userInitials">SA</span>
+                </div>
+                <div>
+                    <p class="text-white text-sm font-medium" id="userName">Yükleniyor...</p>
+                    <p class="text-gray-400 text-xs" id="userRole">Admin</p>
                 </div>
             </div>
         </div>
-        <div class="card-body">
-            <form method="get" class="mb-3">
-                <div class="input-group">
-                    <input type="text" name="search" value="@Model.SearchTerm" class="form-control" placeholder="Firma adı, sicil no veya vergi no ile ara...">
-                    <button class="btn btn-primary" type="submit">
-                        <i class="fas fa-search"></i> Ara
-                    </button>
-                    <a asp-action="Companies" class="btn btn-secondary">
-                        <i class="fas fa-refresh"></i> Temizle
-                    </a>
-                </div>
-            </form>
 
-            @if (Model.Companies?.Items?.Any() == true)
-            {
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
+        <!-- Navigation -->
+        <nav class="px-4 py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="/Dashboard" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Companies" class="flex items-center space-x-3 px-4 py-3 text-white bg-gray-700 bg-opacity-50 rounded-lg">
+                        <i data-lucide="building-2" class="h-5 w-5"></i>
+                        <span>Firmalar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Contacts" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="users" class="h-5 w-5"></i>
+                        <span>Yetkililer</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Vote" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="check-square" class="h-5 w-5"></i>
+                        <span>Oylar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Users" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="user-cog" class="h-5 w-5"></i>
+                        <span>Kullanıcılar</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Logout -->
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                <i data-lucide="log-out" class="h-5 w-5"></i>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Top Bar -->
+        <div class="bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4 lg:px-6">
+                <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900">
+                    <i data-lucide="menu" class="h-6 w-6"></i>
+                </button>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="hidden md:block relative">
+                        <input type="text" id="globalSearch" placeholder="Firma ara..."
+                               class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                    </div>
+
+                    <!-- Add New Company Button -->
+                    <button onclick="openCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                        <i data-lucide="plus" class="h-4 w-4"></i>
+                        <span>Yeni Firma</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="p-4 lg:p-6">
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Firma Yönetimi</h1>
+                <p class="text-gray-600">Firmaları görüntüleyin ve yönetin</p>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Toplam Firma</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalCompanies">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="building-2" class="h-5 w-5 text-blue-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Aktif Firma</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="activeCompanies">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="check-circle" class="h-5 w-5 text-green-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">A.Ş.</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="asCompanies">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="briefcase" class="h-5 w-5 text-purple-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Ltd. Şti.</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="ltdCompanies">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="building" class="h-5 w-5 text-orange-600"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">2022 Yetki</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-1" id="authorizedCompanies">0</p>
+                        </div>
+                        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <i data-lucide="shield-check" class="h-5 w-5 text-indigo-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Firma Tipi</label>
+                        <select id="typeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <option value="AS">A.Ş.</option>
+                            <option value="LTD">Ltd. Şti.</option>
+                            <option value="SAHIS">Şahıs</option>
+                            <option value="KOOP">Kooperatif</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                        <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Pasif</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Yetki Belgesi</label>
+                        <select id="authFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <option value="authorized">Yetkili</option>
+                            <option value="notAuthorized">Yetkisiz</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Meslek Grubu</label>
+                        <select id="professionalFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <option value="5">Bilgi Teknolojileri</option>
+                            <option value="1">İmalat</option>
+                            <option value="2">Ticaret</option>
+                            <option value="3">Hizmet</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="applyFilters()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i data-lucide="filter" class="h-4 w-4 inline mr-2"></i>
+                            Filtrele
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Companies Table -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4">
+                    <table id="companiesTable" class="w-full">
                         <thead>
-                            <tr>
-                                <th>Sicil No</th>
-                                <th>Firma Unvanı</th>
-                                <th>Vergi No</th>
-                                <th>Şirket Tipi</th>
-                                <th>Telefon</th>
-                                <th>E-posta</th>
-                                <th>Durum</th>
-                                <th>İşlemler</th>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4">Firma</th>
+                                <th class="text-left py-3 px-4">Sicil No</th>
+                                <th class="text-left py-3 px-4">Vergi No</th>
+                                <th class="text-left py-3 px-4">Tip</th>
+                                <th class="text-left py-3 px-4">İletişim</th>
+                                <th class="text-center py-3 px-4">Durum</th>
+                                <th class="text-center py-3 px-4">Yetki</th>
+                                <th class="text-center py-3 px-4">İşlemler</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach (var company in Model.Companies.Items)
-                            {
-                                <tr>
-                                    <td>@company.RegistrationNumber</td>
-                                    <td>@company.Title</td>
-                                    <td>@company.TaxNumber</td>
-                                    <td>@company.CompanyType</td>
-                                    <td>@company.OfficePhone</td>
-                                    <td>@company.Email</td>
-                                    <td>
-                                        @if (company.IsActive)
-                                        {
-                                            <span class="badge bg-success">Aktif</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger">Pasif</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <a asp-action="EditCompany" asp-route-id="@company.Id" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a asp-action="CompanyDetails" asp-route-id="@company.Id" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
+                        <tbody id="companiesTableBody">
+                            <!-- Data will be loaded here -->
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                @if (Model.Companies.TotalPages > 1)
-                {
-                    <nav>
-                        <ul class="pagination justify-content-center">
-                            @if (Model.Companies.HasPreviousPage)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" asp-action="Companies" asp-route-page="@(Model.Companies.PageNumber - 1)" asp-route-search="@Model.SearchTerm">Önceki</a>
-                                </li>
-                            }
-
-                            @for (int i = 1; i <= Model.Companies.TotalPages; i++)
-                            {
-                                <li class="page-item @(i == Model.Companies.PageNumber ? "active" : "")">
-                                    <a class="page-link" asp-action="Companies" asp-route-page="@i" asp-route-search="@Model.SearchTerm">@i</a>
-                                </li>
-                            }
-
-                            @if (Model.Companies.HasNextPage)
-                            {
-                                <li class="page-item">
-                                    <a class="page-link" asp-action="Companies" asp-route-page="@(Model.Companies.PageNumber + 1)" asp-route-search="@Model.SearchTerm">Sonraki</a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
-                }
-            }
-            else
-            {
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Kayıtlı firma bulunamadı.
+            <!-- Company Type Distribution Chart -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Firma Tipi Dağılımı</h3>
+                    <canvas id="typeChart" width="400" height="200"></canvas>
                 </div>
-            }
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Sermaye Dağılımı</h3>
+                    <canvas id="capitalChart" width="400" height="200"></canvas>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- Edit Company Modal -->
+    <div id="editCompanyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Firma Düzenle</h3>
+                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="editCompanyForm" class="p-6">
+                <input type="hidden" id="editCompanyId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Firma Unvanı</label>
+                        <input type="text" id="editTitle" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sicil No</label>
+                        <input type="text" id="editRegistrationNumber" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Vergi No</label>
+                        <input type="text" id="editTaxNumber" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Firma Tipi</label>
+                        <select id="editCompanyType" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="AS">A.Ş.</option>
+                            <option value="LTD">Ltd. Şti.</option>
+                            <option value="SAHIS">Şahıs</option>
+                            <option value="KOOP">Kooperatif</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sermaye</label>
+                        <input type="number" id="editCapital"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                        <input type="tel" id="editOfficePhone"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                        <input type="email" id="editEmail"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+                        <textarea id="editRegistrationAddress" rows="2"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="editIsActive" class="rounded border-gray-300 text-blue-600">
+                            <span class="text-sm font-medium text-gray-700">Aktif</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="editHas2022Authorization" class="rounded border-gray-300 text-blue-600">
+                            <span class="text-sm font-medium text-gray-700">2022 Yetki Belgesi</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Company Modal -->
+    <div id="createCompanyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-semibold text-gray-900">Yeni Firma Ekle</h3>
+                    <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form id="createCompanyForm" class="p-6">
+                <!-- Temel Bilgiler -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">Temel Bilgiler</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Firma Unvanı *</label>
+                            <input type="text" id="createTitle" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Firma unvanını giriniz">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Firma Tipi *</label>
+                            <select id="createCompanyType" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Seçiniz --</option>
+                                <option value="AS">A.Ş. (Anonim Şirket)</option>
+                                <option value="LTD">Ltd. Şti. (Limited Şirket)</option>
+                                <option value="SAHIS">Şahıs Şirketi</option>
+                                <option value="KOOP">Kooperatif</option>
+                                <option value="DIGER">Diğer</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Derece</label>
+                            <select id="createDegree"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Seçiniz --</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                                <option value="4">4. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sicil ve Vergi Bilgileri -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">Sicil ve Vergi Bilgileri</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sicil No *</label>
+                            <input type="text" id="createRegistrationNumber" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Sicil numarası">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vergi No *</label>
+                            <input type="text" id="createTaxNumber" maxlength="10" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="10 haneli vergi no">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ticaret Sicil No</label>
+                            <input type="text" id="createTradeRegistrationNumber"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ticaret sicil no">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mali Bilgiler -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">Mali ve Üyelik Bilgileri</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sermaye (TL)</label>
+                            <input type="number" id="createCapital"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Üyelik Tarihi</label>
+                            <input type="date" id="createMemberRegistrationDate"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Meslek Grubu</label>
+                            <select id="createProfessionalGroup"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Seçiniz --</option>
+                                <option value="5">Bilgi Teknolojileri</option>
+                                <option value="1">İmalat</option>
+                                <option value="2">Ticaret</option>
+                                <option value="3">Hizmet</option>
+                                <option value="4">İnşaat</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NACE Kodu</label>
+                            <select id="createNaceCode"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Seçiniz --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- İletişim Bilgileri -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">İletişim Bilgileri</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ofis Telefonu</label>
+                            <input type="tel" id="createOfficePhone"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="0212 XXX XX XX">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cep Telefonu</label>
+                            <input type="tel" id="createMobilePhone"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="0 (5XX) XXX XX XX">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+                            <input type="email" id="createEmail"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="info@firma.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Web Sitesi</label>
+                            <input type="url" id="createWebSite"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="www.firma.com">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+                            <textarea id="createRegistrationAddress" rows="2"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      placeholder="Firma adresi"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Durum ve Yetkiler -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">Durum ve Yetkiler</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="createIsActive" checked class="rounded border-gray-300 text-blue-600">
+                                <span class="text-sm font-medium text-gray-700">Aktif Firma</span>
+                            </label>
+                        </div>
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="createHas2022Authorization" class="rounded border-gray-300 text-blue-600">
+                                <span class="text-sm font-medium text-gray-700">2022 Yetki Belgesi</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-between items-center border-t pt-4">
+                    <p class="text-sm text-gray-500">* işaretli alanlar zorunludur</p>
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeCreateModal()"
+                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            İptal
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i data-lucide="save" class="h-4 w-4 inline mr-2"></i>
+                            Kaydet
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()"
+         class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+
+    <script>
+        let allCompanies = [];
+        let dataTable = null;
+        const token = localStorage.getItem('token');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            if (!token) {
+                window.location.href = '/Account/Login';
+                return;
+            }
+
+            lucide.createIcons();
+            loadUserInfo();
+            loadCompanies();
+        });
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Load User Info
+        function loadUserInfo() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user) {
+                document.getElementById('userName').textContent = user.fullName || user.firstName + ' ' + user.lastName || 'Kullanıcı';
+                document.getElementById('userRole').textContent = user.roles ? user.roles[0] : 'Kullanıcı';
+
+                const initials = ((user.firstName || '')[0] + (user.lastName || '')[0]).toUpperCase();
+                document.getElementById('userInitials').textContent = initials || 'KA';
+            }
+        }
+
+        // Load Companies
+        async function loadCompanies() {
+            try {
+                const response = await fetch('/api/company?pageSize=500', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    allCompanies = result.data?.items || [];
+                    updateStatistics();
+                    renderTable();
+                    initCharts();
+                } else {
+                    console.error('Failed to load companies');
+                    // Use demo data
+                    allCompanies = getDemoCompanies();
+                    updateStatistics();
+                    renderTable();
+                    initCharts();
+                }
+            } catch (error) {
+                console.error('Error loading companies:', error);
+                // Use demo data
+                allCompanies = getDemoCompanies();
+                updateStatistics();
+                renderTable();
+                initCharts();
+            }
+        }
+
+        // Update Statistics
+        function updateStatistics() {
+            const total = allCompanies.length;
+            const active = allCompanies.filter(c => c.isActive).length;
+            const asType = allCompanies.filter(c => c.companyType === 'AS').length;
+            const ltdType = allCompanies.filter(c => c.companyType === 'LTD').length;
+            const authorized = allCompanies.filter(c => c.has2022AuthorizationCertificate).length;
+
+            document.getElementById('totalCompanies').textContent = total;
+            document.getElementById('activeCompanies').textContent = active;
+            document.getElementById('asCompanies').textContent = asType;
+            document.getElementById('ltdCompanies').textContent = ltdType;
+            document.getElementById('authorizedCompanies').textContent = authorized;
+        }
+
+        // Render Table
+        function renderTable() {
+            const tbody = document.getElementById('companiesTableBody');
+
+            tbody.innerHTML = allCompanies.map(company => `
+                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="py-3 px-4">
+                        <div>
+                            <p class="font-medium text-gray-900">${company.title}</p>
+                            <p class="text-xs text-gray-500">NACE: ${company.naceCode || '-'}</p>
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <p class="text-sm text-gray-900 font-mono">${company.registrationNumber}</p>
+                    </td>
+                    <td class="py-3 px-4">
+                        <p class="text-sm text-gray-900 font-mono">${company.taxNumber}</p>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                            ${company.companyType === 'AS' ? 'bg-purple-100 text-purple-800' :
+                              company.companyType === 'LTD' ? 'bg-orange-100 text-orange-800' :
+                              'bg-gray-100 text-gray-800'}">
+                            ${company.companyType}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <p class="text-sm text-gray-900">${company.officePhone || company.mobilePhone || '-'}</p>
+                        <p class="text-xs text-gray-500">${company.email || '-'}</p>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        ${company.isActive ?
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Aktif</span>' :
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Pasif</span>'
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        ${company.has2022AuthorizationCertificate ?
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Var</span>' :
+                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Yok</span>'
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewCompany(${company.id})"
+                                    class="text-gray-600 hover:text-gray-800" title="Görüntüle">
+                                <i data-lucide="eye" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="editCompany(${company.id})"
+                                    class="text-blue-600 hover:text-blue-800" title="Düzenle">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="deleteCompany(${company.id})"
+                                    class="text-red-600 hover:text-red-800" title="Sil">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+
+            // Initialize DataTable
+            if (dataTable) {
+                dataTable.destroy();
+            }
+
+            dataTable = $('#companiesTable').DataTable({
+                pageLength: 25,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                },
+                dom: 'rtip',
+                order: [[0, 'asc']]
+            });
+
+            // Global search
+            $('#globalSearch').on('keyup', function() {
+                dataTable.search(this.value).draw();
+            });
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            // Type Distribution Chart
+            const typeCtx = document.getElementById('typeChart').getContext('2d');
+            const typeCounts = {
+                'A.Ş.': allCompanies.filter(c => c.companyType === 'AS').length,
+                'Ltd. Şti.': allCompanies.filter(c => c.companyType === 'LTD').length,
+                'Şahıs': allCompanies.filter(c => c.companyType === 'SAHIS').length,
+                'Diğer': allCompanies.filter(c => !['AS', 'LTD', 'SAHIS'].includes(c.companyType)).length
+            };
+
+            new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(typeCounts),
+                    datasets: [{
+                        data: Object.values(typeCounts),
+                        backgroundColor: [
+                            'rgba(147, 51, 234, 0.8)',
+                            'rgba(251, 146, 60, 0.8)',
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(107, 114, 128, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(147, 51, 234, 1)',
+                            'rgba(251, 146, 60, 1)',
+                            'rgba(34, 197, 94, 1)',
+                            'rgba(107, 114, 128, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Capital Distribution Chart
+            const capitalCtx = document.getElementById('capitalChart').getContext('2d');
+            const capitalRanges = {
+                '0-100K': allCompanies.filter(c => c.capital <= 100000).length,
+                '100K-500K': allCompanies.filter(c => c.capital > 100000 && c.capital <= 500000).length,
+                '500K-1M': allCompanies.filter(c => c.capital > 500000 && c.capital <= 1000000).length,
+                '1M+': allCompanies.filter(c => c.capital > 1000000).length
+            };
+
+            new Chart(capitalCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(capitalRanges),
+                    datasets: [{
+                        label: 'Firma Sayısı',
+                        data: Object.values(capitalRanges),
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const authFilter = document.getElementById('authFilter').value;
+            const professionalFilter = document.getElementById('professionalFilter').value;
+
+            let filtered = [...allCompanies];
+
+            if (typeFilter) {
+                filtered = filtered.filter(c => c.companyType === typeFilter);
+            }
+
+            if (statusFilter === 'active') {
+                filtered = filtered.filter(c => c.isActive);
+            } else if (statusFilter === 'inactive') {
+                filtered = filtered.filter(c => !c.isActive);
+            }
+
+            if (authFilter === 'authorized') {
+                filtered = filtered.filter(c => c.has2022AuthorizationCertificate);
+            } else if (authFilter === 'notAuthorized') {
+                filtered = filtered.filter(c => !c.has2022AuthorizationCertificate);
+            }
+
+            if (professionalFilter) {
+                filtered = filtered.filter(c => c.professionalGroup === professionalFilter);
+            }
+
+            // Update table with filtered data
+            const tbody = document.getElementById('companiesTableBody');
+            tbody.innerHTML = filtered.map(company => /* same row template as renderTable */).join('');
+            lucide.createIcons();
+
+            // Reinitialize DataTable
+            if (dataTable) {
+                dataTable.destroy();
+            }
+            dataTable = $('#companiesTable').DataTable({
+                pageLength: 25,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
+                },
+                dom: 'rtip'
+            });
+        }
+
+        // View Company Details
+        function viewCompany(id) {
+            const company = allCompanies.find(c => c.id === id);
+            if (company) {
+                alert(`Firma Detayları:\n\nUnvan: ${company.title}\nSicil No: ${company.registrationNumber}\nVergi No: ${company.taxNumber}\nTip: ${company.companyType}\nSermaye: ${company.capital || '-'}\nAdres: ${company.registrationAddress || '-'}`);
+            }
+        }
+
+        // Edit Company
+        function editCompany(id) {
+            const company = allCompanies.find(c => c.id === id);
+            if (company) {
+                document.getElementById('editCompanyId').value = company.id;
+                document.getElementById('editTitle').value = company.title;
+                document.getElementById('editRegistrationNumber').value = company.registrationNumber;
+                document.getElementById('editTaxNumber').value = company.taxNumber;
+                document.getElementById('editCompanyType').value = company.companyType;
+                document.getElementById('editCapital').value = company.capital || '';
+                document.getElementById('editOfficePhone').value = company.officePhone || '';
+                document.getElementById('editEmail').value = company.email || '';
+                document.getElementById('editRegistrationAddress').value = company.registrationAddress || '';
+                document.getElementById('editIsActive').checked = company.isActive;
+                document.getElementById('editHas2022Authorization').checked = company.has2022AuthorizationCertificate;
+
+                document.getElementById('editCompanyModal').classList.remove('hidden');
+                lucide.createIcons();
+            }
+        }
+
+        // Close Edit Modal
+        function closeEditModal() {
+            document.getElementById('editCompanyModal').classList.add('hidden');
+        }
+
+        // Open Create Modal
+        function openCreateModal() {
+            // Clear form
+            document.getElementById('createCompanyForm').reset();
+            document.getElementById('createIsActive').checked = true;
+
+            // Load NACE codes
+            loadNaceCodes();
+
+            // Show modal
+            document.getElementById('createCompanyModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // Close Create Modal
+        function closeCreateModal() {
+            document.getElementById('createCompanyModal').classList.add('hidden');
+        }
+
+        // Load NACE Codes
+        async function loadNaceCodes() {
+            // Demo NACE codes
+            const naceCodes = [
+                { code: '62.01', description: 'Bilgisayar programlama faaliyetleri' },
+                { code: '62.02', description: 'Bilgisayar danışmanlık faaliyetleri' },
+                { code: '46.90', description: 'Uzmanlaşmamış toptan ticaret' },
+                { code: '41.10', description: 'Bina projelerinin geliştirilmesi' },
+                { code: '25.01', description: 'Metal yapı malzemeleri imalatı' }
+            ];
+
+            const select = document.getElementById('createNaceCode');
+            select.innerHTML = '<option value="">-- Seçiniz --</option>';
+            naceCodes.forEach(nace => {
+                const option = document.createElement('option');
+                option.value = nace.code;
+                option.textContent = `${nace.code} - ${nace.description}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Handle Create Form Submit
+        document.getElementById('createCompanyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const companyData = {
+                title: document.getElementById('createTitle').value,
+                registrationNumber: document.getElementById('createRegistrationNumber').value,
+                taxNumber: document.getElementById('createTaxNumber').value,
+                companyType: document.getElementById('createCompanyType').value,
+                tradeRegistrationNumber: document.getElementById('createTradeRegistrationNumber').value,
+                capital: parseFloat(document.getElementById('createCapital').value) || 0,
+                degree: document.getElementById('createDegree').value,
+                memberRegistrationDate: document.getElementById('createMemberRegistrationDate').value,
+                professionalGroup: document.getElementById('createProfessionalGroup').value,
+                naceCode: document.getElementById('createNaceCode').value,
+                officePhone: document.getElementById('createOfficePhone').value,
+                mobilePhone: document.getElementById('createMobilePhone').value,
+                email: document.getElementById('createEmail').value,
+                webSite: document.getElementById('createWebSite').value,
+                registrationAddress: document.getElementById('createRegistrationAddress').value,
+                isActive: document.getElementById('createIsActive').checked,
+                has2022AuthorizationCertificate: document.getElementById('createHas2022Authorization').checked
+            };
+
+            try {
+                const response = await fetch('/api/company', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(companyData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    closeCreateModal();
+                    loadCompanies();
+                    alert('Firma başarıyla oluşturuldu!');
+                } else {
+                    alert(result.message || 'Firma oluşturulamadı!');
+                }
+            } catch (error) {
+                console.error('Create error:', error);
+                alert('Bir hata oluştu!');
+            }
+        });
+
+        // Handle Edit Form Submit
+        document.getElementById('editCompanyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const companyId = document.getElementById('editCompanyId').value;
+            const updateData = {
+                id: parseInt(companyId),
+                title: document.getElementById('editTitle').value,
+                registrationNumber: document.getElementById('editRegistrationNumber').value,
+                taxNumber: document.getElementById('editTaxNumber').value,
+                companyType: document.getElementById('editCompanyType').value,
+                capital: parseFloat(document.getElementById('editCapital').value) || 0,
+                officePhone: document.getElementById('editOfficePhone').value,
+                email: document.getElementById('editEmail').value,
+                registrationAddress: document.getElementById('editRegistrationAddress').value,
+                isActive: document.getElementById('editIsActive').checked,
+                has2022AuthorizationCertificate: document.getElementById('editHas2022Authorization').checked
+            };
+
+            try {
+                const response = await fetch(`/api/company/${companyId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    closeEditModal();
+                    loadCompanies();
+                    alert('Firma başarıyla güncellendi!');
+                } else {
+                    alert('Güncelleme başarısız!');
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                alert('Bir hata oluştu!');
+            }
+        });
+
+        // Format phone inputs
+        document.getElementById('createOfficePhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length > 0) {
+                let formatted = '';
+                if (value.startsWith('0')) {
+                    // Format: 0212 XXX XX XX
+                    if (value.length >= 4) formatted = value.substring(0, 4) + ' ';
+                    if (value.length >= 7) formatted += value.substring(4, 7) + ' ';
+                    if (value.length >= 9) formatted += value.substring(7, 9) + ' ';
+                    if (value.length >= 11) formatted += value.substring(9, 11);
+                } else {
+                    formatted = value;
+                }
+                e.target.value = formatted.trim();
+            }
+        });
+
+        document.getElementById('createMobilePhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length > 0) {
+                let formatted = '';
+                if (value.startsWith('0')) {
+                    // Format: 0 (5XX) XXX XX XX
+                    formatted = '0';
+                    if (value.length >= 2) formatted += ' (' + value.substring(1, 4);
+                    if (value.length >= 5) formatted += ') ' + value.substring(4, 7);
+                    if (value.length >= 8) formatted += ' ' + value.substring(7, 9);
+                    if (value.length >= 10) formatted += ' ' + value.substring(9, 11);
+                } else {
+                    formatted = value;
+                }
+                e.target.value = formatted.trim();
+            }
+        });
+
+        // Format tax number input
+        document.getElementById('createTaxNumber').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').substring(0, 10);
+        });
+
+        // Delete Company
+        async function deleteCompany(id) {
+            if (!confirm('Bu firmayı silmek istediğinizden emin misiniz?\n\nNot: Oy kaydı bulunan firmalar silinemez.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/company/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    loadCompanies();
+                    alert('Firma başarıyla silindi!');
+                } else {
+                    const result = await response.json();
+                    alert(result.message || 'Silme işlemi başarısız!');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Bir hata oluştu!');
+            }
+        }
+
+        // Get Demo Companies
+        function getDemoCompanies() {
+            return [
+                {
+                    id: 1,
+                    title: 'ABC Teknoloji A.Ş.',
+                    registrationNumber: '123456',
+                    taxNumber: '1234567890',
+                    companyType: 'AS',
+                    capital: 500000,
+                    officePhone: '0212 123 4567',
+                    email: 'info@abc.com',
+                    registrationAddress: 'İstanbul, Türkiye',
+                    professionalGroup: '5',
+                    naceCode: '62.01',
+                    isActive: true,
+                    has2022AuthorizationCertificate: true
+                },
+                {
+                    id: 2,
+                    title: 'XYZ Yazılım Ltd. Şti.',
+                    registrationNumber: '234567',
+                    taxNumber: '2345678901',
+                    companyType: 'LTD',
+                    capital: 250000,
+                    mobilePhone: '0532 987 6543',
+                    email: 'info@xyz.com',
+                    registrationAddress: 'Ankara, Türkiye',
+                    professionalGroup: '5',
+                    naceCode: '62.02',
+                    isActive: true,
+                    has2022AuthorizationCertificate: false
+                },
+                {
+                    id: 3,
+                    title: 'DEF Sanayi A.Ş.',
+                    registrationNumber: '345678',
+                    taxNumber: '3456789012',
+                    companyType: 'AS',
+                    capital: 1500000,
+                    officePhone: '0216 555 6677',
+                    email: 'info@def.com',
+                    registrationAddress: 'İzmir, Türkiye',
+                    professionalGroup: '1',
+                    naceCode: '25.01',
+                    isActive: true,
+                    has2022AuthorizationCertificate: true
+                },
+                {
+                    id: 4,
+                    title: 'GHI İnşaat Ltd. Şti.',
+                    registrationNumber: '456789',
+                    taxNumber: '4567890123',
+                    companyType: 'LTD',
+                    capital: 750000,
+                    officePhone: '0224 444 3322',
+                    email: 'info@ghi.com',
+                    registrationAddress: 'Bursa, Türkiye',
+                    professionalGroup: '3',
+                    naceCode: '41.10',
+                    isActive: false,
+                    has2022AuthorizationCertificate: false
+                },
+                {
+                    id: 5,
+                    title: 'JKL Ticaret A.Ş.',
+                    registrationNumber: '567890',
+                    taxNumber: '5678901234',
+                    companyType: 'AS',
+                    capital: 2000000,
+                    officePhone: '0232 222 1111',
+                    email: 'info@jkl.com',
+                    registrationAddress: 'İzmir, Türkiye',
+                    professionalGroup: '2',
+                    naceCode: '46.90',
+                    isActive: true,
+                    has2022AuthorizationCertificate: true
+                }
+            ];
+        }
+
+        // Logout
+        async function logout() {
+            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/Account/Login';
+            }
+        }
+    </script>
+</body>
+</html>

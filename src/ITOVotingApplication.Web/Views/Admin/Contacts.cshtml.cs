@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace ITOVotingApplication.Web.Views.Admin
 {
-    public class IndexModel : PageModel
+    public class ContactsModel : PageModel
     {
         public void OnGet()
         {
