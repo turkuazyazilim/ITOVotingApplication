@@ -16,3 +16,17 @@
 /src/ITOVotingApplication.Core/obj
 /src/ITOVotingApplication.Data/obj
 /src/ITOVotingApplication.Web/obj
+
+# Temporary document files
+/src/ITOVotingApplication.Web/wwwroot/temp/*.docx
+/src/ITOVotingApplication.Web/wwwroot/temp/*.pdf
+/src/ITOVotingApplication.Web/wwwroot/temp/*.doc
+
+# Uploaded signed documents (but keep directory structure)
+/src/ITOVotingApplication.Web/Documents/*/
+!src/ITOVotingApplication.Web/Documents/.gitkeep
+/src/ITOVotingApplication.Business/bin/Release/net8.0
+/src/ITOVotingApplication.Core/bin/Release/net8.0
+/src/ITOVotingApplication.Data/bin/Release/net8.0
+/src/ITOVotingApplication.Web/bin/Release/net8.0
+/src/ITOVotingApplication.Web/wwwroot/Documents/550549-0
