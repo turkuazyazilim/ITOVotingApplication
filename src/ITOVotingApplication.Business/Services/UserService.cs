@@ -167,6 +167,7 @@ namespace ITOVotingApplication.Business.Services
 					UserName = dto.UserName,
 					PasswordHash = CreatePasswordHash(dto.Password),
 					Email = dto.Email,
+					PhoneNumber = dto.PhoneNumber,
 					FirstName = dto.FirstName,
 					LastName = dto.LastName,
 					IsActive = true
@@ -239,6 +240,7 @@ namespace ITOVotingApplication.Business.Services
 				user.FirstName = dto.FirstName;
 				user.LastName = dto.LastName;
 				user.IsActive = dto.IsActive;
+				user.PhoneNumber = dto.PhoneNumber;
 
 				// Update roles
 				if (dto.RoleIds != null)

@@ -3,7 +3,6 @@
 	public class Company : BaseEntity
 	{
 		public string RegistrationNumber { get; set; }
-		public string TaxNumber { get; set; }
 		public string Title { get; set; }
 		public string CompanyType { get; set; }
 		public string TradeRegistrationNumber { get; set; }

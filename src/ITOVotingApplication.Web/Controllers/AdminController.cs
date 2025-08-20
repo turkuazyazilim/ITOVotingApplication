@@ -91,7 +91,6 @@ namespace VotingApplication.Web.Controllers
 			var dto = new CreateCompanyDto
 			{
 				RegistrationNumber = model.RegistrationNumber,
-				TaxNumber = "1111111111",
 				Title = model.Title,
 				CompanyType = model.CompanyType,
 				TradeRegistrationNumber = model.TradeRegistrationNumber,
@@ -108,15 +107,15 @@ namespace VotingApplication.Web.Controllers
 				IsActive = model.IsActive // Add IsActive property
 			};
 
-			var result = await _companyService.CreateAsync(dto);
+			//var result = await _companyService.CreateAsync(dto);
 
-			if (result.Success)
-			{
-				TempData["Success"] = "Firma başarıyla oluşturuldu.";
-				return RedirectToAction(nameof(Companies));
-			}
+			//if (result.Success)
+			//{
+			//	TempData["Success"] = "Firma başarıyla oluşturuldu.";
+			//	return RedirectToAction(nameof(Companies));
+			//}
 
-			await PrepareViewBag();
+			//await PrepareViewBag();
 			return View(model);
 		}
 
@@ -167,6 +166,7 @@ namespace VotingApplication.Web.Controllers
 				UserName = model.UserName,
 				Password = model.Password,
 				Email = model.Email,
+				PhoneNumber = model.PhoneNumber,
 				FirstName = model.FirstName,
 				LastName = model.LastName,
 				RoleIds = model.SelectedRoleIds

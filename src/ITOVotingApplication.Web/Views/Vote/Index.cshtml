@@ -1,214 +1,459 @@
-﻿@model ITOVotingApplication.Web.Models.VoteDashboardViewModel
+@model ITOVotingApplication.Web.Models.VoteDashboardViewModel
 @{
     ViewData["Title"] = "Oy Kullandırma";
+    Layout = null;
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4">Oy Kullandırma Sistemi</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Oy Kullandırma</li>
-    </ol>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
+            <div class="flex items-center space-x-3">
+                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                <span class="text-white font-semibold text-lg">ITOP</span>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
 
-    <!-- İstatistikler -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Toplam Seçmen</h5>
-                    <h2>@(Model.VoteResults?.EligibleVoters ?? 0)</h2>
+        <!-- User Info -->
+        <div class="px-6 py-4 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-semibold" id="userInitials">SA</span>
+                </div>
+                <div>
+                    <p class="text-white text-sm font-medium" id="userName">Yükleniyor...</p>
+                    <p class="text-gray-400 text-xs" id="userRole">Admin</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Oy Kullanan</h5>
-                    <h2>@(Model.VoteResults?.TotalVotes ?? 0)</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Oy Kullanmayan</h5>
-                    <h2>@((Model.VoteResults?.EligibleVoters ?? 0) - (Model.VoteResults?.TotalVotes ?? 0))</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Katılım Oranı</h5>
-                    <h2>%@((Model.VoteResults?.TurnoutPercentage ?? 0).ToString("F1"))</h2>
-                </div>
-            </div>
+
+        <!-- Navigation -->
+        <nav class="px-4 py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="/Dashboard" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Companies" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="building-2" class="h-5 w-5"></i>
+                        <span>Firmalar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Contacts" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="users" class="h-5 w-5"></i>
+                        <span>Yetkililer</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Vote" class="flex items-center space-x-3 px-4 py-3 text-white bg-gray-700 bg-opacity-50 rounded-lg">
+                        <i data-lucide="check-square" class="h-5 w-5"></i>
+                        <span>Oylar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Users" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="user-cog" class="h-5 w-5"></i>
+                        <span>Kullanıcılar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadReports()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="bar-chart-3" class="h-5 w-5"></i>
+                        <span>Raporlar</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Logout -->
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                <i data-lucide="log-out" class="h-5 w-5"></i>
+                <span>Çıkış Yap</span>
+            </button>
         </div>
     </div>
 
-    <!-- TC Kimlik No ile Arama -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-search"></i> Seçmen Sorgulama
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="input-group">
-                        <input type="text" id="identitySearch" class="form-control form-control-lg"
-                               placeholder="TC Kimlik Numarası Giriniz" maxlength="11" />
-                        <button class="btn btn-primary btn-lg" type="button" onclick="searchContact()">
-                            <i class="fas fa-search"></i> Sorgula
-                        </button>
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Top Bar -->
+        <div class="bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4 lg:px-6">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <div class="lg:hidden">
+                        <div class="flex items-center justify-between h-16 px-4 lg:px-6 bg-opacity-20">
+                            <div class="flex items-center space-x-3">
+                                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                                <span class="text-black font-semibold text-lg">ITOP</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <a asp-action="Results" class="btn btn-info btn-lg w-100">
-                        <i class="fas fa-chart-bar"></i> Sonuçları Görüntüle
+
+                <div class="flex items-center space-x-4">
+                    <a href="/Vote/Results" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                        <i data-lucide="bar-chart-3" class="h-4 w-4"></i>
+                        <span class="hidden sm:inline">Sonuçları Görüntüle</span>
                     </a>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Seçmen Bilgileri -->
-    <div id="voterInfo" class="card mb-4" style="display:none;">
-        <div class="card-header bg-primary text-white">
-            <i class="fas fa-user"></i> Seçmen Bilgileri
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p><strong>Ad Soyad:</strong> <span id="voterName"></span></p>
-                    <p><strong>Firma:</strong> <span id="voterCompany"></span></p>
+        <!-- Page Content -->
+        <div class="p-4 lg:p-6">
+
+            <!-- İstatistikler -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-100 text-sm font-medium">Toplam Seçmen</p>
+                                <p class="text-2xl font-bold mt-1">@(Model.VoteResults?.EligibleVoters ?? 0)</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="users" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <p><strong>Oy Durumu:</strong> <span id="voteStatus"></span></p>
-                    <p><strong>Oy Kullanabilir:</strong> <span id="eligibleStatus"></span></p>
+
+                <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-green-100 text-sm font-medium">Oy Kullanan</p>
+                                <p class="text-2xl font-bold mt-1">@(Model.VoteResults?.TotalVotes ?? 0)</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="check-circle" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-orange-100 text-sm font-medium">Oy Kullanmayan</p>
+                                <p class="text-2xl font-bold mt-1">@((Model.VoteResults?.EligibleVoters ?? 0) - (Model.VoteResults?.TotalVotes ?? 0))</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="clock" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm font-medium">Katılım Oranı</p>
+                                <p class="text-2xl font-bold mt-1">%@((Model.VoteResults?.TurnoutPercentage ?? 0).ToString("F1"))</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="trending-up" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="mt-3">
-                <button id="castVoteBtn" class="btn btn-success btn-lg" onclick="castVote()">
-                    <i class="fas fa-vote-yea"></i> Oy Kullan
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Oy Kullanabilecek Seçmenler Listesi -->
-    <div class="card">
-        <div class="card-header">
-            <i class="fas fa-users"></i> Oy Kullanmayan Seçmenler
-        </div>
-        <div class="card-body">
-            @if (Model.EligibleVoters?.Any() == true)
-            {
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>TC Kimlik No</th>
-                                <th>Ad Soyad</th>
-                                <th>Firma</th>
-                                <th>Telefon</th>
-                                <th>İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            <!-- TC Kimlik No ile Arama -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <i data-lucide="search" class="h-5 w-5 mr-2"></i>
+                        Seçmen Sorgulama
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="flex flex-col lg:flex-row gap-4">
+                        <div class="flex-1">
+                            <div class="flex">
+                                <input type="text" id="identitySearch" 
+                                       class="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                       placeholder="TC Kimlik Numarası Giriniz (11 haneli)" maxlength="11" />
+                                <button class="px-6 py-3 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors flex items-center space-x-2" 
+                                        type="button" onclick="searchContact()">
+                                    <i data-lucide="search" class="h-5 w-5"></i>
+                                    <span>Sorgula</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seçmen Bilgileri -->
+            <div id="voterInfo" class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 hidden">
+                <div class="px-6 py-4 bg-blue-600 text-white rounded-t-lg">
+                    <h3 class="text-lg font-medium flex items-center">
+                        <i data-lucide="user" class="h-5 w-5 mr-2"></i>
+                        Seçmen Bilgileri
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Ad Soyad:</p>
+                                <p class="text-lg text-gray-900" id="voterName">-</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Firma:</p>
+                                <p class="text-lg text-gray-900" id="voterCompany">-</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Oy Durumu:</p>
+                                <div id="voteStatus">-</div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Oy Kullanabilir:</p>
+                                <div id="eligibleStatus">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button id="castVoteBtn" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-lg font-medium" onclick="castVote()">
+                            <i data-lucide="vote" class="h-5 w-5"></i>
+                            <span>Oy Kullan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oy Kullanabilecek Seçmenler Listesi -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <i data-lucide="users" class="h-5 w-5 mr-2"></i>
+                        Oy Kullanmayan Seçmenler
+                    </h3>
+                </div>
+                <div class="p-6">
+                    @if (Model.EligibleVoters?.Any() == true)
+                    {
+                        <!-- Desktop Table -->
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TC Kimlik No</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ad Soyad</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Firma</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefon</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach (var voter in Model.EligibleVoters.Where(v => !v.HasVoted))
+                                    {
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-4 text-sm font-mono text-gray-900">@voter.IdentityNum</td>
+                                            <td class="px-4 py-4 text-sm font-medium text-gray-900">@voter.FullName</td>
+                                            <td class="px-4 py-4 text-sm text-gray-900">@voter.CompanyTitle</td>
+                                            <td class="px-4 py-4 text-sm text-gray-900">@voter.MobilePhone</td>
+                                            <td class="px-4 py-4 text-center">
+                                                <a asp-action="CastVote" asp-route-contactId="@voter.Id"
+                                                   class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-sm font-medium inline-flex">
+                                                    <i data-lucide="vote" class="h-4 w-4"></i>
+                                                    <span>Oy Kullan</span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mobile Cards -->
+                        <div class="md:hidden space-y-4">
                             @foreach (var voter in Model.EligibleVoters.Where(v => !v.HasVoted))
                             {
-                                <tr>
-                                    <td>@voter.IdentityNum</td>
-                                    <td>@voter.FullName</td>
-                                    <td>@voter.CompanyTitle</td>
-                                    <td>@voter.MobilePhone</td>
-                                    <td>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">@voter.FullName</h4>
+                                            <p class="text-sm text-gray-600 mt-1">@voter.CompanyTitle</p>
+                                        </div>
                                         <a asp-action="CastVote" asp-route-contactId="@voter.Id"
-                                           class="btn btn-sm btn-success">
-                                            <i class="fas fa-vote-yea"></i> Oy Kullan
+                                           class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                                            Oy Kullan
                                         </a>
-                                    </td>
-                                </tr>
+                                    </div>
+                                    <div class="text-xs text-gray-500 space-y-1">
+                                        <p><span class="font-medium">TC:</span> @voter.IdentityNum</p>
+                                        <p><span class="font-medium">Tel:</span> @voter.MobilePhone</p>
+                                    </div>
+                                </div>
                             }
-                        </tbody>
-                    </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-8">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="check-circle" class="h-6 w-6 text-blue-600"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Tüm Seçmenler Oy Kullandı</h3>
+                            <p class="text-gray-600">Oy kullanmayan seçmen bulunmamaktadır.</p>
+                        </div>
+                    }
                 </div>
-            }
-            else
-            {
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> Oy kullanmayan seçmen bulunmamaktadır.
-                </div>
-            }
+            </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        let currentContactId = null;
+<!-- Mobile Sidebar Overlay -->
+<div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
 
-        function searchContact() {
-            const identityNum = $('#identitySearch').val();
+<script>
+    let currentContactId = null;
 
-            if (identityNum.length !== 11) {
-                alert('Lütfen geçerli bir TC Kimlik Numarası giriniz (11 haneli)');
-                return;
-            }
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load user info
+        loadUserInfo();
+        lucide.createIcons();
+    });
 
-            $.ajax({
-                url: '@Url.Action("SearchContact", "Vote")',
-                type: 'GET',
-                data: { identityNum: identityNum },
-                success: function(result) {
-                    if (result.success) {
-                        currentContactId = result.data.id;
-                        $('#voterName').text(result.data.fullName);
-                        $('#voterCompany').text(result.data.companyTitle);
+    // Toggle Sidebar
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
 
-                        if (result.data.hasVoted) {
-                            $('#voteStatus').html('<span class="badge bg-success">Oy Kullandı</span>');
-                            $('#castVoteBtn').prop('disabled', true).text('Oy Kullanıldı');
-                        } else {
-                            $('#voteStatus').html('<span class="badge bg-warning">Oy Kullanmadı</span>');
-                            $('#castVoteBtn').prop('disabled', false).html('<i class="fas fa-vote-yea"></i> Oy Kullan');
-                        }
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
 
-                        if (result.data.eligibleToVote) {
-                            $('#eligibleStatus').html('<span class="badge bg-success">Evet</span>');
-                        } else {
-                            $('#eligibleStatus').html('<span class="badge bg-danger">Hayır</span>');
-                            $('#castVoteBtn').prop('disabled', true);
-                        }
+    // Load User Info
+    function loadUserInfo() {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user) {
+            document.getElementById('userName').textContent = user.fullName || (user.firstName + ' ' + user.lastName) || 'Kullanıcı';
+            document.getElementById('userRole').textContent = user.roles ? user.roles[0] : 'Kullanıcı';
 
-                        $('#voterInfo').show();
-                    } else {
-                        alert(result.message || 'Seçmen bulunamadı');
-                        $('#voterInfo').hide();
-                    }
-                },
-                error: function() {
-                    alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+            const firstName = user.firstName || '';
+            const lastName = user.lastName || '';
+            const initials = (firstName[0] || '') + (lastName[0] || '');
+            document.getElementById('userInitials').textContent = initials.toUpperCase() || 'KA';
+        }
+    }
+
+    // Logout function
+    function logout() {
+        if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+            localStorage.removeItem('user');
+            window.location.href = '/Auth/Login';
+        }
+    }
+
+    // Search Contact Function
+    function searchContact() {
+        const identityNum = document.getElementById('identitySearch').value;
+
+        if (identityNum.length !== 11) {
+            alert('Lütfen geçerli bir TC Kimlik Numarası giriniz (11 haneli)');
+            return;
+        }
+
+        fetch(`/Vote/SearchContact?identityNum=${encodeURIComponent(identityNum)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                currentContactId = result.data.id;
+                document.getElementById('voterName').textContent = result.data.fullName;
+                document.getElementById('voterCompany').textContent = result.data.companyTitle;
+
+                const voteStatus = document.getElementById('voteStatus');
+                const eligibleStatus = document.getElementById('eligibleStatus');
+                const castVoteBtn = document.getElementById('castVoteBtn');
+
+                if (result.data.hasVoted) {
+                    voteStatus.innerHTML = '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Oy Kullandı</span>';
+                    castVoteBtn.disabled = true;
+                    castVoteBtn.innerHTML = '<i data-lucide="check" class="h-5 w-5"></i><span>Oy Kullanıldı</span>';
+                    castVoteBtn.className = 'px-6 py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center space-x-2 text-lg font-medium';
+                } else {
+                    voteStatus.innerHTML = '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">Oy Kullanmadı</span>';
+                    castVoteBtn.disabled = false;
+                    castVoteBtn.innerHTML = '<i data-lucide="vote" class="h-5 w-5"></i><span>Oy Kullan</span>';
+                    castVoteBtn.className = 'px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 text-lg font-medium';
                 }
-            });
-        }
 
-        function castVote() {
-            if (currentContactId) {
-                window.location.href = '@Url.Action("CastVote", "Vote")' + '?contactId=' + currentContactId;
+                if (result.data.eligibleToVote) {
+                    eligibleStatus.innerHTML = '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Evet</span>';
+                } else {
+                    eligibleStatus.innerHTML = '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Hayır</span>';
+                    castVoteBtn.disabled = true;
+                    castVoteBtn.className = 'px-6 py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center space-x-2 text-lg font-medium';
+                }
+
+                document.getElementById('voterInfo').classList.remove('hidden');
+                lucide.createIcons();
+            } else {
+                alert(result.message || 'Seçmen bulunamadı');
+                document.getElementById('voterInfo').classList.add('hidden');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+    }
+
+    function castVote() {
+        if (currentContactId) {
+            window.location.href = `/Vote/CastVote?contactId=${currentContactId}`;
         }
+    }
 
-        // Enter tuşu ile arama
-        $('#identitySearch').keypress(function(e) {
-            if (e.which == 13) {
-                searchContact();
-                return false;
-            }
-        });
+    // Enter tuşu ile arama
+    document.getElementById('identitySearch').addEventListener('keypress', function(e) {
+        if (e.which === 13 || e.key === 'Enter') {
+            searchContact();
+            e.preventDefault();
+        }
+    });
 
-        // Sadece rakam girişi
-        $('#identitySearch').on('input', function() {
-            this.value = this.value.replace(/[^0-9]/g, '');
-        });
-    </script>
-}
+    // Sadece rakam girişi
+    document.getElementById('identitySearch').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+</script>
+</body>
+</html>

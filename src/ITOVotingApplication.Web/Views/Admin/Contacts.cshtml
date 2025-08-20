@@ -11,11 +11,7 @@
     <title>@ViewData["Title"] - Seçim Uygulaması</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/dataTables.tailwindcss.min.js"></script>
 </head>
 <body class="bg-gray-50">
 
@@ -24,10 +20,8 @@
         <!-- Logo -->
         <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
             <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <i data-lucide="vote" class="h-5 w-5 text-white"></i>
-                </div>
-                <span class="text-white font-semibold text-lg">Seçim App</span>
+                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                <span class="text-white font-semibold text-lg">ITOP</span>
             </div>
             <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
                 <i data-lucide="x" class="h-5 w-5"></i>
@@ -97,9 +91,19 @@
         <!-- Top Bar -->
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="flex items-center justify-between h-16 px-4 lg:px-6">
-                <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900">
-                    <i data-lucide="menu" class="h-6 w-6"></i>
-                </button>
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <div class="lg:hidden">
+                        <div class="flex items-center justify-between h-16 px-4 lg:px-6 bg-opacity-20">
+                            <div class="flex items-center space-x-3">
+                                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                                <span class="text-black font-semibold text-lg">ITOP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="flex items-center space-x-4">
                     <!-- Search -->
@@ -110,7 +114,7 @@
                     </div>
 
                     <!-- Add New Contact Button -->
-                    <button onclick="window.location.href='/Admin/CreateContact'" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                    <button onclick="openCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
                         <i data-lucide="user-plus" class="h-4 w-4"></i>
                         <span>Yeni Yetkili</span>
                     </button>
@@ -177,6 +181,15 @@
                 </div>
             </div>
 
+            <!-- Mobile Search -->
+            <div class="md:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                    <input type="text" id="mobileGlobalSearch" placeholder="Yetkili ara..."
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
             <!-- Filters -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -211,90 +224,352 @@
                 </div>
             </div>
 
-            <!-- Contacts Table -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-4">
-                    <table id="contactsTable" class="w-full">
-                        <thead>
-                            <tr class="border-b border-gray-200">
-                                <th class="text-left py-3 px-4">Yetkili</th>
-                                <th class="text-left py-3 px-4">Firma</th>
-                                <th class="text-left py-3 px-4">TC Kimlik No</th>
-                                <th class="text-left py-3 px-4">İletişim</th>
-                                <th class="text-center py-3 px-4">Oy Durumu</th>
-                                <th class="text-center py-3 px-4">Yetki</th>
-                                <th class="text-center py-3 px-4">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="contactsTableBody">
-                            <!-- Data will be loaded here -->
-                        </tbody>
-                    </table>
+            <!-- Contacts Table Container -->
+            <div id="contactsContainer" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <!-- Desktop table will be loaded here -->
+            </div>
+            
+            <!-- Mobile Card View -->
+            <div class="md:hidden bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+                <div id="contactsMobileContainer" class="divide-y divide-gray-200">
+                    <!-- Mobile cards will be populated here -->
                 </div>
+            </div>
+            
+            <!-- Custom Pagination -->
+            <div id="paginationContainer" class="mt-4 flex items-center justify-between">
+                <!-- Pagination will be loaded here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden p-8 text-center">
+                <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="users" class="w-8 h-8 text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Yetkili bulunamadı</h3>
+                <p class="text-gray-500 mb-4">Arama kriterlerinize uygun yetkili bulunmuyor.</p>
+                <button onclick="clearFilters()" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                    Filtreleri temizle
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Edit Contact Modal -->
-    <div id="editContactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xl font-semibold text-gray-900">Yetkili Düzenle</h3>
-                    <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
-                        <i data-lucide="x" class="h-6 w-6"></i>
-                    </button>
+    <div id="editContactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+                <!-- Modal Header - Fixed -->
+                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">Yetkili Düzenle</h3>
+                        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content - Scrollable -->
+                <div class="flex-1 overflow-y-auto" style="max-height: calc(95vh - 120px);">
+                    <form id="editContactForm" class="p-4 space-y-4">
+                        <input type="hidden" id="editContactId">
+
+                        <!-- Temel Bilgiler -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">Kişisel Bilgiler</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad *</label>
+                                    <input type="text" id="editFirstName" required
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="Adını giriniz">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad *</label>
+                                    <input type="text" id="editLastName" required
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="Soyadını giriniz">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">TC Kimlik No *</label>
+                                    <input type="text" id="editIdentityNum" maxlength="11" required
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="12345678901">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Firma *</label>
+                                    <div class="relative">
+                                        <input type="text" id="editCompanyDisplay" readonly required
+                                               class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50 cursor-pointer"
+                                               placeholder="Firma seçmek için tıklayınız"
+                                               onclick="openCompanySearchModal('edit')">
+                                        <input type="hidden" id="editCompanyId">
+                                        <button type="button" onclick="openCompanySearchModal('edit')" 
+                                                class="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600">
+                                            <i data-lucide="search" class="h-3 w-3"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Yetki Bilgileri -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">Yetki Bilgileri</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Yetki Tipi</label>
+                                    <select id="editAuthorizationType"
+                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">-- Seçiniz --</option>
+                                        <option value="1">Firma Yetkilisi</option>
+                                        <option value="2">Vekil</option>
+                                        <option value="3">Temsilci</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
+                                    <select id="editCommitteeId"
+                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">-- Seçiniz --</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- İletişim Bilgileri -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">İletişim Bilgileri</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Cep Telefonu</label>
+                                    <input type="tel" id="editMobilePhone"
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="0 (5XX) XXX XX XX">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                    <input type="email" id="editEmail"
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="email@example.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Yetkiler -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">Yetkiler</h4>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="editEligibleToVote" class="rounded border-gray-300 text-blue-600">
+                                        <span class="text-xs font-medium text-gray-700">Oy kullanma yetkisi</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Modal Footer - Fixed -->
+                <div class="px-4 py-3 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+                    <div class="flex justify-between items-center">
+                        <p class="text-xs text-gray-500">* işaretli alanlar zorunludur</p>
+                        <div class="flex space-x-2">
+                            <button type="button" onclick="closeEditModal()"
+                                    class="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+                                İptal
+                            </button>
+                            <button type="button" onclick="document.getElementById('editContactForm').requestSubmit()"
+                                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                <i data-lucide="save" class="h-3 w-3 inline mr-1"></i>
+                                Güncelle
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <form id="editContactForm" class="p-6">
-                <input type="hidden" id="editContactId">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Ad</label>
-                        <input type="text" id="editFirstName" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Soyad</label>
-                        <input type="text" id="editLastName" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">TC Kimlik No</label>
-                        <input type="text" id="editIdentityNum" maxlength="11" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-                        <input type="tel" id="editMobilePhone"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
-                        <input type="email" id="editEmail"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="editEligibleToVote" class="rounded border-gray-300 text-blue-600">
-                            <span class="text-sm font-medium text-gray-700">Oy kullanma yetkisi</span>
-                        </label>
+    <!-- Create Contact Modal -->
+    <div id="createContactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+                <!-- Modal Header - Fixed -->
+                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">Yeni Yetkili Ekle</h3>
+                        <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
                     </div>
                 </div>
 
-                <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeEditModal()"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                        İptal
-                    </button>
-                    <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Güncelle
-                    </button>
+                <!-- Modal Content - Scrollable -->
+                <div class="flex-1 overflow-y-auto" style="max-height: calc(95vh - 120px);">
+                    <form id="createContactForm" class="p-4 space-y-4">
+                        <!-- Temel Bilgiler -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">Kişisel Bilgiler</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad *</label>
+                                    <input type="text" id="createFirstName" required
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="Adını giriniz">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad *</label>
+                                    <input type="text" id="createLastName" required
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="Soyadını giriniz">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">TC Kimlik No *</label>
+                                    <input type="text" id="createIdentityNum" maxlength="11" required
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="12345678901">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Firma *</label>
+                                    <div class="relative">
+                                        <input type="text" id="createCompanyDisplay" readonly required
+                                               class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50 cursor-pointer"
+                                               placeholder="Firma seçmek için tıklayınız"
+                                               onclick="openCompanySearchModal('create')">
+                                        <input type="hidden" id="createCompanyId">
+                                        <button type="button" onclick="openCompanySearchModal('create')" 
+                                                class="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600">
+                                            <i data-lucide="search" class="h-3 w-3"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Yetki Bilgileri -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">Yetki Bilgileri</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Yetki Tipi</label>
+                                    <select id="createAuthorizationType"
+                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">-- Seçiniz --</option>
+                                        <option value="1">Firma Yetkilisi</option>
+                                        <option value="2">Vekil</option>
+                                        <option value="3">Temsilci</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
+                                    <select id="createCommitteeId"
+                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                        <option value="">-- Seçiniz --</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- İletişim Bilgileri -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">İletişim Bilgileri</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Cep Telefonu</label>
+                                    <input type="tel" id="createMobilePhone"
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="0 (5XX) XXX XX XX">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                    <input type="email" id="createEmail"
+                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                           placeholder="email@example.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Yetkiler -->
+                        <div class="mb-4">
+                            <h4 class="text-base font-medium text-gray-900 mb-3">Yetkiler</h4>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="createEligibleToVote" checked class="rounded border-gray-300 text-blue-600">
+                                        <span class="text-xs font-medium text-gray-700">Oy kullanma yetkisi</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </form>
+                
+                <!-- Modal Footer - Fixed -->
+                <div class="px-4 py-3 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+                    <div class="flex justify-between items-center">
+                        <p class="text-xs text-gray-500">* işaretli alanlar zorunludur</p>
+                        <div class="flex space-x-2">
+                            <button type="button" onclick="closeCreateModal()"
+                                    class="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+                                İptal
+                            </button>
+                            <button type="button" onclick="document.getElementById('createContactForm').requestSubmit()"
+                                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                                <i data-lucide="save" class="h-3 w-3 inline mr-1"></i>
+                                Kaydet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Search Modal -->
+    <div id="companySearchModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[70] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+                <!-- Modal Header -->
+                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">Firma Seç</h3>
+                        <button onclick="closeCompanySearchModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Box -->
+                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+                    <div class="relative">
+                        <input type="text" id="companySearchInput" 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Firma ara... (3+ karakter)"
+                               onkeyup="filterCompanies()">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Company List -->
+                <div class="flex-1 overflow-y-auto" style="max-height: calc(80vh - 140px);">
+                    <div id="companySearchResults" class="divide-y divide-gray-200">
+                        <!-- Companies will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-4 py-3 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+                    <div class="flex justify-between items-center">
+                        <p class="text-xs text-gray-500">Tüm firmalar gösteriliyor. 3+ karakter ile arama yapın.</p>
+                        <button type="button" onclick="closeCompanySearchModal()"
+                                class="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+                            İptal
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -304,21 +579,54 @@
 
     <script>
         let allContacts = [];
-        let dataTable = null;
-        const token = localStorage.getItem('token');
+        let filteredContacts = [];
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalCount = 0;
+        let totalPages = 0;
+        let allCompanies = [];
+        let allCommittees = [];
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication first
-            if (!token) {
-                window.location.href = '/Account/Login';
+            console.log('DOM loaded');
+
+            // Check if user is authenticated (server-side)
+            const isAuthenticated = '@User.Identity.IsAuthenticated'.toLowerCase() === 'true';
+            if (!isAuthenticated) {
+                console.error('User not authenticated');
+                window.location.href = '/Auth/Login';
                 return;
             }
+
+            console.log('User authenticated, loading contacts...');
+            
+            // Load user info
+            loadUserInfo();
 
             lucide.createIcons();
             loadUserInfo();
             loadCompanies();
+            loadCommittees();
             loadContacts();
+            
+            // Global search event handler
+            document.getElementById('globalSearch')?.addEventListener('input', function() {
+                currentPage = 1;
+                displayContacts();
+            });
+            
+            // Mobile search event handler
+            document.getElementById('mobileGlobalSearch')?.addEventListener('input', function() {
+                // Sync with desktop search
+                const mobileValue = this.value;
+                const desktopSearch = document.getElementById('globalSearch');
+                if (desktopSearch) {
+                    desktopSearch.value = mobileValue;
+                }
+                currentPage = 1;
+                displayContacts();
+            });
         });
 
         // Toggle Sidebar
@@ -332,65 +640,286 @@
 
         // Load User Info
         function loadUserInfo() {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (user) {
-                document.getElementById('userName').textContent = user.fullName || user.firstName + ' ' + user.lastName || 'Kullanıcı';
-                document.getElementById('userRole').textContent = user.roles ? user.roles[0] : 'Kullanıcı';
-
-                const initials = ((user.firstName || '')[0] + (user.lastName || '')[0]).toUpperCase();
-                document.getElementById('userInitials').textContent = initials || 'KA';
+            // Get user info from server-side claims
+            const fullName = '@User.FindFirst("FullName")?.Value' || 'Kullanıcı';
+            const role = '@(User.IsInRole("Admin") ? "Admin" : User.IsInRole("User") ? "User" : "Kullanıcı")' || 'Kullanıcı';
+            
+            let initials = 'KA';
+            
+            // Generate initials from full name
+            if (fullName && fullName !== 'Kullanıcı' && fullName.trim() !== '') {
+                const nameParts = fullName.trim().split(' ').filter(part => part.length > 0);
+                if (nameParts.length >= 2) {
+                    initials = (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+                } else if (nameParts.length === 1) {
+                    initials = (nameParts[0][0] + nameParts[0][0]).toUpperCase();
+                }
             }
+
+            // Update UI elements
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            const userInitialsEl = document.getElementById('userInitials');
+
+            if (userNameEl) userNameEl.textContent = fullName;
+            if (userRoleEl) userRoleEl.textContent = role;
+            if (userInitialsEl) userInitialsEl.textContent = initials;
+
+            console.log('User info loaded on Contacts page:', { fullName, role, initials });
         }
 
         // Load Companies for Filter
         async function loadCompanies() {
             try {
-                const response = await fetch('/api/company?pageSize=100', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await fetch('/api/company?pageSize=500', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (response.ok) {
                     const result = await response.json();
-                    const companies = result.data?.items || [];
+                    if (result && result.success && result.data) {
+                        if (result.data.items && Array.isArray(result.data.items)) {
+                            allCompanies = result.data.items;
+                        } else if (Array.isArray(result.data)) {
+                            allCompanies = result.data;
+                        } else {
+                            // Use demo data if no companies found
+                            allCompanies = getDemoCompanies();
+                        }
 
-                    const select = document.getElementById('companyFilter');
-                    companies.forEach(company => {
+                        // IsActive sıralaması: Aktifler önce, sonra pasifler
+                        allCompanies.sort((a, b) => {
+                            if (a.isActive === b.isActive) {
+                                // Aynı durumda ise isme göre sırala
+                                return a.title.localeCompare(b.title, 'tr');
+                            }
+                            // Aktifler önce (true > false)
+                            return b.isActive - a.isActive;
+                        });
+
+                        // Populate company filter dropdown only
+                        const companyFilter = document.getElementById('companyFilter');
+                        allCompanies.forEach(company => {
+                            const option = document.createElement('option');
+                            option.value = company.id;
+                            option.textContent = company.title;
+                            companyFilter.appendChild(option);
+                        });
+                    }
+                } else {
+                    // Use demo data on error
+                    allCompanies = getDemoCompanies();
+                    // Demo data already sorted
+                    const companyFilter = document.getElementById('companyFilter');
+                    allCompanies.forEach(company => {
                         const option = document.createElement('option');
                         option.value = company.id;
                         option.textContent = company.title;
-                        select.appendChild(option);
+                        companyFilter.appendChild(option);
                     });
                 }
             } catch (error) {
                 console.error('Error loading companies:', error);
+                allCompanies = getDemoCompanies();
+                // Demo data already sorted
+                const companyFilter = document.getElementById('companyFilter');
+                allCompanies.forEach(company => {
+                    const option = document.createElement('option');
+                    option.value = company.id;
+                    option.textContent = company.title;
+                    companyFilter.appendChild(option);
+                });
+            }
+        }
+        
+        // Get Demo Companies
+        function getDemoCompanies() {
+            const companies = [
+                {
+                    id: 1,
+                    title: 'ABC Teknoloji A.Ş.',
+                    registrationNumber: '123456',
+                    tradeRegistrationNumber: 'TR001234',
+                    companyType: 'AS',
+                    capital: 500000,
+                    officePhone: '0212 123 4567',
+                    email: 'info@abc.com',
+                    registrationAddress: 'İstanbul, Türkiye',
+                    professionalGroup: '5',
+                    naceCode: '62.01',
+                    isActive: true,
+                    has2022AuthorizationCertificate: true
+                },
+                {
+                    id: 2,
+                    title: 'XYZ Yazılım Ltd. Şti.',
+                    registrationNumber: '234567',
+                    tradeRegistrationNumber: 'TR002345',
+                    companyType: 'LTD',
+                    capital: 250000,
+                    mobilePhone: '0532 987 6543',
+                    email: 'info@xyz.com',
+                    registrationAddress: 'Ankara, Türkiye',
+                    professionalGroup: '5',
+                    naceCode: '62.02',
+                    isActive: true,
+                    has2022AuthorizationCertificate: false
+                },
+                {
+                    id: 3,
+                    title: 'DEF Sanayi A.Ş.',
+                    registrationNumber: '345678',
+                    tradeRegistrationNumber: 'TR003456',
+                    companyType: 'AS',
+                    capital: 1500000,
+                    officePhone: '0216 555 6677',
+                    email: 'info@def.com',
+                    registrationAddress: 'İzmir, Türkiye',
+                    professionalGroup: '1',
+                    naceCode: '25.01',
+                    isActive: true,
+                    has2022AuthorizationCertificate: true
+                },
+                {
+                    id: 4,
+                    title: 'GHI İnşaat Ltd. Şti.',
+                    registrationNumber: '456789',
+                    tradeRegistrationNumber: 'TR004567',
+                    companyType: 'LTD',
+                    capital: 750000,
+                    officePhone: '0224 444 3322',
+                    email: 'info@ghi.com',
+                    registrationAddress: 'Bursa, Türkiye',
+                    professionalGroup: '3',
+                    naceCode: '41.10',
+                    isActive: false,
+                    has2022AuthorizationCertificate: false
+                },
+                {
+                    id: 5,
+                    title: 'JKL Ticaret A.Ş.',
+                    registrationNumber: '567890',
+                    tradeRegistrationNumber: 'TR005678',
+                    companyType: 'AS',
+                    capital: 2000000,
+                    officePhone: '0232 222 1111',
+                    email: 'info@jkl.com',
+                    registrationAddress: 'İzmir, Türkiye',
+                    professionalGroup: '2',
+                    naceCode: '46.90',
+                    isActive: true,
+                    has2022AuthorizationCertificate: true
+                }
+            ];
+            
+            // IsActive sıralaması: Aktifler önce, sonra pasifler
+            companies.sort((a, b) => {
+                if (a.isActive === b.isActive) {
+                    // Aynı durumda ise isme göre sırala
+                    return a.title.localeCompare(b.title, 'tr');
+                }
+                // Aktifler önce (true > false)
+                return b.isActive - a.isActive;
+            });
+            
+            return companies;
+        }
+        
+        // Load Committees
+        async function loadCommittees() {
+            try {
+                // Demo committees for now
+                const committees = [
+                    { id: 1, description: 'Yönetim Kurulu' },
+                    { id: 2, description: 'Denetleme Kurulu' },
+                    { id: 3, description: 'Disiplin Kurulu' }
+                ];
+                
+                allCommittees = committees;
+                
+                const editSelect = document.getElementById('editCommitteeId');
+                const createSelect = document.getElementById('createCommitteeId');
+                
+                committees.forEach(committee => {
+                    // Edit modal
+                    const option1 = document.createElement('option');
+                    option1.value = committee.id;
+                    option1.textContent = committee.description;
+                    editSelect.appendChild(option1);
+                    
+                    // Create modal
+                    const option2 = document.createElement('option');
+                    option2.value = committee.id;
+                    option2.textContent = committee.description;
+                    createSelect.appendChild(option2);
+                });
+            } catch (error) {
+                console.error('Error loading committees:', error);
             }
         }
 
         // Load Contacts
         async function loadContacts() {
             try {
+                // Loading göstergesi ekleyin
+                const container = document.getElementById('contactsContainer');
+                container.innerHTML = `
+                    <div class="p-8 text-center">
+                        <div class="inline-flex items-center space-x-2">
+                            <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-gray-600">Yetkililer yükleniyor...</span>
+                        </div>
+                    </div>
+                `;
+
                 const response = await fetch('/api/contact?pageSize=500', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (response.ok) {
                     const result = await response.json();
-                    allContacts = result.data?.items || [];
+                    console.log('API Response:', result);
+
+                    if (result && result.success && result.data) {
+                        if (result.data.items && Array.isArray(result.data.items)) {
+                            allContacts = result.data.items;
+                            console.log('✅ Using PagedResult.items, contacts found:', allContacts.length);
+                        } else if (Array.isArray(result.data)) {
+                            allContacts = result.data;
+                            console.log('✅ Using direct array in data, contacts found:', allContacts.length);
+                        } else {
+                            console.warn('❌ Unexpected data format in result.data:', result.data);
+                            allContacts = getDemoContacts();
+                        }
+                    } else {
+                        console.warn('❌ API returned unsuccessful response or unexpected format');
+                        allContacts = getDemoContacts();
+                    }
+
                     updateStatistics();
-                    renderTable();
+                    displayContacts();
                 } else {
-                    console.error('Failed to load contacts');
-                    // Use demo data
+                    console.error('Failed to load contacts, status:', response.status);
                     allContacts = getDemoContacts();
                     updateStatistics();
-                    renderTable();
+                    displayContacts();
                 }
             } catch (error) {
                 console.error('Error loading contacts:', error);
-                // Use demo data
                 allContacts = getDemoContacts();
                 updateStatistics();
-                renderTable();
+                displayContacts();
             }
         }
 
@@ -407,127 +936,517 @@
             document.getElementById('eligibleContacts').textContent = eligible;
         }
 
-        // Render Table
-        function renderTable() {
-            const tbody = document.getElementById('contactsTableBody');
+        // Display Contacts (Custom Pagination)
+        function displayContacts() {
+            const container = document.getElementById('contactsContainer');
+            const mobileContainer = document.getElementById('contactsMobileContainer');
+            
+            // Apply current filters
+            filteredContacts = [...allContacts];
+            
+            // Apply search if any
+            const searchTerm = document.getElementById('globalSearch')?.value?.toLowerCase();
+            if (searchTerm) {
+                filteredContacts = filteredContacts.filter(contact => 
+                    (contact.firstName + ' ' + contact.lastName).toLowerCase().includes(searchTerm) ||
+                    contact.identityNum?.toLowerCase().includes(searchTerm) ||
+                    contact.companyTitle?.toLowerCase().includes(searchTerm) ||
+                    contact.email?.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // Apply other filters
+            const companyFilter = document.getElementById('companyFilter')?.value;
+            const voteStatusFilter = document.getElementById('voteStatusFilter')?.value;
+            const eligibilityFilter = document.getElementById('eligibilityFilter')?.value;
 
-            tbody.innerHTML = allContacts.map(contact => `
-                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                    <td class="py-3 px-4">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                                <span class="text-xs font-medium text-gray-600">
-                                    ${contact.firstName[0]}${contact.lastName[0]}
-                                </span>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">${contact.firstName} ${contact.lastName}</p>
-                                <p class="text-xs text-gray-500">${contact.authorizationTypeDescription || 'Yetkili'}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="py-3 px-4">
-                        <p class="text-sm text-gray-900">${contact.companyTitle}</p>
-                    </td>
-                    <td class="py-3 px-4">
-                        <p class="text-sm text-gray-900 font-mono">${contact.identityNum}</p>
-                    </td>
-                    <td class="py-3 px-4">
-                        <p class="text-sm text-gray-900">${contact.mobilePhone || '-'}</p>
-                        <p class="text-xs text-gray-500">${contact.email || '-'}</p>
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        ${contact.hasVoted ?
-                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Kullandı</span>' :
-                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">Kullanmadı</span>'
-                        }
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        ${contact.eligibleToVote ?
-                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Yetkili</span>' :
-                            '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Yetkisiz</span>'
-                        }
-                    </td>
-                    <td class="py-3 px-4 text-center">
-                        <div class="flex items-center justify-center space-x-2">
-                            <button onclick="editContact(${contact.id})"
-                                    class="text-blue-600 hover:text-blue-800">
-                                <i data-lucide="edit" class="h-4 w-4"></i>
-                            </button>
-                            <button onclick="deleteContact(${contact.id})"
-                                    class="text-red-600 hover:text-red-800">
-                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-
-            lucide.createIcons();
-
-            // Initialize DataTable
-            if (dataTable) {
-                dataTable.destroy();
+            if (companyFilter) {
+                filteredContacts = filteredContacts.filter(c => c.companyId == companyFilter);
             }
 
-            dataTable = $('#contactsTable').DataTable({
-                pageLength: 25,
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json'
-                },
-                dom: 'rtip',
-                order: [[0, 'asc']]
+            if (voteStatusFilter === 'voted') {
+                filteredContacts = filteredContacts.filter(c => c.hasVoted);
+            } else if (voteStatusFilter === 'notVoted') {
+                filteredContacts = filteredContacts.filter(c => !c.hasVoted);
+            }
+
+            if (eligibilityFilter === 'eligible') {
+                filteredContacts = filteredContacts.filter(c => c.eligibleToVote);
+            } else if (eligibilityFilter === 'notEligible') {
+                filteredContacts = filteredContacts.filter(c => !c.eligibleToVote);
+            }
+            
+            // Update totals
+            totalCount = filteredContacts.length;
+            totalPages = Math.ceil(totalCount / pageSize);
+            
+            // Get current page data
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalCount);
+            const currentContacts = filteredContacts.slice(startIndex, endIndex);
+
+            if (currentContacts.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-gray-500">
+                        <i data-lucide="users" class="w-12 h-12 mx-auto mb-4"></i>
+                        <p>Hiç yetkili bulunamadı</p>
+                    </div>
+                `;
+                if (mobileContainer) {
+                    mobileContainer.innerHTML = '';
+                }
+                updatePagination();
+                lucide.createIcons();
+                return;
+            }
+
+            // Desktop table
+            let html = `
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yetkili</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Firma</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TC Kimlik No</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İletişim</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Oy Durumu</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Yetki</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+            `;
+
+            currentContacts.forEach(contact => {
+                html += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-4">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-xs font-medium text-gray-600">
+                                        ${contact.firstName ? contact.firstName[0] : ''}${contact.lastName ? contact.lastName[0] : ''}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">${contact.firstName} ${contact.lastName}</p>
+                                    <p class="text-xs text-gray-500">${contact.authorizationTypeDescription || 'Yetkili'}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <p class="text-sm text-gray-900">${contact.companyTitle || '-'}</p>
+                        </td>
+                        <td class="px-4 py-4">
+                            <p class="text-sm text-gray-900 font-mono">${contact.identityNum || '-'}</p>
+                        </td>
+                        <td class="px-4 py-4">
+                            <p class="text-sm text-gray-900">${contact.mobilePhone || '-'}</p>
+                            <p class="text-xs text-gray-500">${contact.email || '-'}</p>
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            ${contact.hasVoted ?
+                                '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Kullandı</span>' :
+                                '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800">Kullanmadı</span>'
+                            }
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            ${contact.eligibleToVote ?
+                                '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Yetkili</span>' :
+                                '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Yetkisiz</span>'
+                            }
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="editContact(${contact.id})"
+                                        class="text-blue-600 hover:text-blue-800" title="Düzenle">
+                                    <i data-lucide="edit" class="h-4 w-4"></i>
+                                </button>
+                                <button onclick="deleteContact(${contact.id})"
+                                        class="text-red-600 hover:text-red-800" title="Sil">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
             });
 
-            // Global search
-            $('#globalSearch').on('keyup', function() {
-                dataTable.search(this.value).draw();
+            html += `
+                    </tbody>
+                </table>
+            </div>
+            `;
+
+            container.innerHTML = html;
+
+            // Mobile cards
+            let mobileHtml = '';
+            currentContacts.forEach(contact => {
+                mobileHtml += `
+                    <div class="p-4 hover:bg-gray-50">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1">
+                                <h3 class="font-medium text-gray-900 text-sm">${contact.firstName} ${contact.lastName}</h3>
+                                <p class="text-xs text-gray-500 mt-1">${contact.companyTitle || '-'}</p>
+                                <p class="text-xs text-gray-500">TC: ${contact.identityNum || '-'}</p>
+                            </div>
+                            <div class="flex items-center space-x-1 ml-2">
+                                <button onclick="editContact(${contact.id})" class="p-1 text-blue-600 hover:text-blue-800">
+                                    <i data-lucide="edit" class="h-4 w-4"></i>
+                                </button>
+                                <button onclick="deleteContact(${contact.id})" class="p-1 text-red-600 hover:text-red-800">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4 text-xs">
+                            ${contact.hasVoted ?
+                                '<span class="inline-flex px-2 py-1 rounded-full bg-green-100 text-green-800">Kullandı</span>' :
+                                '<span class="inline-flex px-2 py-1 rounded-full bg-orange-100 text-orange-800">Kullanmadı</span>'
+                            }
+                            ${contact.eligibleToVote ?
+                                '<span class="inline-flex px-2 py-1 rounded-full bg-blue-100 text-blue-800">Yetkili</span>' :
+                                '<span class="inline-flex px-2 py-1 rounded-full bg-gray-100 text-gray-600">Yetkisiz</span>'
+                            }
+                        </div>
+                        ${(contact.mobilePhone || contact.email) ? `
+                            <div class="mt-2 text-xs text-gray-600">
+                                ${contact.mobilePhone ? `<p>${contact.mobilePhone}</p>` : ''}
+                                ${contact.email ? `<p>${contact.email}</p>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
             });
+
+            if (mobileContainer) {
+                mobileContainer.innerHTML = mobileHtml;
+            }
+
+            updatePagination();
+            lucide.createIcons();
+        }
+
+        // Update Pagination
+        function updatePagination() {
+            const container = document.getElementById('paginationContainer');
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const startRecord = totalCount > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+            const endRecord = Math.min(currentPage * pageSize, totalCount);
+
+            let html = `
+                <div class="text-sm text-gray-700">
+                    Toplam <span class="font-semibold">${totalCount}</span> yetkili den
+                    <span class="font-semibold">${startRecord}</span> -
+                    <span class="font-semibold">${endRecord}</span>
+                    arası gösteriliyor
+                </div>
+                <div class="flex items-center space-x-1">
+            `;
+
+            // İlk sayfa
+            if (currentPage > 1) {
+                html += `
+                    <button onclick="goToPage(1)"
+                            class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-800 transition-colors duration-200">
+                        İlk
+                    </button>
+                `;
+            }
+
+            // Önceki sayfa
+            if (currentPage > 1) {
+                html += `
+                    <button onclick="goToPage(${currentPage - 1})"
+                            class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-800 transition-colors duration-200">
+                        Önceki
+                    </button>
+                `;
+            }
+
+            // Sayfa numaraları
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `
+                        <button class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            ${i}
+                        </button>
+                    `;
+                } else {
+                    html += `
+                        <button onclick="goToPage(${i})"
+                                class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-800 transition-colors duration-200">
+                            ${i}
+                        </button>
+                    `;
+                }
+            }
+
+            // Sonraki sayfa
+            if (currentPage < totalPages) {
+                html += `
+                    <button onclick="goToPage(${currentPage + 1})"
+                            class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-800 transition-colors duration-200">
+                        Sonraki
+                    </button>
+                `;
+            }
+
+            // Son sayfa
+            if (currentPage < totalPages) {
+                html += `
+                    <button onclick="goToPage(${totalPages})"
+                            class="px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-800 transition-colors duration-200">
+                        Son
+                    </button>
+                `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Go to Page
+        function goToPage(page) {
+            currentPage = page;
+            displayContacts();
         }
 
         // Apply Filters
         function applyFilters() {
-            const companyId = document.getElementById('companyFilter').value;
-            const voteStatus = document.getElementById('voteStatusFilter').value;
-            const eligibility = document.getElementById('eligibilityFilter').value;
+            currentPage = 1; // Reset to first page when applying filters
+            displayContacts();
+        }
 
-            let filtered = [...allContacts];
+        // Clear Filters  
+        function clearFilters() {
+            document.getElementById('companyFilter').value = '';
+            document.getElementById('voteStatusFilter').value = '';
+            document.getElementById('eligibilityFilter').value = '';
+            document.getElementById('globalSearch').value = '';
+            document.getElementById('mobileGlobalSearch').value = '';
+            currentPage = 1;
+            displayContacts();
+        }
 
-            if (companyId) {
-                filtered = filtered.filter(c => c.companyId == companyId);
+        // Open Create Modal
+        function openCreateModal() {
+            console.log('openCreateModal called');
+            try {
+                const modal = document.getElementById('createContactModal');
+                console.log('Create modal element:', modal);
+                
+                // Clear form
+                document.getElementById('createContactForm').reset();
+                document.getElementById('createEligibleToVote').checked = true;
+
+                // Show modal
+                modal.classList.remove('hidden');
+                lucide.createIcons();
+                console.log('Create modal should be open now');
+            } catch (error) {
+                console.error('Error in openCreateModal:', error);
             }
+        }
 
-            if (voteStatus === 'voted') {
-                filtered = filtered.filter(c => c.hasVoted);
-            } else if (voteStatus === 'notVoted') {
-                filtered = filtered.filter(c => !c.hasVoted);
-            }
+        // Close Create Modal
+        function closeCreateModal() {
+            document.getElementById('createContactModal').classList.add('hidden');
+        }
 
-            if (eligibility === 'eligible') {
-                filtered = filtered.filter(c => c.eligibleToVote);
-            } else if (eligibility === 'notEligible') {
-                filtered = filtered.filter(c => !c.eligibleToVote);
-            }
+        // Company Search Modal Functions
+        let currentModalMode = 'create'; // 'create' or 'edit'
 
-            // Update table with filtered data
-            const tbody = document.getElementById('contactsTableBody');
-            tbody.innerHTML = filtered.map(contact => /* same row template */).join('');
+        function openCompanySearchModal(mode) {
+            currentModalMode = mode;
+            document.getElementById('companySearchModal').classList.remove('hidden');
+            document.getElementById('companySearchInput').value = '';
+            // İlk açıldığında tüm firmaları göster
+            populateCompanyList(allCompanies);
             lucide.createIcons();
         }
 
+        function closeCompanySearchModal() {
+            document.getElementById('companySearchModal').classList.add('hidden');
+        }
+
+        function populateCompanyList(companies) {
+            const container = document.getElementById('companySearchResults');
+            
+            if (companies.length === 0) {
+                container.innerHTML = `
+                    <div class="p-4 text-center text-gray-500">
+                        <i data-lucide="building-2" class="w-8 h-8 mx-auto mb-2"></i>
+                        <p>Hiç firma bulunamadı</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = companies.map(company => `
+                <div class="p-3 hover:bg-gray-50 cursor-pointer" onclick="selectCompany(${company.id}, '${company.title}')">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900 text-sm">${company.title}</h4>
+                            <div class="mt-1 space-y-1">
+                                <p class="text-xs text-gray-600">Sicil No: <span class="font-mono">${company.registrationNumber}</span></p>
+                                ${company.tradeRegistrationNumber ? `<p class="text-xs text-gray-600">Ticaret Sicil: <span class="font-mono">${company.tradeRegistrationNumber}</span></p>` : ''}
+                                <p class="text-xs text-gray-500">${company.registrationAddress || ''}</p>
+                            </div>
+                        </div>
+                        <div class="ml-3 flex-shrink-0">
+                            <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full
+                                ${company.companyType === 'AS' ? 'bg-purple-100 text-purple-800' :
+                                  company.companyType === 'LTD' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-gray-100 text-gray-800'}">
+                                ${company.companyType}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        let searchTimeout = null;
+
+        function filterCompanies() {
+            const searchTerm = document.getElementById('companySearchInput').value.trim();
+            
+            // Önceki timeout'u temizle
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            // Eğer arama terimi boşsa tüm firmaları göster
+            if (!searchTerm) {
+                populateCompanyList(allCompanies);
+                return;
+            }
+
+            // 3 karakterden az ise arama yapma, tüm firmaları göster
+            if (searchTerm.length < 3) {
+                populateCompanyList(allCompanies);
+                return;
+            }
+
+            // Loading göster
+            showCompanySearchLoading();
+
+            // 300ms bekle, sonra API'ye git (debounce)
+            searchTimeout = setTimeout(async () => {
+                await searchCompaniesFromAPI(searchTerm);
+            }, 300);
+        }
+
+        function showCompanySearchLoading() {
+            const container = document.getElementById('companySearchResults');
+            container.innerHTML = `
+                <div class="p-8 text-center">
+                    <div class="inline-flex items-center space-x-2">
+                        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-gray-600">Firmalar aranıyor...</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function searchCompaniesFromAPI(searchTerm) {
+            try {
+                const response = await fetch(`/api/company?pageSize=50&searchTerm=${encodeURIComponent(searchTerm)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Company search API Response:', result);
+
+                    let companies = [];
+                    if (result && result.success && result.data) {
+                        if (result.data.items && Array.isArray(result.data.items)) {
+                            companies = result.data.items;
+                        } else if (Array.isArray(result.data)) {
+                            companies = result.data;
+                        }
+                    }
+
+                    populateCompanyList(companies);
+                } else {
+                    console.error('Company search API failed:', response.status);
+                    // Hata durumunda yerel arama yap
+                    const filtered = allCompanies.filter(company => 
+                        company.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        company.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        (company.tradeRegistrationNumber && company.tradeRegistrationNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+                    );
+                    populateCompanyList(filtered);
+                }
+            } catch (error) {
+                console.error('Company search error:', error);
+                // Hata durumunda yerel arama yap
+                const filtered = allCompanies.filter(company => 
+                    company.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    company.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (company.tradeRegistrationNumber && company.tradeRegistrationNumber.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+                populateCompanyList(filtered);
+            }
+        }
+
+        function selectCompany(companyId, companyTitle) {
+            // Update the appropriate fields based on modal mode
+            if (currentModalMode === 'create') {
+                document.getElementById('createCompanyId').value = companyId;
+                document.getElementById('createCompanyDisplay').value = companyTitle;
+            } else if (currentModalMode === 'edit') {
+                document.getElementById('editCompanyId').value = companyId;
+                document.getElementById('editCompanyDisplay').value = companyTitle;
+            }
+            
+            closeCompanySearchModal();
+        }
+
         // Edit Contact
-        function editContact(id) {
+        async function editContact(id) {
             const contact = allContacts.find(c => c.id === id);
             if (contact) {
+                console.log('Edit contact called with contact:', contact);
+                
+                // Fill form fields
                 document.getElementById('editContactId').value = contact.id;
-                document.getElementById('editFirstName').value = contact.firstName;
-                document.getElementById('editLastName').value = contact.lastName;
-                document.getElementById('editIdentityNum').value = contact.identityNum;
+                document.getElementById('editFirstName').value = contact.firstName || '';
+                document.getElementById('editLastName').value = contact.lastName || '';
+                document.getElementById('editIdentityNum').value = contact.identityNum || '';
+                
+                // Set company display and hidden field
+                document.getElementById('editCompanyId').value = contact.companyId || '';
+                document.getElementById('editCompanyDisplay').value = contact.companyTitle || '';
+                
+                document.getElementById('editAuthorizationType').value = contact.authorizationType || '';
+                document.getElementById('editCommitteeId').value = contact.committeeId || '';
                 document.getElementById('editMobilePhone').value = contact.mobilePhone || '';
                 document.getElementById('editEmail').value = contact.email || '';
                 document.getElementById('editEligibleToVote').checked = contact.eligibleToVote;
 
-                document.getElementById('editContactModal').classList.remove('hidden');
+                const editModal = document.getElementById('editContactModal');
+                console.log('Opening edit modal for contact:', contact.firstName, contact.lastName);
+                editModal.classList.remove('hidden');
                 lucide.createIcons();
             }
         }
@@ -537,6 +1456,47 @@
             document.getElementById('editContactModal').classList.add('hidden');
         }
 
+        // Handle Create Form Submit
+        document.getElementById('createContactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const contactData = {
+                companyId: parseInt(document.getElementById('createCompanyId').value),
+                firstName: document.getElementById('createFirstName').value,
+                lastName: document.getElementById('createLastName').value,
+                identityNum: document.getElementById('createIdentityNum').value,
+                authorizationType: parseInt(document.getElementById('createAuthorizationType').value) || 1,
+                committeeId: parseInt(document.getElementById('createCommitteeId').value) || null,
+                mobilePhone: document.getElementById('createMobilePhone').value,
+                email: document.getElementById('createEmail').value,
+                eligibleToVote: document.getElementById('createEligibleToVote').checked
+            };
+
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(contactData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    closeCreateModal();
+                    loadContacts();
+                    alert('Yetkili başarıyla oluşturuldu!');
+                } else {
+                    alert(result.message || 'Yetkili oluşturulamadı!');
+                }
+            } catch (error) {
+                console.error('Create error:', error);
+                alert('Bir hata oluştu!');
+            }
+        });
+
         // Handle Edit Form Submit
         document.getElementById('editContactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -544,9 +1504,12 @@
             const contactId = document.getElementById('editContactId').value;
             const updateData = {
                 id: parseInt(contactId),
+                companyId: parseInt(document.getElementById('editCompanyId').value),
                 firstName: document.getElementById('editFirstName').value,
                 lastName: document.getElementById('editLastName').value,
                 identityNum: document.getElementById('editIdentityNum').value,
+                authorizationType: parseInt(document.getElementById('editAuthorizationType').value) || 1,
+                committeeId: parseInt(document.getElementById('editCommitteeId').value) || null,
                 mobilePhone: document.getElementById('editMobilePhone').value,
                 email: document.getElementById('editEmail').value,
                 eligibleToVote: document.getElementById('editEligibleToVote').checked
@@ -556,9 +1519,9 @@
                 const response = await fetch(`/api/contact/${contactId}`, {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json'
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify(updateData)
                 });
 
@@ -575,23 +1538,64 @@
             }
         });
 
+        // Format phone inputs
+        document.getElementById('createMobilePhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length > 0) {
+                let formatted = '';
+                if (value.startsWith('0')) {
+                    // Format: 0 (5XX) XXX XX XX
+                    formatted = '0';
+                    if (value.length >= 2) formatted += ' (' + value.substring(1, 4);
+                    if (value.length >= 5) formatted += ') ' + value.substring(4, 7);
+                    if (value.length >= 8) formatted += ' ' + value.substring(7, 9);
+                    if (value.length >= 10) formatted += ' ' + value.substring(9, 11);
+                } else {
+                    formatted = value;
+                }
+                e.target.value = formatted.trim();
+            }
+        });
+
+        document.getElementById('editMobilePhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length > 0) {
+                let formatted = '';
+                if (value.startsWith('0')) {
+                    // Format: 0 (5XX) XXX XX XX
+                    formatted = '0';
+                    if (value.length >= 2) formatted += ' (' + value.substring(1, 4);
+                    if (value.length >= 5) formatted += ') ' + value.substring(4, 7);
+                    if (value.length >= 8) formatted += ' ' + value.substring(7, 9);
+                    if (value.length >= 10) formatted += ' ' + value.substring(9, 11);
+                } else {
+                    formatted = value;
+                }
+                e.target.value = formatted.trim();
+            }
+        });
+
         // Delete Contact
         async function deleteContact(id) {
-            if (!confirm('Bu yetkiliyi silmek istediğinizden emin misiniz?')) {
+            if (!confirm('Bu yetkiliyi silmek istediğinizden emin misiniz?\n\nNot: Oy kaydı bulunan yetkililer silinemez.')) {
                 return;
             }
 
             try {
                 const response = await fetch(`/api/contact/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
                 });
 
                 if (response.ok) {
                     loadContacts();
                     alert('Yetkili başarıyla silindi!');
                 } else {
-                    alert('Silme işlemi başarısız!');
+                    const result = await response.json();
+                    alert(result.message || 'Silme işlemi başarısız!');
                 }
             } catch (error) {
                 console.error('Delete error:', error);
@@ -673,9 +1677,16 @@
         // Logout
         async function logout() {
             if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+                // Clear localStorage
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                window.location.href = '/Account/Login';
+                localStorage.clear();
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                
+                // Redirect to logout endpoint
+                window.location.href = '/Auth/Logout';
             }
         }
     </script>

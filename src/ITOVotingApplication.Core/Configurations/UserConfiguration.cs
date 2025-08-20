@@ -24,6 +24,10 @@ namespace ITOVotingApplication.Data.Configurations
 				.HasMaxLength(100)
 				.IsRequired();
 
+			builder.Property(e => e.PhoneNumber)
+				.HasMaxLength(50)
+				.IsRequired();
+
 			builder.Property(e => e.FirstName)
 				.HasMaxLength(50)
 				.IsRequired();

@@ -99,6 +99,7 @@ namespace ITOVotingApplication.Business.Services
 					UserName = registerDto.UserName,
 					PasswordHash = CreatePasswordHash(registerDto.Password),
 					Email = registerDto.Email,
+					PhoneNumber = registerDto.PhoneNumber,
 					FirstName = registerDto.FirstName,
 					LastName = registerDto.LastName,
 					IsActive = true

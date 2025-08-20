@@ -1,0 +1,2536 @@
+﻿@{
+    ViewData["Title"] = "Evraklar";
+}
+
+<!-- Page Header -->
+<div class="mb-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Evraklar</h1>
+            <p class="text-gray-600">Sistem üzerindeki tüm evraklar</p>
+        </div>
+        <button onclick="showCreateDocumentModal()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center">
+            <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+            Yeni Evrak
+        </button>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <h3 class="text-sm font-semibold text-gray-900 mb-4">Filtreler</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Durum -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+            <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                <option value="">Tümü</option>
+                <option value="1">Denetim Bekliyor</option>
+                <option value="2">Denetim Sürüyor</option>
+                <option value="3">Onay Bekliyor</option>
+                <option value="4">Onaylandı</option>
+                <option value="5">Reddedildi</option>
+                <option value="6">Entegrasyona Hazır</option>
+                <option value="99">Kapatıldı</option>
+            </select>
+        </div>
+        <!-- Tarih Aralığı -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Başlangıç Tarihi</label>
+            <input type="date" id="startDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Bitiş Tarihi</label>
+            <input type="date" id="endDate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+        </div>
+        <!-- Arama -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Arama</label>
+            <input type="text" id="searchQuery" placeholder="Evrak no, şirket adı..."
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+        </div>
+    </div>
+    <div class="mt-4 flex items-center justify-end space-x-2">
+        <button onclick="clearFilters()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm">
+            Temizle
+        </button>
+        <button onclick="applyFilters()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">
+            Filtrele
+        </button>
+    </div>
+</div>
+
+<!-- Loading -->
+<div id="loading" class="hidden bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="inline-flex items-center">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+        <span class="text-gray-600">Evraklar yükleniyor...</span>
+    </div>
+</div>
+
+<!-- Document Detail Modal -->
+<div id="documentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-screen overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900" id="modalTitle">Evrak Detayı</h3>
+                <p class="text-sm text-gray-500" id="modalSubtitle">Detaylı evrak bilgileri</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="integrationLogsButton" onclick="viewIntegrationLogs()" class="hidden px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm">
+                    <i data-lucide="database" class="w-4 h-4 inline mr-1"></i>
+                    Entegrasyon Bilgileri
+                </button>
+                <button onclick="viewPDF()" id="pdfButton" class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm">
+                    <i data-lucide="external-link" class="w-4 h-4 inline mr-1"></i>
+                    Evrak Görüntüsü
+                </button>
+                <button onclick="closeDocumentModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6" id="modalContent">
+            <!-- Content will be loaded here -->
+        </div>
+    </div>
+</div>
+<!-- Entegrasyon Bilgileri Modal -->
+<div id="integrationLogsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8">
+            <!-- Modal Header -->
+            <div class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between rounded-t-lg">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Entegrasyon Bilgileri</h3>
+                    <p class="text-sm text-gray-500" id="integrationLogsSubtitle">Evrak entegrasyon geçmişi</p>
+                </div>
+                <button onclick="closeIntegrationLogsModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <div id="integrationLogsContent">
+                    <!-- Integration logs will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Documents Table -->
+<div id="documentsContainer" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Desktop table will be loaded here with hidden md:block -->
+</div>
+<!-- Mobile Card View -->
+<div class="md:hidden bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div id="documentsMobileContainer" class="divide-y divide-gray-200">
+        <!-- Mobile cards will be populated here -->
+    </div>
+</div>
+<!-- Pagination -->
+<div id="paginationContainer" class="mt-4 flex items-center justify-between">
+    <!-- Pagination will be loaded here -->
+</div>
+
+<!-- Empty State -->
+<div id="emptyState" class="hidden p-8 text-center">
+    <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+        <i data-lucide="file-x" class="w-8 h-8 text-gray-400"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">Evrak bulunamadı</h3>
+    <p class="text-gray-500 mb-4">Arama kriterlerinize uygun evrak bulunmuyor.</p>
+    <button onclick="clearFilters()" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+        Filtreleri temizle
+    </button>
+</div>
+<!-- Create Document Modal -->
+<div id="createDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Yeni Evrak Oluştur</h3>
+                <p class="text-sm text-gray-500">Manuel evrak girişi</p>
+            </div>
+            <button onclick="closeCreateDocumentModal()" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Modal Content -->
+        <!-- Modal Content -->
+        <div class="p-6">
+            <form id="createDocumentForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Sol Kolon -->
+                    <div class="space-y-4">
+                        <!-- External ID (otomatik oluşturulacak) -->
+                        <input type="hidden" id="externalId" name="externalId" />
+
+                        <!-- Document Type (sabit: Fatura) -->
+                        <input type="hidden" name="documentTypeId" value="1" />
+
+                        <!-- Evrak Numarası -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Evrak Numarası *</label>
+                            <input type="text" name="documentNumber" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Evrak Tarihi -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Evrak Tarihi *</label>
+                            <input type="date" name="documentDate" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- İşlem Tipi -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">İşlem Tipi *</label>
+                            <select name="documentProcessTypeId" id="processTypeSelect" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                        </div>
+
+                        <!-- Para Birimi -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Para Birimi</label>
+                            <select name="currency"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="TRY" selected>TRY</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Döviz Kuru *</label>
+                            <input type="number" name="exchangeRate" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Sağ Kolon -->
+                    <div class="space-y-4">
+                        <!-- Cari Kodu -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cari Kodu *</label>
+                            <input type="text" name="currAccCode" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Cari Adı -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cari Adı *</label>
+                            <input type="text" name="currAccDescription" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Vergi No -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vergi No</label>
+                            <input type="text" name="vatNumber" maxlength="20"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- İlişki ID -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">İlişki ID</label>
+                            <input type="text" name="collerationId" maxlength="100"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evrak Satırları -->
+                <div class="mt-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-md font-semibold text-gray-900">Evrak Satırları</h4>
+                        <button type="button" onclick="addDocumentLine()"
+                                class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                            <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i>
+                            Satır Ekle
+                        </button>
+                    </div>
+
+                    <div class="mt-4 border-t pt-4">
+                        <h4 class="font-semibold text-gray-900 mb-3">Onay Süreci</h4>
+                        <div id="workflowProgressContainer">
+                            <!-- Workflow progress buraya yüklenecek -->
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barkod</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ürün Kodu</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ürün Açıklaması *</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Miktar *</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Fiyat *</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tutar *</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">KDV %</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">KDV Tutar</th>
+                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentLinesBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Satırlar buraya eklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-6 flex items-center justify-between border-t pt-6">
+                    <div class="flex space-x-2">
+                        <button type="button" onclick="selectXMLFile()"
+                                class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                            <i data-lucide="file-text" class="w-4 h-4 inline mr-2"></i>
+                            Verileri XML'den Oku
+                        </button>
+                        <button type="button" onclick="selectDocumentFile()"
+                                class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
+                            <i data-lucide="upload" class="w-4 h-4 inline mr-2"></i>
+                            Belge Yükle
+                        </button>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button type="button" onclick="closeCreateDocumentModal()"
+                                class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            İptal
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Kaydet
+                        </button>
+                    </div>
+                    <!-- Dosya seçimi için gizli input -->
+                    <input type="file" id="documentFileInput" style="display:none"
+                           accept=".html,.pdf,.jpeg,.jpg,.png"
+                           onchange="handleDocumentFileSelect(event)">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Global değişkenler
+    let currentPage = 0;
+    let pageSize = 20;
+    let totalPages = 0;
+    let totalCount = 0;
+
+    // Sayfa yüklendiğinde
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDateFilters();
+        loadDocuments();
+    });
+
+    // Tarih filtrelerini başlat
+    function initializeDateFilters() {
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+
+        // Bugünün tarihini al
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        // Tarihleri formatla
+        startDate.value = formatDate(yesterday);
+        endDate.value = formatDate(today);
+    }
+
+    // Tarih formatlama
+    function formatDate(date) {
+            return new Date(date).toLocaleDateString('tr-TR');
+        }
+
+    // Filtreleri uygula
+    async function applyFilters() {
+        currentPage = 0; // Sayfa numarasını sıfırla
+        await loadDocuments();
+    }
+
+    // Filtreleri temizle
+    function clearFilters() {
+        initializeDateFilters();
+
+        // Tüm durumları seçili yap
+        document.getElementById('statusFilter').value = '';
+
+        document.getElementById('searchQuery').value = '';
+
+        currentPage = 0;
+        loadDocuments();
+    }
+
+    // Evrakları yükle
+    async function loadDocuments() {
+        showLoading(true);
+
+        // Seçili durumları al
+        const statusFilter = document.getElementById('statusFilter');
+        const selectedStatuses = Array.from(statusFilter.selectedOptions).map(option => parseInt(option.value));
+
+        const statusValue = document.getElementById('statusFilter').value;
+
+        const requestData = {
+            startDate: document.getElementById('startDate').value || null,
+            endDate: document.getElementById('endDate').value || null,
+            status: statusValue ? parseInt(statusValue) : null,
+            searchQuery: document.getElementById('searchQuery').value || null,
+            pageIndex: currentPage,
+            pageSize: pageSize,
+            sortBy: 'DocumentDate',
+            sortDirection: 'DESC'
+        };
+
+        try {
+            const response = await fetch('/api/document/filter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Evraklar yüklenirken hata oluştu');
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                displayDocuments(result.data.items);
+                updatePagination(result.data);
+                totalCount = result.data.totalCount;
+                totalPages = result.data.totalPages;
+            } else {
+                showError(result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Evraklar yüklenirken hata oluştu');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Evrakları göster
+    function displayDocuments(documents) {
+        const container = document.getElementById('documentsContainer');
+        const mobileContainer = document.getElementById('documentsMobileContainer');
+
+        if (!documents || documents.length === 0) {
+            container.innerHTML = `
+                <div class="p-8 text-center text-gray-500">
+                    <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4"></i>
+                    <p>Hiç evrak bulunamadı</p>
+                </div>
+            `;
+            if (mobileContainer) {
+                mobileContainer.innerHTML = '';
+            }
+            lucide.createIcons();
+            return;
+        }
+
+        // Desktop tablo - sadece md ve üzeri ekranlarda görünür
+        let html = `
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evrak</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-64">Şirket</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tutar</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Denetçi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+        `;
+
+        documents.forEach(doc => {
+            html += `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${formatDate(new Date(doc.documentDate))}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${doc.documentNumber}</div>
+                        <div class="text-xs text-gray-500">${doc.documentType?.name || 'Fatura'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="max-w-xs">
+                            <div class="text-sm text-gray-900 line-clamp-2"
+                                 title="${doc.vendorName}">${doc.vendorName}</div>
+                            <div class="text-xs text-gray-500 truncate"
+                                 title="${doc.vendorTaxNumber || ''}">${doc.vendorTaxNumber || ''}</div>
+                            <div class="text-sm text-gray-900 line-clamp-2"
+                                 title="${doc.currAccCode}">${doc.currAccCode}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="max-w-xs">
+                            <div class="flex-shrink-0 ml-4">
+                                    <p class="text-sm font-medium text-gray-900">${formatCurrency(doc.totalAmount, doc.currency)}</p>
+                                    <p class="text-xs text-gray-500 text-left">${doc.lineCount || 0} satır</p>
+                                </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${getStatusBadge(doc.status)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${doc.currentInspector?.fullName || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="viewDocument(${doc.id})"
+                                class="text-blue-600 hover:text-blue-900 mr-2">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="viewDocumentPDF(${doc.id})"
+                                    class="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors"
+                                    title="Evrak Görüntüsü">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        container.innerHTML = html;
+
+        // Mobil kartları güncelle
+        if (mobileContainer) {
+            updateMobileCards(documents);
+        }
+
+        lucide.createIcons();
+    }
+    // Mobil kart oluşturma fonksiyonu
+    function createMobileCard(doc) {
+        return `
+            <div class="mobile-document-card p-4" id="card-${doc.id}">
+                <!-- Ana Bilgiler -->
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 min-w-0">
+                        <!-- Evrak Bilgisi -->
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">${doc.documentNumber || ''}</p>
+                                <p class="text-xs text-gray-500">${formatDate(doc.documentDate)}</p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                ${getStatusBadge(doc.status)}
+                            </div>
+                        </div>
+
+                        <!-- Şirket ve Tutar -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900 truncate">${doc.vendorName || ''}</p>
+                                <p class="text-xs text-gray-500 truncate">${doc.vendorTaxNumber || ''}</p>
+                            </div>
+                            <div class="flex-shrink-0 ml-4">
+                                <p class="text-sm font-medium text-gray-900">${formatCurrency(doc.totalAmount, doc.currency)}</p>
+                                <p class="text-xs text-gray-500 text-right">${doc.lineCount || 0} satır</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Genişlet Butonu -->
+                    <div class="flex-shrink-0 ml-4">
+                        <button onclick="toggleCardDetails(${doc.id})" class="expand-btn p-2 text-gray-400 hover:text-gray-600" id="expand-btn-${doc.id}">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Detay Bilgileri (Gizli) -->
+                <div class="card-details mt-3 pt-3 border-t border-gray-100" id="details-${doc.id}">
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <p class="text-gray-500">Denetçi</p>
+                            <p class="text-gray-900">${doc.currentInspector?.fullName || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Oluşturma</p>
+                            <p class="text-gray-900">${formatDate(doc.createdDate)}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Cari Kod</p>
+                            <p class="text-gray-900">${doc.currAccCode || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Durum</p>
+                            <p class="text-gray-900">${doc.statusText || getStatusText(doc.status)}</p>
+                        </div>
+                    </div>
+
+                    <!-- İşlem Butonları -->
+                    <div class="flex space-x-2 mt-4 pt-3 border-t border-gray-100">
+                        <button onclick="viewDocument(${doc.id})" class="flex-1 bg-blue-50 text-blue-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-blue-100 transition-colors">
+                            <i data-lucide="eye" class="w-4 h-4 inline mr-1"></i>
+                            Görüntüle
+                        </button>
+                        <button onclick="viewDocumentPDF(${doc.id})" class="flex-1 bg-red-50 text-red-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-red-100 transition-colors">
+                            <i data-lucide="external-link" class="w-4 h-4 inline mr-1"></i>
+                            PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    // Mobil kartları güncelleme fonksiyonu
+    function updateMobileCards(documents) {
+        const container = document.getElementById('documentsMobileContainer');
+        if (!container) return;
+
+        container.innerHTML = documents.map(doc => createMobileCard(doc)).join('');
+
+        // İkonları yeniden yükle
+        setTimeout(() => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }, 100);
+    }
+    // Sayfalama güncelle
+    function updatePagination(data) {
+        const container = document.getElementById('paginationContainer');
+
+        if (data.totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = `
+            <div class="text-sm text-gray-700">
+                Toplam <span class="font-semibold">${data.totalCount}</span> kayıttan
+                <span class="font-semibold">${data.pageIndex * data.pageSize + 1}</span> -
+                <span class="font-semibold">${Math.min((data.pageIndex + 1) * data.pageSize, data.totalCount)}</span>
+                arası gösteriliyor
+            </div>
+            <div class="flex items-center space-x-2">
+        `;
+
+        // Önceki sayfa
+        if (data.hasPreviousPage) {
+            html += `
+                <button onclick="goToPage(${data.pageIndex - 1})"
+                        class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            `;
+        }
+
+        // Sayfa numaraları
+        const startPage = Math.max(0, data.pageIndex - 2);
+        const endPage = Math.min(data.totalPages - 1, data.pageIndex + 2);
+
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === data.pageIndex) {
+                html += `
+                    <button class="px-3 py-1 bg-blue-600 text-white rounded-md">
+                        ${i + 1}
+                    </button>
+                `;
+            } else {
+                html += `
+                    <button onclick="goToPage(${i})"
+                            class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50">
+                        ${i + 1}
+                    </button>
+                `;
+            }
+        }
+
+        // Sonraki sayfa
+        if (data.hasNextPage) {
+            html += `
+                <button onclick="goToPage(${data.pageIndex + 1})"
+                        class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+            `;
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+        lucide.createIcons();
+    }
+    // getStatusText helper fonksiyonu (eğer yoksa)
+    function getStatusText(status) {
+        const statusTexts = {
+            1: 'Denetim Bekliyor',
+            2: 'Denetim Sürüyor',
+            3: 'Onay Bekliyor',
+            4: 'Onaylandı',
+            5: 'Reddedildi',
+            6: 'Entegrasyona Hazır',
+            99: 'Kapatıldı'
+        };
+        return statusTexts[status] || status;
+    }
+    // Kart detaylarını açma/kapama fonksiyonu
+    function toggleCardDetails(docId) {
+        const card = document.getElementById(`card-${docId}`);
+        const details = document.getElementById(`details-${docId}`);
+        const button = document.getElementById(`expand-btn-${docId}`);
+
+        if (details.classList.contains('expanded')) {
+            // Kapat
+            details.classList.remove('expanded');
+            card.classList.remove('mobile-card-expanded');
+            button.classList.remove('expanded');
+            button.innerHTML = '<i data-lucide="plus" class="w-4 h-4"></i>';
+        } else {
+            // Aç
+            details.classList.add('expanded');
+            card.classList.add('mobile-card-expanded');
+            button.classList.add('expanded');
+            button.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i>';
+        }
+
+        // Lucide ikonlarını yeniden yükle
+        setTimeout(() => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }, 100);
+    }
+    // Show document modal - GÜNCELLENMIŞ VERSİYON (Ana tutar, KDV, genel toplam kartları ve cari bilgileri kaldırıldı)
+        function showDocumentModal(docData) {
+            const modal = document.getElementById('documentModal');
+            const title = document.getElementById('modalTitle');
+            const subtitle = document.getElementById('modalSubtitle');
+            const content = document.getElementById('modalContent');
+
+            title.textContent = `${docData.documentNumber} - Evrak Detayı`;
+            subtitle.textContent = `Detaylı evrak bilgileri`; // Cari ad ve tutar kaldırıldı
+
+            const integrationLogsButton = document.getElementById('integrationLogsButton');
+            if (integrationLogsButton) {
+                if (docData.status === 6 || docData.status === 99 ||
+                    docData.status === 'IntegrationReady' || docData.status === 'Closed') {
+                    integrationLogsButton.classList.remove('hidden');
+                    integrationLogsButton.onclick = function() {
+                        viewIntegrationLogs();
+                    };
+                } else {
+                    integrationLogsButton.classList.add('hidden');
+                }
+            }
+
+            modal.classList.remove('hidden');
+            content.innerHTML = `
+                <!-- Basic Info -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Evrak Bilgileri</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Evrak No</p>
+                            <p class="text-sm text-gray-900">${docData.documentNumber}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Tarih</p>
+                            <p class="text-sm text-gray-900">${formatDate(docData.documentDate)}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Durum</p>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(docData.status)}">
+                                ${docData.statusText}
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Cari Kod</p>
+                            <p class="text-sm text-gray-900">${docData.currAccCode}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Cari Açıklama</p>
+                            <p class="text-sm text-gray-900">${docData.currAccDescription}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Vergi No</p>
+                            <p class="text-sm text-gray-900">${docData.vatNumber || '-'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Lines -->
+                <div class="mb-8">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">Evrak Satırları</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satır</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Açıklama</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Miktar</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tutar</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">KDV</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ERP Kodu</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Maliyet Merkezi</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notlar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${docData.lines.map((line, index) => `
+                                <tr>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        <div>${line.itemDescription}</div>
+                                        ${line.itemCode ? `<div class="text-xs text-gray-500">Kod: ${line.itemCode}</div>` : ''}
+                                    </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">${line.quantity}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">${formatCurrency(line.amount,docData.currency)}</td>
+                                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">${formatCurrency(line.vatAmount, docData.currency)}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        ${line.erpItemCode ? `
+                                            <div class="font-medium text-gray-900">${line.erpItemCode}</div>
+                                            ${line.erpItemDescription ? `<div class="text-xs text-gray-500">${line.erpItemDescription}</div>` : ''}
+                                        ` : '<span class="text-gray-400">-</span>'}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        ${line.costCenterCode ? `
+                                            <div class="font-medium text-gray-900">${line.costCenterCode}</div>
+                                            ${line.costCenterDescription ? `<div class="text-xs text-gray-500">${line.costCenterDescription}</div>` : ''}
+                                        ` : '<span class="text-gray-400">-</span>'}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">
+                                        ${line.notes || '-'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <td colspan="3" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Toplam:</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">${formatCurrency(docData.lines.reduce((sum, line) => sum + line.amount, 0),docData.currency)}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 text-right">${formatCurrency(docData.lines.reduce((sum, line) => sum + line.vatAmount, 0),docData.currency)}</td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+                <!-- Inspector Assignment -->
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Denetçi Bilgisi</h4>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Atanmış Denetçi</p>
+                            <p class="text-sm text-gray-900">${docData.assignedInspectorName || 'Atanmamış'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Atanma Tarihi</p>
+                            <p class="text-sm text-gray-900">${docData.inspectionDate ? formatDate(docData.inspectionDate) : '-'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Actions -->
+                <div class="bg-purple-50 rounded-lg p-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">Evrak Hareketleri</h4>
+                    ${docData.actions && docData.actions.length > 0 ? `
+                        <div class="space-y-3">
+                            ${docData.actions.map(action => `
+                                <div class="flex items-start space-x-3 p-3 bg-white rounded border border-purple-200">
+                                    <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i data-lucide="activity" class="w-4 h-4 text-purple-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <p class="text-sm font-medium text-gray-900">${action.actionTypeText}</p>
+                                            <p class="text-xs text-gray-500">${formatDateTime(action.actionDate)}</p>
+                                        </div>
+                                        <p class="text-sm text-gray-600">${action.userName}</p>
+                                        ${action.notes ? `<p class="text-xs text-gray-500 mt-1">${action.notes}</p>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="text-center py-8">
+                            <div class="mx-auto w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-3">
+                                <i data-lucide="clock" class="w-6 h-6 text-purple-600"></i>
+                            </div>
+                            <p class="text-gray-500">Henüz hareket kaydı bulunmuyor.</p>
+                        </div>
+                    `}
+                </div>
+                <!-- Workflow Progress -->
+                    <div class="bg-indigo-50 rounded-lg p-6 mt-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">Onay Süreci</h4>
+                        <div id="workflowProgressContainer">
+                            <div class="text-center py-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                                <p class="text-sm text-gray-500 mt-2">Yükleniyor...</p>
+                            </div>
+                        </div>
+                    </div>
+            `;
+
+            modal.classList.remove('hidden');
+
+            // Lucide icons'ları yükle
+            setTimeout(() => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }, 100);
+        }
+        async function viewDocument(documentId) {
+                const token = localStorage.getItem('token');
+
+                try {
+                    const response = await fetch(`/api/document/${documentId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        currentDocument = result.data;
+                        showDocumentModal(result.data);
+                        loadWorkflowProgress(documentId);
+                    } else {
+                        alert('Evrak detayları yüklenemedi.');
+                    }
+                } catch (error) {
+                    console.error('View document error:', error);
+                    alert('Bağlantı hatası: ' + error.message);
+                }
+        }
+        async function loadWorkflowProgress(documentId) {
+                const token = localStorage.getItem('token');
+
+                try {
+                    const response = await fetch(`/api/approvalworkflow/workflow-progress/${documentId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.data) {
+                            displayWorkflowProgress(result.data);
+                        } else {
+                            displayNoWorkflow();
+                        }
+                    } else {
+                        displayNoWorkflow();
+                    }
+                } catch (error) {
+                    console.error('Error loading workflow progress:', error);
+                    displayNoWorkflow();
+                }
+            }
+    // Sayfaya git
+    function goToPage(page) {
+        currentPage = page;
+        loadDocuments();
+    }
+
+    function displayNoWorkflow() {
+        const container = document.getElementById('workflowProgressContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <div class="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                    <i data-lucide="git-branch" class="w-6 h-6 text-gray-400"></i>
+                </div>
+                <p class="text-gray-500">Onay süreci henüz başlatılmamış</p>
+            </div>
+        `;
+
+        // Lucide ikonlarını yeniden yükle
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+    function displayWorkflowProgress(data) {
+        const container = document.getElementById('workflowProgressContainer');
+        if (!container) return;
+
+        if (!data.hasWorkflow) {
+            displayNoWorkflow();
+            return;
+        }
+
+        // Adımları order'a göre grupla
+        const stepsByOrder = {};
+        data.steps.forEach(step => {
+            if (!stepsByOrder[step.stepOrder]) {
+                stepsByOrder[step.stepOrder] = [];
+            }
+            stepsByOrder[step.stepOrder].push(step);
+        });
+
+        // İlerleme çubuğu
+        const progressPercentage = data.totalSteps > 0
+            ? Math.round((data.completedSteps / data.totalSteps) * 100)
+            : 0;
+
+        let html = `
+            <!-- Özet Bilgiler -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm text-gray-600">
+                        <span class="font-semibold">${data.completedSteps}/${data.totalSteps}</span> adım tamamlandı
+                        ${data.rejectedSteps > 0 ? `<span class="text-red-600 ml-2">(${data.rejectedSteps} reddedildi)</span>` : ''}
+                    </div>
+                    ${data.isRuleBased ?
+                        `<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Kural: ${data.ruleName}</span>` :
+                        '<span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">Manuel Atama</span>'
+                    }
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                         style="width: ${progressPercentage}%"></div>
+                </div>
+            </div>
+
+            <!-- Adımlar -->
+            <div class="space-y-3">
+        `;
+
+        // Her order grubu için görüntüleme
+        Object.keys(stepsByOrder).sort((a, b) => a - b).forEach((order, index) => {
+            const steps = stepsByOrder[order];
+            const isActive = steps.some(s => s.startDate && !s.completedDate);
+            const isCompleted = steps.every(s => s.status === 3); // Approved
+            const isRejected = steps.some(s => s.status === 4); // Rejected
+            const isPending = steps.every(s => !s.startDate);
+
+            let statusClass = 'bg-gray-100 border-gray-300';
+            let statusIcon = '⏸️';
+            let statusText = 'Bekliyor';
+
+            if (isActive) {
+                statusClass = 'bg-blue-50 border-blue-500 border-2';
+                statusIcon = '⏳';
+                statusText = 'Onay Bekleniyor';
+            } else if (isCompleted) {
+                statusClass = 'bg-green-50 border-green-500';
+                statusIcon = '✅';
+                statusText = 'Onaylandı';
+            } else if (isRejected) {
+                statusClass = 'bg-red-50 border-red-500';
+                statusIcon = '❌';
+                statusText = 'Reddedildi';
+            }
+
+            html += `
+                <div class="border rounded-lg p-4 ${statusClass}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xl">${statusIcon}</span>
+                                <span class="font-semibold text-gray-900">Sıra ${order}</span>
+                                <span class="text-sm text-gray-600">(${statusText})</span>
+                            </div>
+                            <div class="space-y-1">
+            `;
+
+            // Her adım için detay
+            steps.forEach(step => {
+                const userIcon = step.isBackupActive && step.backupUserName ? '👤➡️👥' : '👤';
+                const userName = step.isBackupActive && step.backupUserName ?
+                    `<del>${step.userName}</del> → ${step.backupUserName}` :
+                    step.userName;
+
+                const stepStatusBadge = getStepStatusBadge(step.status);
+
+                html += `
+                    <div class="flex items-center justify-between py-1">
+                        <div class="flex items-center gap-2">
+                            <span>${userIcon}</span>
+                            <span class="text-sm">${userName}</span>
+                            ${step.isParallel ? '<span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">Paralel</span>' : ''}
+                            ${!step.isRequired ? '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Opsiyonel</span>' : ''}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${stepStatusBadge}
+                            ${step.completedDate ?
+                                `<span class="text-xs text-gray-500">${formatDateTime(step.completedDate)}</span>` :
+                                step.startDate ?
+                                    `<span class="text-xs text-orange-600">⏱️ ${getDaysWaiting(step.startDate)} gün</span>` :
+                                    ''
+                            }
+                        </div>
+                    </div>
+                    ${step.responseNotes ? `
+                        <div class="ml-8 text-xs text-gray-600 italic">
+                            "${step.responseNotes}"
+                        </div>
+                    ` : ''}
+                `;
+            });
+
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Sıralar arası bağlantı oku
+            if (index < Object.keys(stepsByOrder).length - 1) {
+                html += `
+                    <div class="flex justify-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                    </div>
+                `;
+            }
+        });
+
+        html += '</div>';
+
+        // Durum özeti
+        if (data.isCompleted) {
+            html += `
+                <div class="mt-4 p-3 bg-green-100 rounded-lg">
+                    <p class="text-sm text-green-800 font-medium">
+                        ✅ Onay süreci tamamlandı
+                    </p>
+                </div>
+            `;
+        } else if (data.isCancelled) {
+            html += `
+                <div class="mt-4 p-3 bg-red-100 rounded-lg">
+                    <p class="text-sm text-red-800 font-medium">
+                        ❌ Onay süreci iptal edildi
+                    </p>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+    }
+
+    function getStepStatusBadge(status) {
+        switch(status) {
+            case 1: // Pending
+                return '<span class="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded">Bekliyor</span>';
+            case 2: // InProgress
+                return '<span class="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded">İşlemde</span>';
+            case 3: // Approved
+                return '<span class="px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded">Onaylandı</span>';
+            case 4: // Rejected
+                return '<span class="px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded">Reddedildi</span>';
+            case 5: // Skipped
+                return '<span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-800 rounded">Atlandı</span>';
+            default:
+                return '';
+        }
+    }
+
+    function addWorkflowStatusToMobileCard(doc) {
+        // Mobil kartta mini workflow durumu gösterimi
+        if (doc.status === 3 || doc.status === 4) { // WaitingApproval veya Approved
+            return `
+                <div class="mt-2 pt-2 border-t border-gray-100">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-500">Onay Durumu:</span>
+                        <button onclick="event.stopPropagation(); viewWorkflowQuick(${doc.id})"
+                                class="text-blue-600 hover:text-blue-800">
+                            <i data-lucide="git-branch" class="w-3 h-3 inline"></i>
+                            Görüntüle
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        return '';
+    }
+
+    async function viewWorkflowQuick(documentId) {
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch(`/api/approvalworkflow/workflow-progress/${documentId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.isSuccess && result.data) {
+                    showQuickWorkflowModal(result.data);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading workflow:', error);
+        }
+    }
+    function getDaysWaiting(startDate) {
+        const start = new Date(startDate);
+        const now = new Date();
+        const diffTime = Math.abs(now - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+    // View PDF directly - Yeni sekmede aç
+    async function viewDocumentPDF(documentId) {
+
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch(`/api/document/${documentId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.data.documentFilePath) {
+                    openPDFInNewTab(result.data);
+                } else {
+                    alert('Bu evrak için PDF dosyası bulunamadı.');
+                }
+            } else {
+                alert('Evrak detayları yüklenemedi.');
+            }
+        } catch (error) {
+            console.error('View PDF error:', error);
+            alert('PDF görüntüleme hatası: ' + error.message);
+        }
+    }
+    // PDF'i yeni sekmede aç
+    function openPDFInNewTab(docData) {
+        try {
+            let pdfUrl = docData.documentFilePath;
+
+            // Eğer local file path ise web URL'ine dönüştür
+            if (pdfUrl.includes(':\\') || pdfUrl.startsWith('file://')) {
+                const fileName = pdfUrl.split(/[\\\/]/).pop();
+                pdfUrl = `/documents/Invoices/${fileName}`;
+                console.log(`Local path converted to: ${pdfUrl}`);
+            }
+
+            console.log(`Opening PDF in new tab: ${pdfUrl}`);
+
+            // PDF'i yeni sekmede aç
+            const newWindow = window.open(pdfUrl, '_blank');
+
+            // Popup blocker kontrolü
+            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                // Popup bloklandıysa kullanıcıya bilgi ver
+                if (confirm('Popup blocker aktif olabilir. PDF\'i indirmek ister misiniz?')) {
+                    downloadPDFFile(pdfUrl, docData.documentNumber);
+                }
+            } else {
+                // Başarılı açılma mesajı (opsiyonel)
+                console.log('✅ PDF yeni sekmede açıldı');
+            }
+
+        } catch (error) {
+            console.error('PDF açma hatası:', error);
+            alert('PDF açılırken bir hata oluştu: ' + error.message);
+        }
+    }
+    // Durum badge'i
+    function getStatusBadge(status) {
+        const statusMap = {
+            1: { text: 'Denetim Bekliyor', class: 'bg-yellow-100 text-yellow-800' },
+            2: { text: 'Denetim Sürüyor', class: 'bg-blue-100 text-blue-800' },
+            3: { text: 'Onay Bekliyor', class: 'bg-indigo-100 text-indigo-800' },
+            4: { text: 'Onaylandı', class: 'bg-green-100 text-green-800' },
+            5: { text: 'Reddedildi', class: 'bg-red-100 text-red-800' },
+            6: { text: 'Entegrasyona Hazır', class: 'bg-purple-100 text-purple-800' },
+            99: { text: 'Kapatıldı', class: 'bg-gray-100 text-gray-800' }
+        };
+
+        const statusInfo = statusMap[status] || { text: 'Bilinmiyor', class: 'bg-gray-100 text-gray-800' };
+
+        return `<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.class}">
+                    ${statusInfo.text}
+                </span>`;
+    }
+
+    // Para formatlama
+    function formatCurrency(amount, currencyCode) {
+            return new Intl.NumberFormat('tr-TR', {
+                style: 'currency',
+                currency: currencyCode,
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+    // Loading göster/gizle
+    function showLoading(show) {
+        const loading = document.getElementById('loading');
+        const container = document.getElementById('documentsContainer');
+
+        if (show) {
+            loading.classList.remove('hidden');
+            container.classList.add('hidden');
+        } else {
+            loading.classList.add('hidden');
+            container.classList.remove('hidden');
+        }
+    }
+
+    // Hata mesajı göster
+    function showError(message) {
+        const container = document.getElementById('documentsContainer');
+        container.innerHTML = `
+            <div class="p-8 text-center">
+                <div class="text-red-600 mb-4">
+                    <i data-lucide="alert-circle" class="w-12 h-12 mx-auto"></i>
+                </div>
+                <p class="text-gray-700">${message}</p>
+            </div>
+        `;
+        lucide.createIcons();
+    }
+    // PDF dosyasını indir
+        function downloadPDFFile(url, filename) {
+            try {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${filename}.pdf`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log('📥 PDF indirme başlatıldı');
+            } catch (error) {
+                console.error('PDF indirme hatası:', error);
+                alert('PDF indirilemedi: ' + error.message);
+            }
+        }
+
+        // Show PDF modal
+        function showPDFModal(docData) {
+            const modal = document.getElementById('pdfModal');
+            const title = document.getElementById('pdfModalTitle');
+            const subtitle = document.getElementById('pdfModalSubtitle');
+            const container = document.getElementById('pdfContainer');
+
+            title.textContent = `${docData.documentNumber} - PDF Görüntüleyici`;
+            subtitle.textContent = `${docData.currAccDescription}`;
+
+            // Show loading
+            container.innerHTML = `
+                <div id="pdfLoading" class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p class="text-gray-600">PDF yükleniyor...</p>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+
+            // Load PDF
+            loadPDF(docData.documentFilePath, container, docData);
+        }
+
+        // Load PDF - Documents sayfası için iyileştirilmiş versiyon
+        function loadPDF(filePath, container, docData) {
+            try {
+                if (!filePath || filePath.trim() === '') {
+                    container.innerHTML = `
+                        <div class="text-center p-8">
+                            <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                <i data-lucide="file-x" class="w-8 h-8 text-red-600"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">PDF dosyası bulunamadı</h3>
+                            <p class="text-gray-500">Bu evrak için PDF dosyası mevcut değil.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+        function closePDFModal() {
+            document.getElementById('pdfModal').classList.add('hidden');
+        }
+            } catch (error) {
+                console.error('PDF load error:', error);
+                container.innerHTML = `
+                    <div class="text-center p-8">
+                        <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <i data-lucide="alert-circle" class="w-8 h-8 text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Hata</h3>
+                        <p class="text-gray-500">PDF görüntülenirken bir hata oluştu.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Close modals
+        function closeDocumentModal() {
+            document.getElementById('documentModal').classList.add('hidden');
+            currentDocument = null;
+        }
+
+        function closePDFModal() {
+            document.getElementById('pdfModal').classList.add('hidden');
+            currentZoom = 1.5; // Reset zoom
+            currentPdf = null;
+            currentPdfPage = null;
+        }
+
+        // Download PDF
+        function downloadPDF() {
+            if (currentDocument && currentDocument.documentFilePath) {
+                downloadPDFFile(currentDocument.documentFilePath, currentDocument.documentNumber);
+            } else {
+                alert('PDF dosyası bulunamadı.');
+            }
+        }
+
+        // PDF Zoom functions
+        let currentZoom = 1.5;
+        let currentPdf = null;
+        let currentPdfPage = null;
+
+        function zoomIn() {
+            if (currentPdf && currentPdfPage) {
+                currentZoom += 0.25;
+                renderPDFPage();
+            }
+        }
+
+        function zoomOut() {
+            if (currentPdf && currentPdfPage && currentZoom > 0.5) {
+                currentZoom -= 0.25;
+                renderPDFPage();
+            }
+        }
+
+        function renderPDFPage() {
+            if (!currentPdf || !currentPdfPage) return;
+
+            const viewport = currentPdfPage.getViewport({ scale: currentZoom });
+            const canvas = document.querySelector('#pdfContainer canvas');
+            if (!canvas) return;
+
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            currentPdfPage.render(renderContext);
+        }
+
+        // Show/hide loading
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            const container = document.getElementById('documentsContainer');
+
+            if (show) {
+                loading.classList.remove('hidden');
+                container.classList.add('hidden');
+            } else {
+                loading.classList.add('hidden');
+                container.classList.remove('hidden');
+            }
+        }
+
+        // Utility functions
+        function formatCurrency(amount, currencyCode) {
+            return new Intl.NumberFormat('tr-TR', {
+                style: 'currency',
+                    currency: currencyCode,
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getStatusColor(status) {
+            // Önce string değerleri kontrol et (backend'den string olarak gelebilir)
+            const stringColors = {
+                'WaitingInspection': 'bg-yellow-100 text-yellow-800',
+                'InspectionInProgress': 'bg-orange-100 text-orange-800',
+                'WaitingApproval': 'bg-blue-100 text-blue-800',
+                'Approved': 'bg-green-100 text-green-800',
+                'Rejected': 'bg-red-100 text-red-800',
+                'Closed': 'bg-gray-100 text-gray-800',
+                'IntegrationReady': 'bg-purple-100 text-purple-800'
+            };
+
+            // Sonra sayısal değerleri kontrol et
+            const numericColors = {
+                1: 'bg-yellow-100 text-yellow-800',    // WaitingInspection
+                2: 'bg-orange-100 text-orange-800',    // InspectionInProgress
+                3: 'bg-blue-100 text-blue-800',        // WaitingApproval
+                4: 'bg-green-100 text-green-800',      // Approved
+                5: 'bg-red-100 text-red-800',          // Rejected
+                99: 'bg-gray-100 text-gray-800',       // Closed (99 olduğuna dikkat!)
+                6: 'bg-purple-100 text-purple-800'     // IntegrationReady
+            };
+
+            // Önce string map'te ara
+            if (stringColors[status]) {
+                return stringColors[status];
+            }
+
+            // Sonra numeric map'te ara
+            return numericColors[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        // Create Document Modal Functions
+        let documentLineCounter = 1;
+        let processTypes = [];
+    // Show create document modal
+    async function showCreateDocumentModal() {
+        // Generate External ID
+        document.getElementById('externalId').value = generateExternalId();
+
+        // Set today's date as default
+        const today = new Date().toISOString().split('T')[0];
+        document.querySelector('input[name="documentDate"]').value = today;
+
+        // Load process types if not loaded
+        if (processTypes.length === 0) {
+            await loadProcessTypes();
+        }
+
+        // Add first empty line
+        documentLineCounter = 1;
+        document.getElementById('documentLinesBody').innerHTML = '';
+        addDocumentLine();
+
+        // Show modal
+        document.getElementById('createDocumentModal').classList.remove('hidden');
+
+        // Enter tuşunu engelle
+        const form = document.getElementById('createDocumentForm');
+        form.onkeydown = function(e) {
+            var key = e.charCode || e.keyCode || 0;
+            if (key == 13) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    }
+    // showCreateDocumentModal fonksiyonunun sonuna ekleyin
+        document.querySelectorAll('#createDocumentForm input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+    // Close create document modal
+        function closeCreateDocumentModal() {
+            // Modal'ı gizle
+            document.getElementById('createDocumentModal').classList.add('hidden');
+
+            // Formu sıfırla
+            document.getElementById('createDocumentForm').reset();
+
+            // Evrak satırlarını temizle
+            document.getElementById('documentLinesBody').innerHTML = '';
+
+            // Sayaçları sıfırla
+            documentLineCounter = 1;
+
+            // Hidden inputları temizle
+            const hiddenFilePath = document.getElementById('documentFilePath');
+            if (hiddenFilePath) {
+                hiddenFilePath.remove();
+            }
+
+            // Belge Yükle butonunu eski haline getir
+            const uploadBtn = document.querySelector('button[onclick="selectDocumentFile()"]');
+            if (uploadBtn && uploadBtn.textContent.includes('Belge Yüklendi')) {
+                uploadBtn.innerHTML = `
+                    <i data-lucide="upload" class="w-4 h-4 inline mr-2"></i>
+                    Belge Yükle
+                `;
+                uploadBtn.classList.remove('bg-green-100', 'text-green-700', 'hover:bg-green-200');
+                uploadBtn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+
+                // Lucide iconları yenile
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            // Dosya input'unu temizle
+            const fileInput = document.getElementById('documentFileInput');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+    // Generate External ID (GUID-like)
+        function generateExternalId() {
+            return 'MAN-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+    // Load process types
+        async function loadProcessTypes() {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch('/api/document/process-types', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    processTypes = result.data || [];
+
+                    // Populate select
+                    const select = document.getElementById('processTypeSelect');
+                    select.innerHTML = '<option value="">Seçiniz...</option>';
+
+                    processTypes.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.value;
+                        option.textContent = type.text;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading process types:', error);
+            }
+        }
+        // Add document line
+        function addDocumentLine() {
+            const tbody = document.getElementById('documentLinesBody');
+            const row = document.createElement('tr');
+            row.id = `line_${documentLineCounter}`;
+
+            row.innerHTML = `
+                <td class="px-4 py-2">
+                    <input type="text" name="lines[${documentLineCounter}].barcode"
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                </td>
+                <td class="px-4 py-2">
+                    <input type="text" name="lines[${documentLineCounter}].itemCode"
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                </td>
+                <td class="px-4 py-2">
+                    <input type="text" name="lines[${documentLineCounter}].itemDescription" required
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm">
+                </td>
+                <td class="px-4 py-2">
+                    <input type="number" name="lines[${documentLineCounter}].quantity" step="0.01" required
+                           onchange="calculateLineAmount(${documentLineCounter})"
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                </td>
+                <td class="px-4 py-2">
+                    <input type="number" name="lines[${documentLineCounter}].price" step="0.01" required
+                           onchange="calculateLineAmount(${documentLineCounter})"
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                </td>
+                <td class="px-4 py-2">
+                    <input type="number" name="lines[${documentLineCounter}].amount" step="0.01" required
+                           onchange="calculateVatAmount(${documentLineCounter})"
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                </td>
+                <td class="px-4 py-2">
+                    <input type="number" name="lines[${documentLineCounter}].vatRate" step="0.01" value="18"
+                           onchange="calculateVatAmount(${documentLineCounter})"
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                </td>
+                <td class="px-4 py-2">
+                    <input type="number" name="lines[${documentLineCounter}].vatAmount" step="0.01" required
+                           class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                </td>
+                <td class="px-4 py-2 text-center">
+                    <button type="button" onclick="removeDocumentLine(${documentLineCounter})"
+                            class="text-red-600 hover:text-red-800">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+            documentLineCounter++;
+
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            row.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        });
+        }
+                // Remove document line
+        function removeDocumentLine(lineId) {
+            const row = document.getElementById(`line_${lineId}`);
+            if (row) {
+                row.remove();
+            }
+        }
+
+        // Calculate line amount
+        function calculateLineAmount(lineId) {
+            const quantity = parseFloat(document.querySelector(`input[name="lines[${lineId}].quantity"]`).value) || 0;
+            const price = parseFloat(document.querySelector(`input[name="lines[${lineId}].price"]`).value) || 0;
+            const amount = quantity * price;
+
+            document.querySelector(`input[name="lines[${lineId}].amount"]`).value = amount.toFixed(2);
+            calculateVatAmount(lineId);
+        }
+
+        // Calculate VAT amount
+        function calculateVatAmount(lineId) {
+            const amount = parseFloat(document.querySelector(`input[name="lines[${lineId}].amount"]`).value) || 0;
+            const vatRate = parseFloat(document.querySelector(`input[name="lines[${lineId}].vatRate"]`).value) || 0;
+            const vatAmount = amount * (vatRate / 100);
+
+            document.querySelector(`input[name="lines[${lineId}].vatAmount"]`).value = vatAmount.toFixed(2);
+        }
+
+        // Dosya seçim dialogunu aç
+        function selectDocumentFile() {
+            document.getElementById('documentFileInput').click();
+        }
+
+        /// Dosya seçildiğinde
+        async function handleDocumentFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Dosya boyutu kontrolü (örn: max 10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                alert('Dosya boyutu 10MB\'dan büyük olamaz!');
+                event.target.value = ''; // Input'u temizle
+                return;
+            }
+
+            // Dosya tipini kontrol et
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const allowedExtensions = ['pdf', 'html', 'jpeg', 'jpg', 'png'];
+
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert('Sadece PDF, HTML, JPEG, JPG ve PNG dosyaları yüklenebilir!');
+                event.target.value = ''; // Input'u temizle
+                return;
+            }
+
+            try {
+                // FormData oluştur
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Token al
+                const token = localStorage.getItem('token');
+
+                // Dosyayı yükle
+                const response = await fetch('/api/document/upload-file', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    // DocumentFilePath'i forma ekle
+                    let hiddenInput = document.getElementById('documentFilePath');
+                    if (!hiddenInput) {
+                        // Hidden input ekle
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.id = 'documentFilePath';
+                        hiddenInput.name = 'documentFilePath';
+                        document.getElementById('createDocumentForm').appendChild(hiddenInput);
+                    }
+
+                    hiddenInput.value = result.data.filePath;
+
+                    // "Belge Yükle" butonunu bul ve güncelle
+                    const uploadBtn = document.querySelector('button[onclick="selectDocumentFile()"]');
+                    if (uploadBtn) {
+                        uploadBtn.innerHTML = `
+                            <i data-lucide="check" class="w-4 h-4 inline mr-2"></i>
+                            Belge Yüklendi (${file.name})
+                        `;
+                        uploadBtn.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                        uploadBtn.classList.add('bg-green-100', 'text-green-700', 'hover:bg-green-200');
+
+                        // Lucide iconları yenile
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    }
+
+                    // Başarı mesajı
+                    console.log(`✓ Dosya yüklendi: ${file.name}`);
+
+                    // Alert yerine daha yumuşak bir bildirim (isteğe bağlı)
+                    // showNotification(`Dosya başarıyla yüklendi: ${file.name}`, 'success');
+
+                } else {
+                    const error = await response.json();
+                    alert('Dosya yüklenirken hata oluştu: ' + (error.message || 'Bilinmeyen hata'));
+                }
+            } catch (error) {
+                console.error('File upload error:', error);
+                alert('Dosya yüklenirken hata oluştu: ' + error.message);
+            }
+
+            // Input'u temizle (aynı dosyanın tekrar seçilebilmesi için)
+            event.target.value = '';
+        }
+        // Form submit handler
+        document.getElementById('createDocumentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Enter tuşu ile submit'i engelle
+        if (e.submitter === null) {
+            return false;
+        }
+
+        const token = localStorage.getItem('token');
+        const formData = new FormData(e.target);
+
+        // İşlem tipi kontrolü
+        const processType = formData.get('documentProcessTypeId');
+            if (!processType || processType === '') {
+                alert('Lütfen işlem tipi seçiniz!');
+                document.getElementById('processTypeSelect').focus();
+                return;
+            }
+
+            // Build document object
+            const createDto = {
+                documentTypeId: 1,
+                externalId: formData.get('collerationId') || '',
+                documentDate: formData.get('documentDate'),
+                documentNumber: formData.get('documentNumber'),
+                currency: formData.get('currency') || 'TRY',
+                currAccCode: formData.get('currAccCode'),
+                exchangeRate: formData.get('exchangeRate'),
+                currAccDescription: formData.get('currAccDescription'),
+                vatNumber: formData.get('vatNumber') || '',
+                collerationId: formData.get('collerationId') || '',
+                documentFilePath: formData.get('documentFilePath') || '',
+                documentProcessTypeId: parseInt(processType), // processType artık tanımlı
+                details: []
+            };
+
+            // Collect lines
+            const rows = document.querySelectorAll('#documentLinesBody tr');
+            let lineId = 1;
+
+            rows.forEach(row => {
+                const lineData = {
+                    lineId: lineId++,
+                    barcode: row.querySelector('input[name*="barcode"]').value || '',
+                    itemCode: row.querySelector('input[name*="itemCode"]').value || '',
+                    itemDescription: row.querySelector('input[name*="itemDescription"]').value,
+                    quantity: parseFloat(row.querySelector('input[name*="quantity"]').value) || 0,
+                    price: parseFloat(row.querySelector('input[name*="price"]').value) || 0,
+                    amount: parseFloat(row.querySelector('input[name*="amount"]').value) || 0,
+                    vatRate: parseFloat(row.querySelector('input[name*="vatRate"]').value) || 0,
+                    vatAmount: parseFloat(row.querySelector('input[name*="vatAmount"]').value) || 0
+                };
+
+                if (lineData.itemDescription && lineData.amount > 0) {
+                    createDto.details.push(lineData);
+                }
+            });
+
+            if (createDto.details.length === 0) {
+                alert('En az bir satır girmelisiniz!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/document', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(createDto) // DEĞİŞTİRİLDİ
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Evrak başarıyla oluşturuldu!');
+                    closeCreateDocumentModal();
+                    loadDocuments(); // Reload documents list
+                } else {
+                    const error = await response.json();
+                    alert('Hata: ' + (error.message || 'Evrak oluşturulamadı'));
+                }
+            } catch (error) {
+                console.error('Create document error:', error);
+                alert('Bağlantı hatası: ' + error.message);
+            }
+        });
+
+        function showNotification(message, type = 'info') {
+
+        const existing = document.querySelector('.notification-toast');
+        if (existing) {
+            existing.remove();
+        }
+
+        // Yeni bildirim oluştur
+        const notification = document.createElement('div');
+        notification.className = `notification-toast fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info'}" class="w-5 h-5 mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Lucide iconları yenile
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Animasyon ile göster
+        setTimeout(() => {
+            notification.classList.add('translate-x-0');
+        }, 10);
+
+        // 3 saniye sonra kaldır
+        setTimeout(() => {
+            notification.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+        // XML dosya seçim dialogunu aç
+        function selectXMLFile() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.xml';
+            fileInput.onchange = handleXMLFileSelect;
+            fileInput.click();
+        }
+        // Güvenli element değeri atama fonksiyonu
+        function setInputValue(selector, value) {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.value = value || '';
+                console.log(`✓ Set ${selector} = ${value}`);
+            } else {
+                console.warn(`✗ Element not found: ${selector}`);
+            }
+        }
+        // XML dosyası seçildiğinde
+        async function handleXMLFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Dosya tipi kontrolü
+            if (!file.name.toLowerCase().endsWith('.xml')) {
+                alert('Lütfen sadece XML dosyası seçiniz!');
+                return;
+            }
+
+            try {
+                // FormData oluştur
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Token al
+                const token = localStorage.getItem('token');
+
+                // Backend'e gönder
+                const response = await fetch('/api/document/parse-xml', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('XML Parse Result:', result); // Debug için
+
+                    // Form verilerini doldur
+                    populateFormFromBackendData(result.data);
+
+                    alert('XML dosyası başarıyla okundu ve form dolduruldu!');
+                } else {
+                    const error = await response.json();
+                    alert('XML okuma hatası: ' + (error.message || 'Bilinmeyen hata'));
+                }
+
+            } catch (error) {
+                console.error('XML okuma hatası:', error);
+                alert('XML dosyası okunurken hata oluştu: ' + error.message);
+            }
+        }
+        // Backend'den gelen veriyi forma doldur
+        function populateFormFromBackendData(data) {
+            console.log('Populating form with data:', data);
+
+            // Modal açık değilse aç
+            const modal = document.getElementById('createDocumentModal');
+            if (modal && modal.classList.contains('hidden')) {
+                console.log('Opening create document modal...');
+                showCreateDocumentModal();
+
+                // Modal açıldıktan sonra form elemanlarının yüklenmesini bekle
+                setTimeout(() => {
+                    fillFormData(data);
+                }, 100);
+            } else {
+                fillFormData(data);
+            }
+        }
+        // Form verilerini doldur
+        function fillFormData(data) {
+            // 1. Başlık Bilgilerini Doldur
+            // Evrak Numarası
+            setInputValue('input[name="documentNumber"]', data.documentNumber);
+
+            // İlişki ID
+            setInputValue('input[name="collerationId"]', data.collerationId);
+
+            // Evrak Tarihi
+            setInputValue('input[name="documentDate"]', data.documentDate);
+
+            // Para Birimi - Select element için özel kontrol
+            const currencySelect = document.querySelector('select[name="currency"]');
+            if (currencySelect && data.currency) {
+                currencySelect.value = data.currency;
+                console.log(`✓ Set currency = ${data.currency}`);
+            }
+
+            // Cari Kodu
+            setInputValue('input[name="currAccCode"]', data.currAccCode);
+
+            // Döviz Kuru
+            setInputValue('input[name="exchangeRate"]', data.exchangeRate);
+
+            // Vergi No
+            setInputValue('input[name="vatNumber"]', data.vatNumber);
+
+            // Cari Adı (FirstName + FamilyName)
+            const fullName = `${data.firstName || ''} ${data.familyName || ''}`.trim();
+            setInputValue('input[name="currAccDescription"]', fullName);
+
+            // 2. Mevcut satırları temizle
+            const tbody = document.getElementById('documentLinesBody');
+            if (tbody) {
+                tbody.innerHTML = '';
+                documentLineCounter = 1;
+                console.log('✓ Cleared existing lines');
+            }
+
+            // 3. Fatura Satırlarını Doldur
+            if (data.lines && data.lines.length > 0) {
+                console.log(`Adding ${data.lines.length} lines...`);
+
+                data.lines.forEach((line, index) => {
+                    console.log(`Processing line ${index + 1}:`, line);
+
+                    // Yeni satır ekle
+                    addDocumentLine();
+
+                    // Form inputlarına değerleri yaz
+                    const currentLineId = documentLineCounter - 1;
+
+                    // Her satır için güvenli atama
+                    setInputValue(`input[name="lines[${currentLineId}].itemDescription"]`, line.itemDescription);
+                    setInputValue(`input[name="lines[${currentLineId}].quantity"]`, line.quantity);
+                    setInputValue(`input[name="lines[${currentLineId}].price"]`, line.price);
+                    setInputValue(`input[name="lines[${currentLineId}].amount"]`, line.amount);
+                    setInputValue(`input[name="lines[${currentLineId}].vatAmount"]`, line.vatAmount);
+                    setInputValue(`input[name="lines[${currentLineId}].vatRate"]`, line.vatRate);
+                });
+            } else {
+                // Eğer hiç satır yoksa en az bir boş satır ekle
+                console.log('No lines found, adding empty line');
+                addDocumentLine();
+            }
+
+            console.log('✓ Form population completed');
+        }
+        // Alternatif: Client-side XML parsing (backend kullanmadan)
+        function selectXMLFileClientSide() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.xml';
+            fileInput.onchange = handleXMLFileSelectClientSide;
+            fileInput.click();
+        }
+
+        async function handleXMLFileSelectClientSide(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.xml')) {
+                alert('Lütfen sadece XML dosyası seçiniz!');
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(text, "text/xml");
+
+                const parseError = xmlDoc.querySelector('parsererror');
+                if (parseError) {
+                    alert('XML dosyası okunamadı! Dosya formatını kontrol ediniz.');
+                    return;
+                }
+
+                // XML namespace'leri göz önünde bulundurarak veri çek
+                const getValue = (selector) => {
+                    // Önce namespace'siz dene
+                    let element = xmlDoc.querySelector(selector);
+
+                    // Bulamazsa namespace'li versiyonları dene
+                    if (!element) {
+                        // cbc: prefix'i ile
+                        element = xmlDoc.querySelector(selector.replace(/(\w+)>/g, 'cbc\\:$1>'));
+                    }
+                    if (!element) {
+                        // cac: prefix'i ile
+                        element = xmlDoc.querySelector(selector.replace(/(\w+)>/g, 'cac\\:$1>'));
+                    }
+
+                    return element ? element.textContent.trim() : '';
+                };
+
+                // Form verilerini doldur
+                const data = {
+                    documentNumber: getValue('UUID'),
+                    collerationId: getValue('UUID'),
+                    documentDate: getValue('IssueDate'),
+                    currency: getValue('DocumentCurrencyCode'),
+                    currAccCode: xmlDoc.querySelector('[schemeID="VKN_TCKN"], [schemeID="TCKN"], [schemeID="VKN"]')?.textContent.trim() || '',
+                    vatNumber: xmlDoc.querySelector('[schemeID="VKN_TCKN"], [schemeID="TCKN"], [schemeID="VKN"]')?.textContent.trim() || '',
+                    firstName: getValue('AccountingSupplierParty Person FirstName'),
+                    familyName: getValue('AccountingSupplierParty Person FamilyName'),
+                    exchangeRate: 1,
+                    lines: []
+                };
+
+                // Satırları parse et
+                const invoiceLines = xmlDoc.querySelectorAll('InvoiceLine, cac\\:InvoiceLine');
+                invoiceLines.forEach(line => {
+                    data.lines.push({
+                        itemDescription: line.querySelector('Name, cbc\\:Name')?.textContent.trim() || '',
+                        quantity: line.querySelector('InvoicedQuantity, cbc\\:InvoicedQuantity')?.textContent.trim() || '',
+                        price: line.querySelector('PriceAmount, cbc\\:PriceAmount')?.textContent.trim() || '',
+                        amount: line.querySelector('LineExtensionAmount, cbc\\:LineExtensionAmount')?.textContent.trim() || '',
+                        vatAmount: line.querySelector('TaxAmount, cbc\\:TaxAmount')?.textContent.trim() || '',
+                        vatRate: line.querySelector('Percent, cbc\\:Percent')?.textContent.trim() || '18'
+                    });
+                });
+
+                populateFormFromBackendData(data);
+                alert('XML dosyası başarıyla okundu ve form dolduruldu!');
+
+            } catch (error) {
+                console.error('XML okuma hatası:', error);
+                alert('XML dosyası okunurken hata oluştu: ' + error.message);
+            }
+        }
+        // View PDF from modal - Yeni sekmede aç
+        function viewPDF() {
+            if (currentDocument && currentDocument.documentFilePath) {
+                openPDFInNewTab(currentDocument);
+            } else {
+                alert('Bu evrak için PDF dosyası bulunamadı.');
+            }
+        }
+        // Entegrasyon Bilgileri Modal Functions
+        async function viewIntegrationLogs() {
+            if (!currentDocument) return;
+
+            const documentId = currentDocument.id;
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await fetch(`/api/document/${documentId}/integration-logs`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const logs = result.data || [];
+
+                    showIntegrationLogsModal(logs);
+                } else {
+                    alert('Entegrasyon bilgileri yüklenemedi.');
+                }
+            } catch (error) {
+                console.error('View integration logs error:', error);
+                alert('Entegrasyon bilgileri görüntüleme hatası: ' + error.message);
+            }
+        }
+
+        function showIntegrationLogsModal(logs) {
+            const modal = document.getElementById('integrationLogsModal');
+            const content = document.getElementById('integrationLogsContent');
+
+            if (logs.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-lucide="database" class="w-12 h-12 mx-auto text-gray-400 mb-3"></i>
+                        <p class="text-gray-500">Entegrasyon kaydı bulunamadı.</p>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="space-y-4">
+                        ${logs.map(log => `
+                            <div class="border border-gray-200 rounded-lg p-4 ${log.isSuccess ? 'bg-green-50' : 'bg-red-50'}">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">
+                                            ${log.integrationSystemName || 'Bilinmeyen Sistem'} -
+                                            ${log.integrationTemplateName || 'Bilinmeyen Şablon'}
+                                        </h4>
+                                        <p class="text-sm text-gray-600">
+                                            ${formatDateTime(log.integrationDate)}
+                                            ${log.integratedByUserFullName ? ` - ${log.integratedByUserFullName}` : ''}
+                                        </p>
+                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        log.isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }">
+                                        ${log.isSuccess ? 'Başarılı' : 'Başarısız'}
+                                    </span>
+                                </div>
+
+                                ${log.errorMessage ? `
+                                    <div class="mt-2 p-3 bg-red-100 rounded-md">
+                                        <p class="text-sm text-red-700">
+                                            <strong>Hata:</strong> ${log.errorMessage}
+                                        </p>
+                                    </div>
+                                ` : ''}
+
+                                ${log.externalReferenceId ? `
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-600">
+                                            <strong>Harici Referans:</strong> ${log.externalReferenceId}
+                                        </p>
+                                    </div>
+                                ` : ''}
+
+                                <div class="mt-3 flex space-x-2">
+                                    <button onclick="toggleIntegrationDetail('request_${log.id}')"
+                                            class="text-sm text-blue-600 hover:text-blue-700">
+                                        <i data-lucide="code" class="w-4 h-4 inline mr-1"></i>
+                                        İstek Detayı
+                                    </button>
+                                    <button onclick="toggleIntegrationDetail('response_${log.id}')"
+                                            class="text-sm text-blue-600 hover:text-blue-700">
+                                        <i data-lucide="file-text" class="w-4 h-4 inline mr-1"></i>
+                                        Yanıt Detayı
+                                    </button>
+                                </div>
+
+                                <div id="request_${log.id}" class="hidden mt-3">
+                                    <div class="bg-gray-100 rounded-md p-3">
+                                        <h5 class="text-sm font-semibold text-gray-700 mb-2">İstek (Request):</h5>
+                                        <pre class="text-xs overflow-x-auto whitespace-pre-wrap">${escapeHtml(log.requestBody || 'Veri yok')}</pre>
+                                    </div>
+                                </div>
+
+                                <div id="response_${log.id}" class="hidden mt-3">
+                                    <div class="bg-gray-100 rounded-md p-3">
+                                        <h5 class="text-sm font-semibold text-gray-700 mb-2">Yanıt (Response):</h5>
+                                        <pre class="text-xs overflow-x-auto whitespace-pre-wrap">${escapeHtml(log.responseBody || 'Veri yok')}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+
+            // Refresh lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function closeIntegrationLogsModal() {
+            document.getElementById('integrationLogsModal').classList.add('hidden');
+        }
+
+        function toggleIntegrationDetail(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.toggle('hidden');
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDocuments();
+
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+
+        // Close modals when clicking outside - PDF modalı kaldırıldı
+        document.getElementById('documentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDocumentModal();
+            }
+        });
+
+        document.getElementById('createDocumentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                if (confirm('Formdaki veriler kaybolacak. Kapatmak istediğinizden emin misiniz?')) {
+                    closeCreateDocumentModal();
+                }
+            }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('createDocumentModal');
+                if (!modal.classList.contains('hidden')) {
+                    if (confirm('Formdaki veriler kaybolacak. Kapatmak istediğinizden emin misiniz?')) {
+                        closeCreateDocumentModal();
+                    }
+                }
+            }
+        });
+        // Keyboard shortcuts - PDF modalı kaldırıldı
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('documentModal').classList.contains('hidden')) {
+                    closeDocumentModal();
+                }
+            }
+        });
+        // Modal dışına tıklama ile kapatma
+        document.getElementById('integrationLogsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeIntegrationLogsModal();
+            }
+        });
+
+        // ESC tuşu ile kapatma (mevcut koda ekleyin)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('inspectionModal').classList.contains('hidden')) {
+                    closeInspectionModal();
+                }
+                if (!document.getElementById('integrationLogsModal').classList.contains('hidden')) {
+                    closeIntegrationLogsModal();
+                }
+            }
+        });
+</script>
+<style>
+    const workflowStyles = `
+    /* Workflow progress animasyonları */
+    .workflow-step-active {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: .5;
+        }
+    }
+
+    /* Workflow progress bar animasyonu */
+    .workflow-progress-bar {
+        transition: width 0.5s ease-in-out;
+    }
+
+    `;
+    /* Form elemanlarının yüksekliklerini eşitle */
+    #createDocumentForm input[type="text"],
+    #createDocumentForm input[type="date"],
+    #createDocumentForm select {
+        height: 42px; /* Sabit yükseklik */
+    }
+
+    /* Label'ların yüksekliklerini eşitle */
+    #createDocumentForm label {
+        min-height: 20px;
+        line-height: 20px;
+    }
+    /* Modal içeriği için maksimum yükseklik ve scroll */
+    #integrationLogsContent {
+        scrollbar-width: thin;
+        scrollbar-color: #e5e7eb #f3f4f6;
+    }
+
+        #integrationLogsContent::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #integrationLogsContent::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+
+        #integrationLogsContent::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+
+            #integrationLogsContent::-webkit-scrollbar-thumb:hover {
+                background: #d1d5db;
+            }
+
+    /* Mobile responsive */
+    @@media (max-width: 640px) {
+        #integrationLogsModal .max-w-4xl {
+            max-width: 100%;
+            margin: 0;
+        }
+
+        #integrationLogsContent {
+            max-height: 60vh;
+        }
+    }
+    /* Mobil kartlar için stil iyileştirmesi */
+    .mobile-document-card {
+        transition: all 0.2s ease;
+    }
+
+        .mobile-document-card:hover {
+            background-color: #f9fafb;
+        }
+
+    .mobile-card-expanded {
+        background-color: #f8fafc;
+    }
+
+    .expand-btn {
+        transition: transform 0.2s ease;
+    }
+
+        .expand-btn.expanded {
+            transform: rotate(45deg);
+        }
+
+    /* Detay alanının animasyonu */
+    .card-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+        .card-details.expanded {
+            max-height: 500px;
+        }
+
+    /* Buton hover efektleri */
+    button[onclick*="viewDocument"]:hover,
+    button[onclick*="editDocument"]:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s ease;
+    }
+    /* Mobil kartlar için stil */
+    .mobile-document-card {
+        transition: all 0.2s ease;
+    }
+
+        .mobile-document-card:hover {
+            background-color: #f9fafb;
+        }
+
+    .mobile-card-expanded {
+        background-color: #f8fafc;
+    }
+
+    .expand-btn {
+        transition: transform 0.2s ease;
+    }
+
+        .expand-btn.expanded {
+            transform: rotate(45deg);
+        }
+
+    /* Detay alanının animasyonu */
+    .card-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+        .card-details.expanded {
+            max-height: 500px;
+        }
+</style>

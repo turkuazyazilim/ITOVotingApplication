@@ -18,6 +18,11 @@ namespace ITOVotingApplication.Web.Models
 		[Display(Name = "E-posta")]
 		public string Email { get; set; }
 
+		[Required(ErrorMessage = "E-posta zorunludur.")]
+		[Phone(ErrorMessage = "Geçerli bir telefon giriniz.")]
+		[Display(Name = "Telefon")]
+		public string PhoneNumber { get; set; }
+
 		[Required(ErrorMessage = "Ad zorunludur.")]
 		[Display(Name = "Ad")]
 		public string FirstName { get; set; }

@@ -1,164 +1,322 @@
-﻿@model ITOVotingApplication.Web.Models.CastVoteViewModel
+@model ITOVotingApplication.Web.Models.CastVoteViewModel
 @{
     ViewData["Title"] = "Oy Kullan";
+    Layout = null;
 }
 
-<div class="container-fluid">
-    <h1 class="mt-4">Oy Kullanma İşlemi</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-action="Index">Oy Kullandırma</a></li>
-        <li class="breadcrumb-item active">Oy Kullan</li>
-    </ol>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen bg-gray-50">
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+        <!-- Logo -->
+        <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
+            <div class="flex items-center space-x-3">
+                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                <span class="text-white font-semibold text-lg">ITOP</span>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <!-- Seçmen Bilgileri Kartı -->
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-user-check"></i> Seçmen Bilgileri</h5>
+        <!-- User Info -->
+        <div class="px-6 py-4 border-b border-gray-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-semibold" id="userInitials">SA</span>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="info-group mb-3">
-                                <label class="text-muted small">Seçmen Adı Soyadı</label>
-                                <h5 class="mb-0">@Model.ContactName</h5>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-group mb-3">
-                                <label class="text-muted small">Firma</label>
-                                <h5 class="mb-0">@Model.CompanyName</h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="info-group">
-                                <label class="text-muted small">Sandık No</label>
-                                <h5 class="mb-0">
-                                    <span class="badge bg-primary">Sandık @Model.BallotBoxId</span>
-                                </h5>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-group">
-                                <label class="text-muted small">İşlem Zamanı</label>
-                                <h5 class="mb-0">@DateTime.Now.ToString("dd.MM.yyyy HH:mm")</h5>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <p class="text-white text-sm font-medium" id="userName">Yükleniyor...</p>
+                    <p class="text-gray-400 text-xs" id="userRole">Admin</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Oy Kullanma Formu -->
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-vote-yea"></i> Oy Kullanma</h5>
-                </div>
-                <div class="card-body">
-                    <form asp-action="CastVote" method="post" id="voteForm">
-                        <input type="hidden" asp-for="ContactId" />
-                        <input type="hidden" asp-for="ContactName" />
-                        <input type="hidden" asp-for="CompanyName" />
-                        <input type="hidden" asp-for="BallotBoxId" />
+        <!-- Navigation -->
+        <nav class="px-4 py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="/Dashboard" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Companies" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="building-2" class="h-5 w-5"></i>
+                        <span>Firmalar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Contacts" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="users" class="h-5 w-5"></i>
+                        <span>Yetkililer</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Vote" class="flex items-center space-x-3 px-4 py-3 text-white bg-gray-700 bg-opacity-50 rounded-lg">
+                        <i data-lucide="check-square" class="h-5 w-5"></i>
+                        <span>Oylar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/Admin/Users" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="user-cog" class="h-5 w-5"></i>
+                        <span>Kullanıcılar</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="loadReports()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
+                        <i data-lucide="bar-chart-3" class="h-5 w-5"></i>
+                        <span>Raporlar</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <!-- Logout -->
+        <div class="absolute bottom-0 left-0 right-0 p-4">
+            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                <i data-lucide="log-out" class="h-5 w-5"></i>
+                <span>Çıkış Yap</span>
+            </button>
+        </div>
+    </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Description" class="form-label">
-                                <i class="fas fa-comment-alt"></i> Açıklama (İsteğe Bağlı)
-                            </label>
-                            <textarea asp-for="Description"
-                                      class="form-control"
-                                      rows="3"
-                                      placeholder="Oy kullanma işlemi ile ilgili not ekleyebilirsiniz..."></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                            <small class="form-text text-muted">
-                                Bu alan isteğe bağlıdır. Maksimum 500 karakter girebilirsiniz.
-                            </small>
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Top Bar -->
+        <div class="bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4 lg:px-6">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <div class="lg:hidden">
+                        <div class="flex items-center justify-between h-16 px-4 lg:px-6 bg-opacity-20">
+                            <div class="flex items-center space-x-3">
+                                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                                <span class="text-black font-semibold text-lg">ITOP</span>
+                            </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Uyarı Mesajı -->
-                        <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.5rem;"></i>
+                <div class="flex items-center space-x-4">
+                    <a href="/Vote" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2">
+                        <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                        <span class="hidden sm:inline">Geri Dön</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div class="p-4 lg:p-6">
+            <div class="max-w-4xl mx-auto">
+
+                <!-- Seçmen Bilgileri Kartı -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                    <div class="px-6 py-4 bg-blue-600 text-white rounded-t-lg">
+                        <h3 class="text-lg font-medium flex items-center">
+                            <i data-lucide="user-check" class="h-5 w-5 mr-2"></i>
+                            Seçmen Bilgileri
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">Seçmen Adı Soyadı</label>
+                                    <p class="text-lg font-semibold text-gray-900">@Model.ContactName</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">Sandık No</label>
+                                    <span class="inline-flex px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800">
+                                        Sandık @Model.BallotBoxId
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">Firma</label>
+                                    <p class="text-lg font-semibold text-gray-900">@Model.CompanyName</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600 mb-1">İşlem Zamanı</label>
+                                    <p class="text-lg font-semibold text-gray-900">@DateTime.Now.ToString("dd.MM.yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Oy Kullanma Formu -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                    <div class="px-6 py-4 bg-green-600 text-white rounded-t-lg">
+                        <h3 class="text-lg font-medium flex items-center">
+                            <i data-lucide="vote" class="h-5 w-5 mr-2"></i>
+                            Oy Kullanma
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <form asp-action="CastVote" method="post" id="voteForm" class="space-y-6">
+                            <input type="hidden" asp-for="ContactId" />
+                            <input type="hidden" asp-for="ContactName" />
+                            <input type="hidden" asp-for="CompanyName" />
+                            <input type="hidden" asp-for="BallotBoxId" />
+
+                            <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert"></div>
+
                             <div>
-                                <strong>Önemli Uyarı!</strong><br>
-                                Oy kullanma işlemi geri alınamaz. Lütfen işlemi onaylamadan önce seçmen bilgilerini kontrol ediniz.
+                                <label asp-for="Description" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i data-lucide="message-circle" class="h-4 w-4 inline mr-1"></i>
+                                    Açıklama (İsteğe Bağlı)
+                                </label>
+                                <textarea asp-for="Description"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                          rows="3"
+                                          maxlength="500"
+                                          placeholder="Oy kullanma işlemi ile ilgili not ekleyebilirsiniz..."></textarea>
+                                <span asp-validation-for="Description" class="text-red-600 text-sm"></span>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Bu alan isteğe bağlıdır. Maksimum 500 karakter girebilirsiniz.
+                                    <span id="charCount" class="font-medium">0/500</span>
+                                </p>
                             </div>
-                        </div>
 
-                        <!-- Onay Checkbox -->
-                        <div class="form-check mb-4">
-                            <input class="form-check-input" type="checkbox" id="confirmVote" required>
-                            <label class="form-check-label" for="confirmVote">
-                                <strong>Yukarıdaki bilgileri kontrol ettim ve oy kullanma işlemini onaylıyorum.</strong>
-                            </label>
-                        </div>
+                            <!-- Uyarı Mesajı -->
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i data-lucide="alert-triangle" class="h-6 w-6 text-orange-600"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-orange-800">Önemli Uyarı!</h3>
+                                        <p class="mt-1 text-sm text-orange-700">
+                                            Oy kullanma işlemi geri alınamaz. Lütfen işlemi onaylamadan önce seçmen bilgilerini kontrol ediniz.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- İşlem Butonları -->
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                            <a asp-action="Index" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-arrow-left"></i> Vazgeç
-                            </a>
-                            <button type="button"
-                                    class="btn btn-success btn-lg"
-                                    id="submitVoteBtn"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#confirmModal"
-                                    disabled>
-                                <i class="fas fa-check-circle"></i> Oyu Kaydet
-                            </button>
-                        </div>
-                    </form>
+                            <!-- Onay Checkbox -->
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="confirmVote" type="checkbox" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" required>
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="confirmVote" class="font-medium text-gray-700">
+                                        Yukarıdaki bilgileri kontrol ettim ve oy kullanma işlemini onaylıyorum.
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- İşlem Butonları -->
+                            <div class="flex flex-col sm:flex-row gap-3 sm:justify-between pt-4">
+                                <a href="/Vote" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2 text-base font-medium">
+                                    <i data-lucide="arrow-left" class="h-5 w-5"></i>
+                                    <span>Vazgeç</span>
+                                </a>
+                                <button type="button"
+                                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 text-base font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                        id="submitVoteBtn"
+                                        onclick="openConfirmModal()"
+                                        disabled>
+                                    <i data-lucide="check-circle" class="h-5 w-5"></i>
+                                    <span>Oyu Kaydet</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Bilgilendirme Kartı -->
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Bilgilendirme</h6>
-                </div>
-                <div class="card-body">
-                    <ul class="mb-0">
-                        <li>Her seçmen sadece bir kez oy kullanabilir.</li>
-                        <li>Oy kullanma işlemi sistem tarafından kayıt altına alınmaktadır.</li>
-                        <li>İşlem tamamlandıktan sonra değişiklik yapılamaz.</li>
-                        <li>Herhangi bir sorun yaşarsanız sistem yöneticisi ile iletişime geçiniz.</li>
-                    </ul>
+                <!-- Bilgilendirme Kartı -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                        <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                            <i data-lucide="info" class="h-5 w-5 mr-2"></i>
+                            Bilgilendirme
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start">
+                                <i data-lucide="check" class="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+                                Her seçmen sadece bir kez oy kullanabilir.
+                            </li>
+                            <li class="flex items-start">
+                                <i data-lucide="check" class="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+                                Oy kullanma işlemi sistem tarafından kayıt altına alınmaktadır.
+                            </li>
+                            <li class="flex items-start">
+                                <i data-lucide="check" class="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+                                İşlem tamamlandıktan sonra değişiklik yapılamaz.
+                            </li>
+                            <li class="flex items-start">
+                                <i data-lucide="check" class="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
+                                Herhangi bir sorun yaşarsanız sistem yöneticisi ile iletişime geçiniz.
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Mobile Sidebar Overlay -->
+<div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+
 <!-- Onay Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title" id="confirmModalLabel">
-                    <i class="fas fa-question-circle"></i> İşlemi Onayla
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-3">
-                    <i class="fas fa-vote-yea text-success" style="font-size: 3rem;"></i>
-                </div>
-                <p class="text-center">
-                    <strong>@Model.ContactName</strong> adlı seçmen için oy kullanma işlemini onaylıyor musunuz?
-                </p>
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i> Bu işlem geri alınamaz!
+<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i data-lucide="help-circle" class="h-5 w-5 mr-2 text-orange-600"></i>
+                        İşlemi Onayla
+                    </h3>
+                    <button onclick="closeConfirmModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> İptal
+            <div class="p-6">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="vote" class="h-8 w-8 text-green-600"></i>
+                    </div>
+                    <p class="text-gray-900 text-lg">
+                        <strong>@Model.ContactName</strong> adlı seçmen için oy kullanma işlemini onaylıyor musunuz?
+                    </p>
+                </div>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center">
+                        <i data-lucide="alert-circle" class="h-5 w-5 text-red-600 mr-2"></i>
+                        <p class="text-red-800 text-sm font-medium">Bu işlem geri alınamaz!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-2">
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                    <span>İptal</span>
                 </button>
-                <button type="button" class="btn btn-success" id="confirmVoteBtn">
-                    <i class="fas fa-check"></i> Evet, Oyu Kaydet
+                <button onclick="confirmVote()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2" id="confirmVoteBtn">
+                    <i data-lucide="check" class="h-4 w-4"></i>
+                    <span>Evet, Oyu Kaydet</span>
                 </button>
             </div>
         </div>
@@ -166,115 +324,169 @@
 </div>
 
 <!-- Başarı Modal -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="successModalLabel">
-                    <i class="fas fa-check-circle"></i> İşlem Başarılı
-                </h5>
+<div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div class="px-6 py-4 bg-green-600 text-white rounded-t-lg">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <i data-lucide="check-circle" class="h-5 w-5 mr-2"></i>
+                    İşlem Başarılı
+                </h3>
             </div>
-            <div class="modal-body">
+            <div class="p-6">
                 <div class="text-center">
-                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                    <h4 class="mt-3">Oy Başarıyla Kaydedildi!</h4>
-                    <p class="text-muted">İşlem başarıyla tamamlandı.</p>
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="check-circle" class="h-8 w-8 text-green-600"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold text-gray-900 mb-2">Oy Başarıyla Kaydedildi!</h4>
+                    <p class="text-gray-600">İşlem başarıyla tamamlandı.</p>
                 </div>
             </div>
-            <div class="modal-footer">
-                <a asp-action="Index" class="btn btn-primary">
-                    <i class="fas fa-list"></i> Listeye Dön
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-center">
+                <a href="/Vote" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                    <i data-lucide="list" class="h-4 w-4"></i>
+                    <span>Listeye Dön</span>
                 </a>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+<script>
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load user info and initialize
+        loadUserInfo();
+        lucide.createIcons();
 
-    <script>
-        $(document).ready(function() {
-            // Onay checkbox kontrolü
-            $('#confirmVote').change(function() {
-                if ($(this).is(':checked')) {
-                    $('#submitVoteBtn').prop('disabled', false);
+        // Onay checkbox kontrolü
+        const confirmCheckbox = document.getElementById('confirmVote');
+        const submitBtn = document.getElementById('submitVoteBtn');
+        
+        confirmCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        });
+
+        // Karakter sayacı
+        const descriptionTextarea = document.getElementById('Description');
+        const charCount = document.getElementById('charCount');
+        
+        if (descriptionTextarea) {
+            descriptionTextarea.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                const maxLength = 500;
+                charCount.textContent = `${currentLength}/${maxLength}`;
+                
+                if (currentLength > maxLength * 0.9) {
+                    charCount.className = 'font-medium text-orange-600';
                 } else {
-                    $('#submitVoteBtn').prop('disabled', true);
+                    charCount.className = 'font-medium';
                 }
             });
+        }
 
-            // Modal'dan onay verildiğinde formu gönder
-            $('#confirmVoteBtn').click(function() {
-                // Butonu devre dışı bırak (çift tıklamayı önle)
-                $(this).prop('disabled', true);
-                $(this).html('<span class="spinner-border spinner-border-sm me-2"></span>İşleniyor...');
+        // Form submit kontrolü
+        const voteForm = document.getElementById('voteForm');
+        voteForm.addEventListener('submit', function(e) {
+            if (!confirmCheckbox.checked) {
+                e.preventDefault();
+                alert('Lütfen onay kutusunu işaretleyiniz.');
+                return false;
+            }
+        });
 
-                // Modal'ı kapat
-                $('#confirmModal').modal('hide');
-
-                // Formu gönder
-                $('#voteForm').submit();
-            });
-
-            // Karakter sayacı
-            $('#Description').on('input', function() {
-                var maxLength = 500;
-                var currentLength = $(this).val().length;
-                var remaining = maxLength - currentLength;
-
-                if (remaining < 50) {
-                    $(this).next('.text-danger').text('Kalan karakter: ' + remaining);
-                } else {
-                    $(this).next('.text-danger').text('');
-                }
-            });
-
-            // Form submit öncesi son kontrol
-            $('#voteForm').on('submit', function(e) {
-                if (!$('#confirmVote').is(':checked')) {
-                    e.preventDefault();
-                    alert('Lütfen onay kutusunu işaretleyiniz.');
-                    return false;
-                }
-            });
-
-            // Başarı mesajı varsa modal'ı göster
+        // Başarı mesajı kontrolü
         @if (TempData["Success"] != null)
         {
             <text>
-                    $('#successModal').modal('show');
-                    setTimeout(function() {
-                        window.location.href = '@Url.Action("Index")';
-                    }, 3000);
+            showSuccessModal();
+            setTimeout(function() {
+                window.location.href = '/Vote';
+            }, 3000);
             </text>
         }
 
-            // Hata mesajı için alert
+        // Hata mesajı kontrolü
         @if (TempData["Error"] != null)
         {
             <text>
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Hata!',
-                        text: '@TempData["Error"]',
-                        confirmButtonText: 'Tamam'
-                    });
+            alert('@TempData["Error"]');
             </text>
         }
-        });
+    });
 
-        // Tarayıcı geri tuşu uyarısı
-        window.addEventListener('beforeunload', function (e) {
-            if ($('#confirmVote').is(':checked') && !$('#voteForm').hasClass('submitted')) {
-                e.preventDefault();
-                e.returnValue = 'İşleminiz tamamlanmadı. Sayfadan ayrılmak istediğinize emin misiniz?';
-            }
-        });
-    </script>
+    // Toggle Sidebar
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
 
-    <!-- SweetAlert2 CDN (isteğe bağlı, daha güzel alertler için) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-}
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
+
+    // Load User Info
+    function loadUserInfo() {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user) {
+            document.getElementById('userName').textContent = user.fullName || (user.firstName + ' ' + user.lastName) || 'Kullanıcı';
+            document.getElementById('userRole').textContent = user.roles ? user.roles[0] : 'Kullanıcı';
+
+            const firstName = user.firstName || '';
+            const lastName = user.lastName || '';
+            const initials = (firstName[0] || '') + (lastName[0] || '');
+            document.getElementById('userInitials').textContent = initials.toUpperCase() || 'KA';
+        }
+    }
+
+    // Logout function
+    function logout() {
+        if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+            localStorage.removeItem('user');
+            window.location.href = '/Auth/Login';
+        }
+    }
+
+    // Modal functions
+    function openConfirmModal() {
+        document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+    }
+
+    function showSuccessModal() {
+        document.getElementById('successModal').classList.remove('hidden');
+    }
+
+    function confirmVote() {
+        const confirmBtn = document.getElementById('confirmVoteBtn');
+        
+        // Butonu devre dışı bırak
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin mr-2"></i>İşleniyor...';
+
+        // Modal'ı kapat
+        closeConfirmModal();
+
+        // Formu gönder
+        document.getElementById('voteForm').submit();
+    }
+
+    // Tarayıcı geri tuşu uyarısı
+    window.addEventListener('beforeunload', function (e) {
+        const confirmCheckbox = document.getElementById('confirmVote');
+        const voteForm = document.getElementById('voteForm');
+        
+        if (confirmCheckbox.checked && !voteForm.classList.contains('submitted')) {
+            e.preventDefault();
+            e.returnValue = 'İşleminiz tamamlanmadı. Sayfadan ayrılmak istediğinize emin misiniz?';
+        }
+    });
+</script>
+</body>
+</html>

@@ -17,10 +17,6 @@ namespace ITOVotingApplication.Data.Configurations
 				.HasMaxLength(50)
 				.IsRequired();
 
-			builder.Property(e => e.TaxNumber)
-				.HasMaxLength(20)
-				.IsRequired();
-
 			builder.Property(e => e.Title)
 				.HasMaxLength(250)
 				.IsRequired();
@@ -80,7 +76,6 @@ namespace ITOVotingApplication.Data.Configurations
 
 			// Index
 			builder.HasIndex(e => e.RegistrationNumber).IsUnique();
-			builder.HasIndex(e => e.TaxNumber).IsUnique();
 		}
 	}
 }

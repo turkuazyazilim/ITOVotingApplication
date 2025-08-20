@@ -18,78 +18,76 @@
     <!-- Sidebar -->
     <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
         <!-- Logo -->
-        <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
+        <div class="flex items-center justify-between h-16 px-4 lg:px-6 bg-black bg-opacity-20">
             <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <i data-lucide="vote" class="h-5 w-5 text-white"></i>
-                </div>
-                <span class="text-white font-semibold text-lg">Seçim App</span>
+                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                <span class="text-white font-semibold text-lg">ITOP</span>
             </div>
-            <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
+            <button onclick="closeSidebar()" class="lg:hidden text-white hover:text-gray-300 p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors">
                 <i data-lucide="x" class="h-5 w-5"></i>
             </button>
         </div>
 
         <!-- User Info -->
-        <div class="px-6 py-4 border-b border-gray-700">
+        <div class="px-4 lg:px-6 py-4 border-b border-gray-700">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
-                    <span class="text-white font-semibold" id="userInitials">SA</span>
+                    <span class="text-white font-semibold text-sm" id="userInitials">SA</span>
                 </div>
-                <div>
-                    <p class="text-white text-sm font-medium" id="userName">Yükleniyor...</p>
-                    <p class="text-gray-400 text-xs" id="userRole">Admin</p>
+                <div class="min-w-0 flex-1">
+                    <p class="text-white text-sm font-medium truncate" id="userName">Yükleniyor...</p>
+                    <p class="text-gray-400 text-xs truncate" id="userRole">Admin</p>
                 </div>
             </div>
         </div>
 
         <!-- Navigation -->
-        <nav class="px-4 py-4">
+        <nav class="px-2 lg:px-4 py-4 flex-1 overflow-y-auto">
             <ul class="space-y-1">
                 <li>
-                    <a href="#" onclick="loadDashboard()" class="flex items-center space-x-3 px-4 py-3 text-white bg-gray-700 bg-opacity-50 rounded-lg">
-                        <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
-                        <span>Dashboard</span>
+                    <a href="#" onclick="loadDashboard()" class="flex items-center space-x-3 px-3 lg:px-4 py-3 text-white bg-gray-700 bg-opacity-50 rounded-lg touch-manipulation">
+                        <i data-lucide="layout-dashboard" class="h-5 w-5 flex-shrink-0"></i>
+                        <span class="truncate">Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" onclick="loadCompanies()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
-                        <i data-lucide="building-2" class="h-5 w-5"></i>
-                        <span>Firmalar</span>
+                    <a href="#" onclick="loadCompanies()" class="flex items-center space-x-3 px-3 lg:px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors touch-manipulation">
+                        <i data-lucide="building-2" class="h-5 w-5 flex-shrink-0"></i>
+                        <span class="truncate">Firmalar</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" onclick="loadContacts()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
-                        <i data-lucide="users" class="h-5 w-5"></i>
-                        <span>Yetkililer</span>
+                    <a href="#" onclick="loadContacts()" class="flex items-center space-x-3 px-3 lg:px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors touch-manipulation">
+                        <i data-lucide="users" class="h-5 w-5 flex-shrink-0"></i>
+                        <span class="truncate">Yetkililer</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" onclick="loadVotes()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
-                        <i data-lucide="check-square" class="h-5 w-5"></i>
-                        <span>Oylar</span>
+                    <a href="#" onclick="loadVotes()" class="flex items-center space-x-3 px-3 lg:px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors touch-manipulation">
+                        <i data-lucide="check-square" class="h-5 w-5 flex-shrink-0"></i>
+                        <span class="truncate">Oylar</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" onclick="loadUsers()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
-                        <i data-lucide="user-cog" class="h-5 w-5"></i>
-                        <span>Kullanıcılar</span>
+                    <a href="#" onclick="loadUsers()" class="flex items-center space-x-3 px-3 lg:px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors touch-manipulation">
+                        <i data-lucide="user-cog" class="h-5 w-5 flex-shrink-0"></i>
+                        <span class="truncate">Kullanıcılar</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" onclick="loadReports()" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors">
-                        <i data-lucide="bar-chart-3" class="h-5 w-5"></i>
-                        <span>Raporlar</span>
+                    <a href="#" onclick="loadReports()" class="flex items-center space-x-3 px-3 lg:px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-700 hover:bg-opacity-50 rounded-lg transition-colors touch-manipulation">
+                        <i data-lucide="bar-chart-3" class="h-5 w-5 flex-shrink-0"></i>
+                        <span class="truncate">Raporlar</span>
                     </a>
                 </li>
             </ul>
         </nav>
 
         <!-- Logout -->
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
-                <i data-lucide="log-out" class="h-5 w-5"></i>
-                <span>Çıkış Yap</span>
+        <div class="absolute bottom-0 left-0 right-0 p-2 lg:p-4">
+            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 px-3 lg:px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors touch-manipulation">
+                <i data-lucide="log-out" class="h-5 w-5 flex-shrink-0"></i>
+                <span class="truncate">Çıkış Yap</span>
             </button>
         </div>
     </div>
@@ -97,96 +95,99 @@
     <!-- Main Content -->
     <div class="lg:ml-64 min-h-screen">
         <!-- Top Bar -->
-        <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
             <div class="flex items-center justify-between h-16 px-4 lg:px-6">
-                <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900">
-                    <i data-lucide="menu" class="h-6 w-6"></i>
-                </button>
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <div class="lg:hidden">
+                        <div class="flex items-center justify-between h-16 px-4 lg:px-6 bg-opacity-20">
+                            <div class="flex items-center space-x-3">
+                                <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                                <span class="text-black font-semibold text-lg">ITOP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Mobile User Info -->
+                    <div class="lg:hidden flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                            <span class="text-white font-semibold text-xs" id="mobileUserInitials">SA</span>
+                        </div>
+                    </div>
+                    <!-- Notifications (optional) -->
+                    <button class="hidden lg:flex text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="bell" class="h-5 w-5"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Page Content -->
         <div class="p-4 lg:p-6">
             <!-- Page Header -->
-            <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p class="text-gray-600">Hoş geldiniz! Sistem özeti ve istatistikler</p>
+            <div class="mb-4 lg:mb-6">
+                <h1 class="text-xl lg:text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p class="text-sm lg:text-base text-gray-600 mt-1">Hoş geldiniz! Sistem özeti ve istatistikler</p>
             </div>
 
             <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
                 <!-- Total Companies -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Toplam Firma</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalCompanies">0</p>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-gray-600 truncate">Toplam Firma</p>
+                            <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="totalCompanies">0</p>
                             <p class="text-xs text-green-600 mt-2">
                                 <span class="inline-flex items-center">
-                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1"></i>
-                                    +12% bu ay
+                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1 flex-shrink-0"></i>
+                                    <span class="truncate">+12% bu ay</span>
                                 </span>
                             </p>
                         </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i data-lucide="building-2" class="h-6 w-6 text-blue-600"></i>
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                            <i data-lucide="building-2" class="h-5 w-5 lg:h-6 lg:w-6 text-blue-600"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- Total Contacts -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Toplam Yetkili</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalContacts">0</p>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-gray-600 truncate">Toplam Yetkili</p>
+                            <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="totalContacts">0</p>
                             <p class="text-xs text-green-600 mt-2">
                                 <span class="inline-flex items-center">
-                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1"></i>
-                                    +8% bu ay
+                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1 flex-shrink-0"></i>
+                                    <span class="truncate">+8% bu ay</span>
                                 </span>
                             </p>
                         </div>
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <i data-lucide="users" class="h-6 w-6 text-green-600"></i>
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                            <i data-lucide="users" class="h-5 w-5 lg:h-6 lg:w-6 text-green-600"></i>
                         </div>
                     </div>
                 </div>
 
                 <!-- Total Votes -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Kullanılan Oy</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-1" id="totalVotes">0</p>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-sm font-medium text-gray-600 truncate">Kullanılan Oy</p>
+                            <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="totalVotes">0</p>
                             <p class="text-xs text-blue-600 mt-2">
                                 <span class="inline-flex items-center">
-                                    <i data-lucide="activity" class="h-3 w-3 mr-1"></i>
-                                    %65 katılım
+                                    <i data-lucide="activity" class="h-3 w-3 mr-1 flex-shrink-0"></i>
+                                    <span class="truncate">%65 katılım</span>
                                 </span>
                             </p>
                         </div>
-                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <i data-lucide="check-square" class="h-6 w-6 text-purple-600"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Active Users -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Aktif Kullanıcı</p>
-                            <p class="text-2xl font-bold text-gray-900 mt-1" id="activeUsers">0</p>
-                            <p class="text-xs text-orange-600 mt-2">
-                                <span class="inline-flex items-center">
-                                    <i data-lucide="users" class="h-3 w-3 mr-1"></i>
-                                    5 çevrimiçi
-                                </span>
-                            </p>
-                        </div>
-                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                            <i data-lucide="user-check" class="h-6 w-6 text-orange-600"></i>
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
+                            <i data-lucide="check-square" class="h-5 w-5 lg:h-6 lg:w-6 text-purple-600"></i>
                         </div>
                     </div>
                 </div>
@@ -204,7 +205,64 @@
             lucide.createIcons();
             loadUserInfo();
             loadDashboardData();
+            initializeTouchGestures();
         });
+
+        // Touch Gestures for Mobile
+        function initializeTouchGestures() {
+            let startX = null;
+            let startY = null;
+
+            document.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }, { passive: true });
+
+            document.addEventListener('touchmove', function(e) {
+                if (!startX || !startY) return;
+
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = startX - currentX;
+                const diffY = startY - currentY;
+
+                // Horizontal swipe (more horizontal than vertical)
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    // Swipe right to open sidebar
+                    if (diffX < -50 && startX < 50 && window.innerWidth < 1024) {
+                        toggleSidebar();
+                        startX = null;
+                        startY = null;
+                    }
+                    // Swipe left to close sidebar
+                    else if (diffX > 50 && window.innerWidth < 1024) {
+                        const sidebar = document.getElementById('sidebar');
+                        if (!sidebar.classList.contains('-translate-x-full')) {
+                            closeSidebar();
+                        }
+                        startX = null;
+                        startY = null;
+                    }
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', function() {
+                startX = null;
+                startY = null;
+            }, { passive: true });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth < 1024) {
+                    const sidebar = document.getElementById('sidebar');
+                    const sidebarButton = e.target.closest('[onclick*="toggleSidebar"]');
+                    
+                    if (!sidebar.contains(e.target) && !sidebarButton && !sidebar.classList.contains('-translate-x-full')) {
+                        closeSidebar();
+                    }
+                }
+            });
+        }
 
         // Check authentication
         // const token = localStorage.getItem('token');
@@ -221,100 +279,219 @@
             overlay.classList.toggle('hidden');
         }
 
+        // Close Sidebar (for mobile close button)
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+
+        // Auto-close sidebar on mobile when clicking navigation links
+        function loadDashboard() {
+            if (window.innerWidth < 1024) { // lg breakpoint
+                closeSidebar();
+            }
+            location.reload();
+        }
+
+        function loadCompanies() {
+            if (window.innerWidth < 1024) {
+                closeSidebar();
+            }
+            window.location.href = '/Admin/Companies';
+        }
+
+        function loadContacts() {
+            if (window.innerWidth < 1024) {
+                closeSidebar();
+            }
+            window.location.href = '/Admin/Contacts';
+        }
+
+        function loadVotes() {
+            if (window.innerWidth < 1024) {
+                closeSidebar();
+            }
+            window.location.href = '/Vote';
+        }
+
+        function loadUsers() {
+            if (window.innerWidth < 1024) {
+                closeSidebar();
+            }
+            window.location.href = '/Admin/Users';
+        }
+
+        function loadReports() {
+            if (window.innerWidth < 1024) {
+                closeSidebar();
+            }
+            alert('Raporlar sayfası hazırlanıyor...');
+        }
+
         // Load User Info
         function loadUserInfo() {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (user) {
-                document.getElementById('userName').textContent = user.fullName || user.firstName + ' ' + user.lastName || 'Kullanıcı';
-                document.getElementById('userRole').textContent = user.roles ? user.roles[0] : 'Kullanıcı';
+            // Get user info from server-side ViewBag
+            const serverFullName = '@ViewBag.FullName' || '';
+            const serverUserName = '@ViewBag.UserName' || '';
+            const serverUserRole = '@ViewBag.UserRole' || 'Kullanıcı';
+            const serverUserId = '@ViewBag.UserId' || '';
+            
+            let fullName = serverFullName || 'Kullanıcı';
+            let role = serverUserRole || 'Kullanıcı';
+            let initials = 'KA';
 
-                const initials = ((user.firstName || '')[0] + (user.lastName || '')[0]);
-                document.getElementById('userInitials').textContent = initials || 'KA';
+            // Generate initials from full name
+            if (fullName && fullName !== 'Kullanıcı' && fullName.trim() !== '') {
+                const nameParts = fullName.trim().split(' ').filter(part => part.length > 0);
+                if (nameParts.length >= 2) {
+                    initials = (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+                } else if (nameParts.length === 1) {
+                    initials = (nameParts[0][0] + nameParts[0][0]).toUpperCase();
+                }
             }
+
+            // Save to localStorage for API calls
+            const userInfo = {
+                id: serverUserId,
+                userName: serverUserName,
+                fullName: fullName,
+                roles: [role]
+            };
+            localStorage.setItem('user', JSON.stringify(userInfo));
+
+            // Update UI elements
+            const userNameEl = document.getElementById('userName');
+            const userRoleEl = document.getElementById('userRole');
+            const userInitialsEl = document.getElementById('userInitials');
+            const mobileUserInitialsEl = document.getElementById('mobileUserInitials');
+
+            if (userNameEl) userNameEl.textContent = fullName;
+            if (userRoleEl) userRoleEl.textContent = role;
+            if (userInitialsEl) userInitialsEl.textContent = initials;
+            if (mobileUserInitialsEl) mobileUserInitialsEl.textContent = initials;
+
+            console.log('User info loaded:', { fullName, role, initials, userInfo });
         }
 
         // Load Dashboard Data
         async function loadDashboardData() {
             try {
                 // Load statistics
-                const stats = await Promise.all([
+                const responses = await Promise.all([
                     fetchAPI('/api/company/count'),
                     fetchAPI('/api/contact/count'),
                     fetchAPI('/api/vote/count'),
                     fetchAPI('/api/user/count')
                 ]);
 
-                document.getElementById('totalCompanies').textContent = stats[0]?.data || 0;
-                document.getElementById('totalContacts').textContent = stats[1]?.data || 0;
-                document.getElementById('totalVotes').textContent = stats[2]?.data || 0;
-                document.getElementById('activeUsers').textContent = stats[3]?.data || 0;
+                // Safely update elements if they exist
+                const totalCompaniesEl = document.getElementById('totalCompanies');
+                const totalContactsEl = document.getElementById('totalContacts');
+                const totalVotesEl = document.getElementById('totalVotes');
+                const activeUsersEl = document.getElementById('activeUsers');
+
+                // Helper function to get API data value, treating 0 as valid
+                function getApiValue(response, fallback) {
+                    // Check if API call was successful and has data
+                    if (response && response.success && (response.data !== null && response.data !== undefined)) {
+                        return response.data;
+                    }
+                    // Fallback for different response formats
+                    const value = response?.data?.data ?? response?.data;
+                    return (value !== null && value !== undefined) ? value : fallback;
+                }
+
+                if (totalCompaniesEl) {
+                    totalCompaniesEl.textContent = getApiValue(responses[0], '127');
+                }
+                if (totalContactsEl) {
+                    totalContactsEl.textContent = getApiValue(responses[1], '354');
+                }
+                if (totalVotesEl) {
+                    totalVotesEl.textContent = getApiValue(responses[2], '218');
+                }
+                if (activeUsersEl) {
+                    activeUsersEl.textContent = getApiValue(responses[3], '12');
+                }
+
+                console.log('Dashboard data loaded successfully:', responses);
             } catch (error) {
                 console.error('Dashboard data load error:', error);
-                // Use dummy data for demo
-                document.getElementById('totalCompanies').textContent = '127';
-                document.getElementById('totalContacts').textContent = '354';
-                document.getElementById('totalVotes').textContent = '218';
-                document.getElementById('activeUsers').textContent = '12';
+                // Use dummy data for demo - but check if elements exist first
+                const elements = [
+                    { id: 'totalCompanies', value: '127' },
+                    { id: 'totalContacts', value: '354' },
+                    { id: 'totalVotes', value: '218' },
+                    { id: 'activeUsers', value: '12' }
+                ];
+
+                elements.forEach(({ id, value }) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                    }
+                });
             }
         }
 
         // Fetch API Helper
         async function fetchAPI(url) {
-            const token = localStorage.getItem('token');
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
+            try {
+                const token = localStorage.getItem('token');
+                const headers = {
                     'Content-Type': 'application/json'
+                };
+
+                // Add authorization if token exists
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
                 }
-            });
 
-            if (response.ok) {
-                return await response.json();
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers,
+                    credentials: 'same-origin' // Include cookies for authentication
+                });
+
+                console.log(`API Request: ${url}`, response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`API Response for ${url}:`, data);
+                    return data;
+                } else {
+                    console.error(`API Error for ${url}:`, response.status, response.statusText);
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+            } catch (error) {
+                console.error(`Fetch error for ${url}:`, error);
+                throw error;
             }
-            throw new Error('API request failed');
         }
 
-        // Navigation Functions
-        function loadDashboard() {
-            location.reload();
-        }
-
-        function loadCompanies() {
-            window.location.href = '@Url.Action("Companies", "Admin")';
-        }
-
-        function loadContacts() {
-            window.location.href = '/Admin/Contacts';
-        }
-
-        function loadVotes() {
-            window.location.href = '/Vote';
-        }
-
-        function loadUsers() {
-            window.location.href = '/Admin/Users';
-        }
-
-        function loadReports() {
-            alert('Raporlar sayfası hazırlanıyor...');
-        }
 
         // Logout
         async function logout() {
             if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
-                
-                const token = localStorage.getItem('token');
-
-                const response = await fetch('/Account/Logout', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                try {
+                    // Clear localStorage immediately
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    localStorage.clear(); // Clear all localStorage data
+                    
+                    // Clear sessionStorage as well
+                    sessionStorage.clear();
+                    
+                    // Call server logout endpoint and redirect
+                    window.location.href = '/Auth/Logout';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    // Even if there's an error, redirect to login
+                    window.location.href = '/Auth/Login';
+                }
             }
         }
     </script>

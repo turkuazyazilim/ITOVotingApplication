@@ -27,6 +27,8 @@ namespace ITOVotingApplication.Web.Controllers
 		{
 			// Store the return URL to redirect after successful login
 			
+			
+			
 			ViewData["ReturnUrl"] = returnUrl;
 
 			// If user is already authenticated, redirect to appropriate page
@@ -141,7 +143,7 @@ namespace ITOVotingApplication.Web.Controllers
 			await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 			_logger.LogInformation($"User {User.Identity.Name} logged out.");
 
-			return RedirectToAction("Login", "Account");
+			return RedirectToAction("Login", "Auth");
 		}
 
 		// GET: /Account/AccessDenied
@@ -180,6 +182,7 @@ namespace ITOVotingApplication.Web.Controllers
 				UserName = model.UserName,
 				Password = model.Password,
 				Email = model.Email,
+				PhoneNumber = model.PhoneNumber,
 				FirstName = model.FirstName,
 				LastName = model.LastName
 			};

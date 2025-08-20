@@ -18,85 +18,6 @@ namespace ITOVotingApplication.Business.Services
 			_unitOfWork = unitOfWork;
 			_mapper = mapper;
 		}
-
-		public async Task<ApiResponse<CompanyDto>> GetByIdAsync(int id)
-		{
-			try
-			{
-				var company = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
-					.Include(c => c.ActiveContact)
-					.FirstOrDefaultAsync(c => c.Id == id);
-
-				if (company == null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Firma bulunamadı.");
-				}
-
-				var result = _mapper.Map<CompanyDto>(company);
-				return ApiResponse<CompanyDto>.SuccessResult(result);
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse<CompanyDto>.ErrorResult($"Firma getirme hatası: {ex.Message}");
-			}
-		}
-		public async Task<ApiResponse<int>> GetCountAsync(bool onlyActive = true)
-		{
-			try
-			{
-				var query = _unitOfWork.Companies.Query();
-
-				if (onlyActive)
-				{
-					query = query.Where(c => c.IsActive);
-				}
-
-				var count = await query.CountAsync();
-
-				return ApiResponse<int>.SuccessResult(count);
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse<int>.ErrorResult($"Firma sayısı getirme hatası: {ex.Message}");
-			}
-		}
-		public async Task<ApiResponse<CompanyStatisticsDto>> GetStatisticsAsync()
-		{
-			try
-			{
-				var statistics = new CompanyStatisticsDto
-				{
-					TotalCompanies = await _unitOfWork.Companies.Query().CountAsync(),
-					ActiveCompanies = await _unitOfWork.Companies.Query().Where(c => c.IsActive).CountAsync(),
-					InactiveCompanies = await _unitOfWork.Companies.Query().Where(c => !c.IsActive).CountAsync(),
-
-					// Firma tiplerine göre dağılım
-					CompanyTypeDistribution = await _unitOfWork.Companies.Query()
-						.GroupBy(c => c.CompanyType)
-						.Select(g => new CompanyTypeStatistic
-						{
-							Type = g.Key,
-							Count = g.Count()
-						})
-						.ToListAsync(),
-
-					// Son eklenen firmalar
-					RecentlyAdded = await _unitOfWork.Companies.Query()
-						.OrderByDescending(c => c.Id)
-						.Take(5)
-						.Select(c => new { c.Title, c.RegistrationNumber })
-						.ToListAsync()
-				};
-
-				return ApiResponse<CompanyStatisticsDto>.SuccessResult(statistics);
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse<CompanyStatisticsDto>.ErrorResult($"İstatistik getirme hatası: {ex.Message}");
-			}
-		}
 		public async Task<ApiResponse<PagedResult<CompanyDto>>> GetAllAsync(PagedRequest request)
 		{
 			try
@@ -113,7 +34,6 @@ namespace ITOVotingApplication.Business.Services
 					query = query.Where(c =>
 						c.Title.Contains(request.SearchTerm) ||
 						c.RegistrationNumber.Contains(request.SearchTerm) ||
-						c.TaxNumber.Contains(request.SearchTerm) ||
 						c.TradeRegistrationNumber.Contains(request.SearchTerm));
 				}
 
@@ -161,212 +81,22 @@ namespace ITOVotingApplication.Business.Services
 				return ApiResponse<PagedResult<CompanyDto>>.ErrorResult($"Firma listesi getirme hatası: {ex.Message}");
 			}
 		}
-
-		public async Task<ApiResponse<CompanyDto>> CreateAsync(CreateCompanyDto dto)
+		public async Task<ApiResponse<int>> GetCountAsync(bool onlyActive = true)
 		{
 			try
 			{
-				// Check for duplicate registration number
-				var existingCompany = await _unitOfWork.Companies
-					.SingleOrDefaultAsync(c => c.RegistrationNumber == dto.RegistrationNumber);
+				var query = _unitOfWork.Companies.Query();
 
-				if (existingCompany != null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Bu sicil numarası ile kayıtlı firma bulunmaktadır.");
-				}
+				query = query.Where(c => c.IsActive);
 
-				// Validate company type
-				var companyType = await _unitOfWork.CompanyTypes
-					.SingleOrDefaultAsync(ct => ct.CompanyTypeCode == dto.CompanyType);
+				var count = await query.CountAsync();
 
-				if (companyType == null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Geçersiz şirket tipi.");
-				}
-
-				// Validate NACE code if provided
-				if (!string.IsNullOrWhiteSpace(dto.NaceCode))
-				{
-					var naceCode = await _unitOfWork.NaceCodes
-						.SingleOrDefaultAsync(n => n.Code == dto.NaceCode);
-
-					if (naceCode == null)
-					{
-						return ApiResponse<CompanyDto>.ErrorResult("Geçersiz NACE kodu.");
-					}
-				}
-
-				var company = _mapper.Map<Company>(dto);
-				company.IsActive = true;
-
-				await _unitOfWork.Companies.AddAsync(company);
-				await _unitOfWork.CompleteAsync();
-
-				var createdCompany = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
-					.FirstOrDefaultAsync(c => c.Id == company.Id);
-
-				var result = _mapper.Map<CompanyDto>(createdCompany);
-				return ApiResponse<CompanyDto>.SuccessResult(result, "Firma başarıyla oluşturuldu.");
+				return ApiResponse<int>.SuccessResult(count);
 			}
 			catch (Exception ex)
 			{
-				return ApiResponse<CompanyDto>.ErrorResult($"Firma oluşturma hatası: {ex.Message}");
+				return ApiResponse<int>.ErrorResult($"Firma sayısı getirme hatası: {ex.Message}");
 			}
-		}
-
-		public async Task<ApiResponse<CompanyDto>> UpdateAsync(UpdateCompanyDto dto)
-		{
-			try
-			{
-				var company = await _unitOfWork.Companies.GetByIdAsync(dto.Id);
-
-				if (company == null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Firma bulunamadı.");
-				}
-
-				// Check for duplicate registration number
-				var existingCompany = await _unitOfWork.Companies
-					.SingleOrDefaultAsync(c => c.RegistrationNumber == dto.RegistrationNumber && c.Id != dto.Id);
-
-				if (existingCompany != null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Bu sicil numarası başka bir firmada kullanılmaktadır.");
-				}
-
-				// Check for duplicate tax number
-				existingCompany = await _unitOfWork.Companies
-					.SingleOrDefaultAsync(c => c.TaxNumber == dto.TaxNumber && c.Id != dto.Id);
-
-				if (existingCompany != null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Bu vergi numarası başka bir firmada kullanılmaktadır.");
-				}
-
-				// Validate active contact if provided
-				if (dto.ActiveContactId.HasValue)
-				{
-					var contact = await _unitOfWork.Contacts
-						.SingleOrDefaultAsync(c => c.Id == dto.ActiveContactId.Value && c.CompanyId == dto.Id);
-
-					if (contact == null)
-					{
-						return ApiResponse<CompanyDto>.ErrorResult("Geçersiz yetkili kişi.");
-					}
-				}
-
-				_mapper.Map(dto, company);
-				_unitOfWork.Companies.Update(company);
-				await _unitOfWork.CompleteAsync();
-
-				var updatedCompany = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
-					.Include(c => c.ActiveContact)
-					.FirstOrDefaultAsync(c => c.Id == company.Id);
-
-				var result = _mapper.Map<CompanyDto>(updatedCompany);
-				return ApiResponse<CompanyDto>.SuccessResult(result, "Firma başarıyla güncellendi.");
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse<CompanyDto>.ErrorResult($"Firma güncelleme hatası: {ex.Message}");
-			}
-		}
-
-		public async Task<ApiResponse<bool>> DeleteAsync(int id)
-		{
-			try
-			{
-				var company = await _unitOfWork.Companies.GetByIdAsync(id);
-
-				if (company == null)
-				{
-					return ApiResponse<bool>.ErrorResult("Firma bulunamadı.");
-				}
-
-				// Check if company has any votes
-				var hasVotes = await _unitOfWork.VoteTransactions
-					.Query()
-					.AnyAsync(v => v.CompanyId == id);
-
-				if (hasVotes)
-				{
-					return ApiResponse<bool>.ErrorResult("Oy kaydı bulunan firma silinemez.");
-				}
-
-				// Soft delete
-				company.IsActive = false;
-				_unitOfWork.Companies.Update(company);
-				await _unitOfWork.CompleteAsync();
-
-				return ApiResponse<bool>.SuccessResult(true, "Firma başarıyla silindi.");
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse<bool>.ErrorResult($"Firma silme hatası: {ex.Message}");
-			}
-		}
-
-		public async Task<ApiResponse<List<CompanyDto>>> GetActiveCompaniesAsync()
-		{
-			try
-			{
-				var companies = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
-					.Include(c => c.ActiveContact)
-					.Where(c => c.IsActive)
-					.OrderBy(c => c.Title)
-					.ToListAsync();
-
-				var result = _mapper.Map<List<CompanyDto>>(companies);
-				return ApiResponse<List<CompanyDto>>.SuccessResult(result);
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse<List<CompanyDto>>.ErrorResult($"Aktif firma listesi getirme hatası: {ex.Message}");
-			}
-		}
-
-		public async Task<ApiResponse<CompanyDto>> GetByRegistrationNumberAsync(string registrationNumber)
-		{
-			try
-			{
-				var company = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
-					.Include(c => c.ActiveContact)
-					.FirstOrDefaultAsync(c => c.RegistrationNumber == registrationNumber);
-
-				if (company == null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Firma bulunamadı.");
-				}
-
-				var result = _mapper.Map<CompanyDto>(company);
-				return ApiResponse<CompanyDto>.SuccessResult(result);
-			}
-			catch (Exception ex)
-			{
-				return ApiResponse<CompanyDto>.ErrorResult($"Firma getirme hatası: {ex.Message}");
-			}
-		}
-		public class CompanyStatisticsDto
-		{
-			public int TotalCompanies { get; set; }
-			public int ActiveCompanies { get; set; }
-			public int InactiveCompanies { get; set; }
-			public List<CompanyTypeStatistic> CompanyTypeDistribution { get; set; }
-			public object RecentlyAdded { get; set; }
-		}
-
-		public class CompanyTypeStatistic
-		{
-			public string Type { get; set; }
-			public int Count { get; set; }
 		}
 	}
 }

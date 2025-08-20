@@ -27,6 +27,15 @@ namespace ITOVotingApplication.Web.Controllers
 		[HttpGet]
 		public IActionResult Index()
 		{
+			// User bilgilerini ViewBag'e koy
+			if (User.Identity.IsAuthenticated)
+			{
+				ViewBag.FullName = User.FindFirst("FullName")?.Value ?? "";
+				ViewBag.UserName = User.Identity.Name ?? "";
+				ViewBag.UserRole = User.IsInRole("Admin") ? "Admin" : User.IsInRole("User") ? "User" : "Kullanıcı";
+				ViewBag.UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+			}
+			
 			return View();
 		}
 
@@ -35,32 +44,60 @@ namespace ITOVotingApplication.Web.Controllers
 		[Route("api/company/count")]
 		public async Task<IActionResult> GetCompanyCount()
 		{
-			var result = await _companyService.GetCountAsync();
-			return Ok(result);
+			try
+			{
+				var result = await _companyService.GetCountAsync(true);
+				return Ok(new { success = result.Success, data = result.Data, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, data = 0, message = "Firma sayısı alınamadı" });
+			}
 		}
 
 		[HttpGet]
 		[Route("api/contact/count")]
 		public async Task<IActionResult> GetContactCount()
 		{
-			var result = await _contactService.GetCountAsync();
-			return Ok(result);
+			try
+			{
+				var result = await _contactService.GetCountAsync();
+				return Ok(new { success = result.Success, data = result.Data, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, data = 0, message = "Yetkili sayısı alınamadı" });
+			}
 		}
 
 		[HttpGet]
 		[Route("api/vote/count")]
 		public async Task<IActionResult> GetVoteCount()
 		{
-			var result = await _voteService.GetVoteCountAsync();
-			return Ok(result);
+			try
+			{
+				var result = await _voteService.GetVoteCountAsync();
+				return Ok(new { success = result.Success, data = result.Data, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, data = 0, message = "Oy sayısı alınamadı" });
+			}
 		}
 
 		[HttpGet]
 		[Route("api/user/count")]
 		public async Task<IActionResult> GetUserCount()
 		{
-			var result = await _userService.GetActiveUserCountAsync();
-			return Ok(result);
+			try
+			{
+				var result = await _userService.GetActiveUserCountAsync();
+				return Ok(new { success = result.Success, data = result.Data, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, data = 0, message = "Kullanıcı sayısı alınamadı" });
+			}
 		}
 
 		[HttpGet]

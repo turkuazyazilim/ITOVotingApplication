@@ -1,33 +1,32 @@
 using ITOVotingApplication.Business.Interfaces;
 using ITOVotingApplication.Business.Services;
+using ITOVotingApplication.Business.Services.Interfaces;
 using ITOVotingApplication.Core.Interfaces;
 using ITOVotingApplication.Data.Context;
 using ITOVotingApplication.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.StaticFiles;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Kestrel yapýlandýrmasý - IP üzerinden eriþim için
-//builder.WebHost.ConfigureKestrel(serverOptions =>
-//{
-//	serverOptions.Listen(System.Net.IPAddress.Any, 5001); // HTTP
-//	serverOptions.Listen(System.Net.IPAddress.Any, 7001, listenOptions =>
-//	{
-//		// HTTPS için sertifika gerekli - development için self-signed sertifika kullanabilirsiniz
-//		// listenOptions.UseHttps();
-//	});
-//});
-
 // Add services to the container.
 builder.Services.AddControllersWithViews()
-	.AddNewtonsoftJson(options =>
-	{
-		options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-	});
+.AddNewtonsoftJson(options =>
+{
+	options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+});
+
+// Configure API behavior options for better model validation handling
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+	// Keep automatic model validation but allow custom handling
+	options.SuppressModelStateInvalidFilter = false;
+});
 
 // Database Context
 builder.Services.AddDbContext<VotingDbContext>(options =>
@@ -42,9 +41,14 @@ builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IVoteService, VoteService>();
+builder.Services.AddScoped<ICommitteeService, CommitteeService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// JWT Configuration
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? "ThisIsMyVerySecureSecretKeyForJWT2024!@#$%";
 
 // Authentication - Dual Support (Cookie + JWT)
 builder.Services.AddAuthentication(options =>
@@ -54,10 +58,10 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-	options.LoginPath = "/Account/Login";  // Auth/Login deðil, Account/Login olmalý
-	options.LogoutPath = "/Account/Logout";
-	options.AccessDeniedPath = "/Account/AccessDenied";
-	options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+	options.LoginPath = "/Auth/Login";
+	options.LogoutPath = "/Auth/Logout";
+	options.AccessDeniedPath = "/Auth/AccessDenied";
+	options.ExpireTimeSpan = TimeSpan.FromHours(24);
 	options.SlidingExpiration = true;
 })
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -68,14 +72,48 @@ builder.Services.AddAuthentication(options =>
 		ValidateAudience = true,
 		ValidateLifetime = true,
 		ValidateIssuerSigningKey = true,
-		ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-		ValidAudience = builder.Configuration["JwtSettings:Audience"],
-		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+		ValidIssuer = jwtSettings["Issuer"] ?? "ITOVotingApp",
+		ValidAudience = jwtSettings["Audience"] ?? "ITOVotingAppUsers",
+		IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+		ClockSkew = TimeSpan.Zero
+	};
+
+	// JWT Bearer events for API authentication
+	options.Events = new JwtBearerEvents
+	{
+		OnMessageReceived = context =>
+		{
+			// Token'ï¿½ Authorization header'dan al
+			var token = context.Request.Headers["Authorization"]
+				.FirstOrDefault()?.Split(" ").Last();
+
+			if (!string.IsNullOrEmpty(token))
+			{
+				context.Token = token;
+			}
+
+			return Task.CompletedTask;
+		},
+		OnAuthenticationFailed = context =>
+		{
+			if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+			{
+				context.Response.Headers.Add("Token-Expired", "true");
+			}
+			return Task.CompletedTask;
+		}
 	};
 });
 
-// Authorization
-builder.Services.AddAuthorization();
+// Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+	options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+	options.AddPolicy("UserOnly", policy => policy.RequireRole("User", "Admin"));
+	options.AddPolicy("ApiUser", policy =>
+	policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+		  .RequireAuthenticatedUser());
+});
 
 // CORS Policy for API access
 builder.Services.AddCors(options =>
@@ -94,11 +132,11 @@ builder.Services.AddSession(options =>
 	options.IdleTimeout = TimeSpan.FromMinutes(30);
 	options.Cookie.HttpOnly = true;
 	options.Cookie.IsEssential = true;
+	options.Cookie.Name = ".ITOVoting.Session";
 });
 
-// Swagger KALDIRILDI
-// builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen();
+// Add HttpContextAccessor for accessing HttpContext in services
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -106,9 +144,6 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
 	app.UseDeveloperExceptionPage();
-	// Swagger KALDIRILDI
-	// app.UseSwagger();
-	// app.UseSwaggerUI();
 }
 else
 {
@@ -116,43 +151,116 @@ else
 	app.UseHsts();
 }
 
-// HTTPS redirection'ý kaldýrdýk çünkü hem HTTP hem HTTPS destekliyoruz
-// app.UseHttpsRedirection();
-
+// Default static files (wwwroot)
 app.UseStaticFiles();
+
+// Additional static files for temp directory with proper configuration
+var tempPath = Path.Combine(app.Environment.WebRootPath ?? app.Environment.ContentRootPath, "wwwroot", "temp");
+if (!Directory.Exists(tempPath))
+{
+    Directory.CreateDirectory(tempPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(tempPath),
+    RequestPath = "/temp",
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "application/octet-stream",
+    ContentTypeProvider = new FileExtensionContentTypeProvider(new Dictionary<string, string>
+    {
+        { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+        { ".pdf", "application/pdf" },
+        { ".doc", "application/msword" }
+    })
+});
+
+// Additional static files for Documents directory
+var documentsPath = Path.Combine(app.Environment.WebRootPath ?? app.Environment.ContentRootPath, "Documents");
+if (!Directory.Exists(documentsPath))
+{
+    Directory.CreateDirectory(documentsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(documentsPath),
+    RequestPath = "/Documents",
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "application/octet-stream"
+});
+
 app.UseRouting();
 
 app.UseCors("AllowAll");
 
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSession();
+// Giriï¿½ yapmamï¿½ï¿½ kullanï¿½cï¿½larï¿½ Login sayfasï¿½na yï¿½nlendir
+app.Use(async (context, next) =>
+{
+	// Eï¿½er kullanï¿½cï¿½ authenticate deï¿½ilse ve Login/API endpoint'i deï¿½ilse
+	if (!context.User.Identity.IsAuthenticated
+		&& !context.Request.Path.StartsWithSegments("/Auth/Login")
+		&& !context.Request.Path.StartsWithSegments("/api/auth")
+		&& !context.Request.Path.StartsWithSegments("/css")
+		&& !context.Request.Path.StartsWithSegments("/js")
+		&& !context.Request.Path.StartsWithSegments("/lib")
+		&& !context.Request.Path.StartsWithSegments("/images"))
+	{
+		// Root veya Admin sayfalarï¿½na eriï¿½im deneniyorsa Login'e yï¿½nlendir
+		if (context.Request.Path == "/"
+			|| context.Request.Path.StartsWithSegments("/Admin")
+			|| context.Request.Path.StartsWithSegments("/Dashboard")
+			|| context.Request.Path.StartsWithSegments("/Vote"))
+		{
+			context.Response.Redirect("/Auth/Login");
+			return;
+		}
+	}
 
+	await next();
+});
+
+// API Routes iï¿½in
+app.MapControllers();
+
+// Auth routes - ï¿½LK SIRADA olmalï¿½
 app.MapControllerRoute(
-	name: "default",
-	pattern: "{controller=Account}/{action=Login}/{id?}");
+	name: "auth",
+	pattern: "Auth/{action=Login}/{id?}",
+	defaults: new { controller = "Auth" });
 
+// Admin area routes
+app.MapControllerRoute(
+	name: "admin",
+	pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}");
+
+// Dashboard route
 app.MapControllerRoute(
 	name: "dashboard",
 	pattern: "Dashboard/{action=Index}/{id?}",
-	defaults: new { controller = "Dashboard", action = "Index" });
+	defaults: new { controller = "Dashboard" });
 
+// Vote routes
 app.MapControllerRoute(
-	name: "dashboard",
-	pattern: "{controller=Account}/{action=Logout}");
+	name: "vote",
+	pattern: "Vote/{action=Index}/{id?}",
+	defaults: new { controller = "Vote" });
 
-app.MapControllers(); // API endpoints için
+// Default route - Ana sayfa olarak Auth/Login'e yï¿½nlendir
+app.MapControllerRoute(
+	name: "default",
+	pattern: "{controller=Auth}/{action=Login}/{id?}");
 
-// Seed Database (Optional)
-using (var scope = app.Services.CreateScope())
+// Root path'i Login'e yï¿½nlendir
+app.MapGet("/", context =>
 {
-	var context = scope.ServiceProvider.GetRequiredService<VotingDbContext>();
-	context.Database.EnsureCreated();
-
-	// Seed default admin user if not exists
-	//DbInitializer.Initialize(context);
-}
+	context.Response.Redirect("/Auth/Login");
+	return Task.CompletedTask;
+});
 
 app.Run();
