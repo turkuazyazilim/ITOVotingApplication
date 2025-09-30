@@ -12,6 +12,13 @@ namespace ITOVotingApplication.Data.Configurations
 
 			builder.HasKey(e => e.Id);
 
+			// Properties
+			builder.Property(x => x.FieldReferenceCategoryId)
+				.IsRequired(false);
+
+			builder.Property(x => x.FieldReferenceSubCategoryId)
+				.IsRequired(false);
+
 			// Relationships
 			builder.HasOne(d => d.User)
 				.WithMany(p => p.UserRoles)
@@ -22,6 +29,17 @@ namespace ITOVotingApplication.Data.Configurations
 				.WithMany(p => p.UserRoles)
 				.HasForeignKey(d => d.RoleId)
 				.OnDelete(DeleteBehavior.Restrict);
+
+			// Field Reference relationships (nullable)
+			builder.HasOne(d => d.FieldReferenceCategory)
+				.WithMany()
+				.HasForeignKey(d => d.FieldReferenceCategoryId)
+				.OnDelete(DeleteBehavior.NoAction);
+
+			builder.HasOne(d => d.FieldReferenceSubCategory)
+				.WithMany(p => p.UserRoles)
+				.HasForeignKey(d => d.FieldReferenceSubCategoryId)
+				.OnDelete(DeleteBehavior.NoAction);
 
 			// Index
 			builder.HasIndex(e => new { e.UserId, e.RoleId }).IsUnique();

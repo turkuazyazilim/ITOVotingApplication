@@ -92,19 +92,13 @@ namespace VotingApplication.Web.Controllers
 			{
 				RegistrationNumber = model.RegistrationNumber,
 				Title = model.Title,
-				CompanyType = model.CompanyType,
 				TradeRegistrationNumber = model.TradeRegistrationNumber,
-				Capital = model.Capital,
 				RegistrationAddress = model.RegistrationAddress,
-				Degree = model.Degree,
-				MemberRegistrationDate = model.MemberRegistrationDate,
 				ProfessionalGroup = model.ProfessionalGroup,
-				NaceCode = model.NaceCode,
 				OfficePhone = model.OfficePhone,
 				MobilePhone = model.MobilePhone,
 				Email = model.Email,
-				WebSite = model.WebSite,
-				IsActive = model.IsActive // Add IsActive property
+				IsActive = model.IsActive
 			};
 
 			//var result = await _companyService.CreateAsync(dto);
@@ -290,14 +284,6 @@ namespace VotingApplication.Web.Controllers
 		}
 		private async Task PrepareViewBag()
 		{
-			var naceCodes = await _unitOfWork.NaceCodes.GetAllAsync();
-
-			ViewBag.NaceCodes = naceCodes.Select(n => new SelectListItem
-			{
-				Value = n.Code,
-				Text = $"{n.Code} - {n.NaceDescription}"
-			}).ToList();
-
 			ViewBag.ProfessionalGroups = new List<SelectListItem>
 			{
 				new SelectListItem { Value = "5", Text = "5 - BİLGİ TEKNOLOJİLERİ" }

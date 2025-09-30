@@ -30,9 +30,13 @@ namespace ITOVotingApplication.Web.Controllers
 		[AllowAnonymous]
 		public IActionResult Login(string returnUrl = null)
 		{
-			// Eğer kullanıcı zaten giriş yapmışsa Dashboard'a yönlendir
+			// Eğer kullanıcı zaten giriş yapmışsa role göre yönlendir
 			if (User.Identity.IsAuthenticated)
 			{
+				if (User.IsInRole("Saha Görevlisi"))
+				{
+					return RedirectToAction("Index", "FieldWorker");
+				}
 				return RedirectToAction("Index", "Dashboard");
 			}
 
@@ -104,6 +108,12 @@ namespace ITOVotingApplication.Web.Controllers
 					if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
 					{
 						return Redirect(returnUrl);
+					}
+
+					// Role göre yönlendirme
+					if (loginResponse.Data.User.Roles != null && loginResponse.Data.User.Roles.Contains("Saha Görevlisi"))
+					{
+						return RedirectToAction("Index", "FieldWorker");
 					}
 
 					return RedirectToAction("Index", "Dashboard");
@@ -384,6 +394,10 @@ namespace ITOVotingApplication.Web.Controllers
 		{
 			if (User.Identity.IsAuthenticated)
 			{
+				if (User.IsInRole("Saha Görevlisi"))
+				{
+					return RedirectToAction("Index", "FieldWorker");
+				}
 				return RedirectToAction("Index", "Dashboard");
 			}
 

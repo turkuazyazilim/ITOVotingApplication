@@ -7,6 +7,7 @@ using ITOVotingApplication.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ITOVotingApplication.Web.Controllers
 {
@@ -18,12 +19,16 @@ namespace ITOVotingApplication.Web.Controllers
         private readonly IUserService _userService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IWhatsAppService _whatsAppService;
+        private readonly IUserInvitationService _invitationService;
 
-        public UserController(IUserService userService, IUnitOfWork unitOfWork, IMapper mapper)
+        public UserController(IUserService userService, IUnitOfWork unitOfWork, IMapper mapper, IWhatsAppService whatsAppService, IUserInvitationService invitationService)
         {
             _userService = userService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _whatsAppService = whatsAppService;
+            _invitationService = invitationService;
         }
 
         [HttpGet("")]
@@ -51,23 +56,7 @@ namespace ITOVotingApplication.Web.Controllers
         [HttpGet("{id:int}")]
         public async Task<ApiResponse<UserDto>> GetByIdAsync(int id)
         {
-            try
-            {
-                var user = await _unitOfWork.Users.Query()
-                    .FirstOrDefaultAsync(u => u.Id == id);
-
-                if (user == null)
-                {
-                    return ApiResponse<UserDto>.ErrorResult("Kullanıcı bulunamadı.");
-                }
-
-                var result = _mapper.Map<UserDto>(user);
-                return ApiResponse<UserDto>.SuccessResult(result);
-            }
-            catch (Exception ex)
-            {
-                return ApiResponse<UserDto>.ErrorResult($"Kullanıcı getirme hatası: {ex.Message}");
-            }
+            return await _userService.GetByIdAsync(id);
         }
 
         [HttpPost]
@@ -130,6 +119,31 @@ namespace ITOVotingApplication.Web.Controllers
             }
         }
 
+        [HttpGet("roles")]
+        public async Task<ApiResponse<List<RoleDto>>> GetRolesAsync()
+        {
+            try
+            {
+                var roles = await _unitOfWork.Roles.Query()
+                    .Where(r => r.IsActive)
+                    .OrderBy(r => r.RoleDescription)
+                    .ToListAsync();
+
+                var result = roles.Select(r => new RoleDto
+                {
+                    Id = r.Id,
+                    RoleDescription = r.RoleDescription,
+                    IsActive = r.IsActive
+                }).ToList();
+
+                return ApiResponse<List<RoleDto>>.SuccessResult(result);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<List<RoleDto>>.ErrorResult($"Roller getirme hatası: {ex.Message}");
+            }
+        }
+
         [HttpGet("statistics")]
         public async Task<ApiResponse<UserStatisticsDto>> GetStatisticsAsync()
         {
@@ -155,6 +169,73 @@ namespace ITOVotingApplication.Web.Controllers
                 return ApiResponse<UserStatisticsDto>.ErrorResult($"İstatistik getirme hatası: {ex.Message}");
             }
         }
+
+        [HttpPost("send-registration-link")]
+        public async Task<ApiResponse<object>> SendRegistrationLinkAsync(SendRegistrationLinkDto dto)
+        {
+            try
+            {
+                // Get current user ID
+                var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+                {
+                    return ApiResponse<object>.ErrorResult("Kullanıcı kimliği bulunamadı");
+                }
+
+                // Create invitation token
+                var invitationResult = await _invitationService.CreateInvitationAsync(
+                    dto.ContactMethod == "email" ? dto.Email : null,
+                    dto.ContactMethod == "phone" ? dto.Phone : null,
+                    currentUserId);
+
+                if (!invitationResult.Success)
+                {
+                    return ApiResponse<object>.ErrorResult($"Davet oluşturulamadı: {invitationResult.Message}");
+                }
+
+                // Generate invitation link with token
+                var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+                var registrationLink = $"{baseUrl}/invitation/{invitationResult.Data}";
+
+                string message = "";
+                if (dto.ContactMethod == "email")
+                {
+                    message = $"E-posta gönderildi: {dto.Email}\nKayıt linki: {registrationLink}";
+                    // TODO: Implement email sending
+                    // await _emailService.SendRegistrationEmailAsync(dto.Email, registrationLink);
+                }
+                else if (dto.ContactMethod == "phone")
+                {
+                    // Prepare WhatsApp message
+                    var whatsappResult = await _whatsAppService.SendRegistrationLinkAsync(dto.Phone, registrationLink);
+
+                    if (whatsappResult.Success)
+                    {
+                        // Return structured data for modal display
+                        var responseData = new
+                        {
+                            contactMethod = "phone",
+                            phoneNumber = dto.Phone,
+                            message = whatsappResult.Data,
+                            registrationLink = registrationLink
+                        };
+
+                        return ApiResponse<object>.SuccessResult(responseData, "WhatsApp mesajı hazırlandı!");
+                    }
+                    else
+                    {
+                        return ApiResponse<object>.ErrorResult($"WhatsApp mesajı hazırlanamadı: {whatsappResult.Message}");
+                    }
+                }
+
+                // Fallback for email (will be implemented later)
+                return ApiResponse<object>.SuccessResult(message, "Kayıt linki başarıyla hazırlandı!");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<object>.ErrorResult($"Link gönderme hatası: {ex.Message}");
+            }
+        }
     }
 
     public class UserStatisticsDto
@@ -163,5 +244,19 @@ namespace ITOVotingApplication.Web.Controllers
         public int ActiveUsers { get; set; }
         public int InactiveUsers { get; set; }
         public object RecentlyAdded { get; set; }
+    }
+
+    public class RoleDto
+    {
+        public int Id { get; set; }
+        public string RoleDescription { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class SendRegistrationLinkDto
+    {
+        public string ContactMethod { get; set; } // "email" or "phone"
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
     }
 }

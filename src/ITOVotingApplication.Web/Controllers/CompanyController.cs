@@ -43,6 +43,13 @@ namespace ITOVotingApplication.Web.Controllers
 			return Ok(result);
 		}
 
+		[HttpGet("committees")]
+		public async Task<IActionResult> GetCommittees()
+		{
+			var result = await _committeeService.GetAllForDropdownAsync();
+			return Ok(result);
+		}
+
 		[HttpGet("")]
 		public async Task<IActionResult> GetCompanies([FromQuery] PagedRequest? request)
 		{
@@ -70,8 +77,6 @@ namespace ITOVotingApplication.Web.Controllers
 			try
 			{
 				var company = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
 					.Include(c => c.ActiveContact)
 					.FirstOrDefaultAsync(c => c.Id == id);
 
@@ -99,15 +104,6 @@ namespace ITOVotingApplication.Web.Controllers
 					ActiveCompanies = await _unitOfWork.Companies.Query().Where(c => c.IsActive).CountAsync(),
 					InactiveCompanies = await _unitOfWork.Companies.Query().Where(c => !c.IsActive).CountAsync(),
 
-					// Firma tiplerine göre dağılım
-					CompanyTypeDistribution = await _unitOfWork.Companies.Query()
-						.GroupBy(c => c.CompanyType)
-						.Select(g => new CompanyTypeStatistic
-						{
-							Type = g.Key,
-							Count = g.Count()
-						})
-						.ToListAsync(),
 
 					// Son eklenen firmalar
 					RecentlyAdded = await _unitOfWork.Companies.Query()
@@ -139,26 +135,6 @@ namespace ITOVotingApplication.Web.Controllers
 					return ApiResponse<CompanyDto>.ErrorResult("Bu sicil numarası ile kayıtlı firma bulunmaktadır.");
 				}
 
-				// Validate company type
-				var companyType = await _unitOfWork.CompanyTypes
-					.SingleOrDefaultAsync(ct => ct.CompanyTypeCode == dto.CompanyType);
-
-				if (companyType == null)
-				{
-					return ApiResponse<CompanyDto>.ErrorResult("Geçersiz şirket tipi.");
-				}
-
-				// Validate NACE code if provided
-				if (!string.IsNullOrWhiteSpace(dto.NaceCode))
-				{
-					var naceCode = await _unitOfWork.NaceCodes
-						.SingleOrDefaultAsync(n => n.Code == dto.NaceCode);
-
-					if (naceCode == null)
-					{
-						return ApiResponse<CompanyDto>.ErrorResult("Geçersiz NACE kodu.");
-					}
-				}
 
 				var company = _mapper.Map<Company>(dto);
 				company.IsActive = true;
@@ -167,8 +143,6 @@ namespace ITOVotingApplication.Web.Controllers
 				await _unitOfWork.CompleteAsync();
 
 				var createdCompany = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
 					.FirstOrDefaultAsync(c => c.Id == company.Id);
 
 				var result = _mapper.Map<CompanyDto>(createdCompany);
@@ -221,8 +195,6 @@ namespace ITOVotingApplication.Web.Controllers
 				await _unitOfWork.CompleteAsync();
 
 				var updatedCompany = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
 					.Include(c => c.ActiveContact)
 					.FirstOrDefaultAsync(c => c.Id == company.Id);
 
@@ -276,8 +248,6 @@ namespace ITOVotingApplication.Web.Controllers
 			try
 			{
 				var companies = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
 					.Include(c => c.ActiveContact)
 					.Where(c => c.IsActive)
 					.OrderBy(c => c.Title)
@@ -298,8 +268,6 @@ namespace ITOVotingApplication.Web.Controllers
 			try
 			{
 				var company = await _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
 					.Include(c => c.ActiveContact)
 					.FirstOrDefaultAsync(c => c.RegistrationNumber == registrationNumber);
 
@@ -321,15 +289,9 @@ namespace ITOVotingApplication.Web.Controllers
 			public int TotalCompanies { get; set; }
 			public int ActiveCompanies { get; set; }
 			public int InactiveCompanies { get; set; }
-			public List<CompanyTypeStatistic> CompanyTypeDistribution { get; set; }
-			public object RecentlyAdded { get; set; }
+				public object RecentlyAdded { get; set; }
 		}
 
-		public class CompanyTypeStatistic
-		{
-			public string Type { get; set; }
-			public int Count { get; set; }
-		}
 
 		[HttpGet("{id:int}/generate-authorization-document")]
 		public async Task<IActionResult> GenerateAuthorizationDocument(int id)

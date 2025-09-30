@@ -13,12 +13,10 @@ namespace ITOVotingApplication.Business.Mappings
 		{
 			// Company Mappings
 			CreateMap<Company, CompanyDto>()
-				.ForMember(dest => dest.CompanyTypeDescription,
-					opt => opt.MapFrom(src => src.CompanyTypeNavigation.CompanyTypeDescription))
-				.ForMember(dest => dest.NaceDescription,
-					opt => opt.MapFrom(src => src.NaceCodeNavigation.NaceDescription))
 				.ForMember(dest => dest.ActiveContactName,
-					opt => opt.MapFrom(src => src.ActiveContact != null ? src.ActiveContact.FullName : null));
+					opt => opt.MapFrom(src => src.ActiveContact != null ? src.ActiveContact.FullName : null))
+				.ForMember(dest => dest.CommitteeDescription,
+					opt => opt.MapFrom(src => src.Committee != null ? src.Committee.CommitteeDescription : null));
 
 			CreateMap<CreateCompanyDto, Company>();
 			CreateMap<UpdateCompanyDto, Company>();
@@ -53,7 +51,23 @@ namespace ITOVotingApplication.Business.Mappings
 				.ForMember(dest => dest.Roles,
 					opt => opt.MapFrom(src => src.UserRoles
 						.Where(ur => ur.IsActive)
-						.Select(ur => ur.Role.RoleDescription).ToList()));
+						.Select(ur => ur.Role.RoleDescription).ToList()))
+				.ForMember(dest => dest.FieldReferenceCategoryId,
+					opt => opt.MapFrom(src => src.UserRoles
+						.Where(ur => ur.IsActive)
+						.FirstOrDefault().FieldReferenceCategoryId))
+				.ForMember(dest => dest.FieldReferenceSubCategoryId,
+					opt => opt.MapFrom(src => src.UserRoles
+						.Where(ur => ur.IsActive)
+						.FirstOrDefault().FieldReferenceSubCategoryId))
+				.ForMember(dest => dest.FieldReferenceCategoryName,
+					opt => opt.MapFrom(src => src.UserRoles
+						.Where(ur => ur.IsActive && ur.FieldReferenceCategory != null)
+						.FirstOrDefault().FieldReferenceCategory.CategoryName))
+				.ForMember(dest => dest.FieldReferenceSubCategoryName,
+					opt => opt.MapFrom(src => src.UserRoles
+						.Where(ur => ur.IsActive && ur.FieldReferenceSubCategory != null)
+						.FirstOrDefault().FieldReferenceSubCategory.SubCategoryName));
 
 			CreateMap<CreateUserDto, User>();
 			CreateMap<UpdateUserDto, User>();

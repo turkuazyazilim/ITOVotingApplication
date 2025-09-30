@@ -13,8 +13,6 @@ namespace ITOVotingApplication.Data.Context
 
 		// DbSets
 		public DbSet<Company> Companies { get; set; }
-		public DbSet<CompanyType> CompanyTypes { get; set; }
-		public DbSet<NaceCode> NaceCodes { get; set; }
 		public DbSet<Contact> Contacts { get; set; }
 		public DbSet<Committee> Committees { get; set; }
 		public DbSet<User> Users { get; set; }
@@ -22,6 +20,9 @@ namespace ITOVotingApplication.Data.Context
 		public DbSet<UserRole> UserRoles { get; set; }
 		public DbSet<BallotBox> BallotBoxes { get; set; }
 		public DbSet<VoteTransaction> VoteTransactions { get; set; }
+		public DbSet<FieldReferenceCategory> FieldReferenceCategories { get; set; }
+		public DbSet<FieldReferenceSubCategory> FieldReferenceSubCategories { get; set; }
+		public DbSet<UserInvitation> UserInvitations { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -29,8 +30,6 @@ namespace ITOVotingApplication.Data.Context
 
 			// Apply configurations
 			modelBuilder.ApplyConfiguration(new CompanyConfiguration());
-			modelBuilder.ApplyConfiguration(new CompanyTypeConfiguration());
-			modelBuilder.ApplyConfiguration(new NaceCodeConfiguration());
 			modelBuilder.ApplyConfiguration(new ContactConfiguration());
 			modelBuilder.ApplyConfiguration(new CommitteeConfiguration());
 			modelBuilder.ApplyConfiguration(new UserConfiguration());
@@ -38,6 +37,9 @@ namespace ITOVotingApplication.Data.Context
 			modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
 			modelBuilder.ApplyConfiguration(new BallotBoxConfiguration());
 			modelBuilder.ApplyConfiguration(new VoteTransactionConfiguration());
+			modelBuilder.ApplyConfiguration(new FieldReferenceCategoryConfiguration());
+			modelBuilder.ApplyConfiguration(new FieldReferenceSubCategoryConfiguration());
+			modelBuilder.ApplyConfiguration(new UserInvitationConfiguration());
 		}
 	}
 }

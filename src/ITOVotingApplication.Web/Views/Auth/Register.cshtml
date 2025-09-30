@@ -1,0 +1,335 @@
+@{
+    ViewData["Title"] = "Saha Kullanıcısı Kayıt";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - İTO Oylama Sistemi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <div class="flex justify-center">
+                    <img src="/Documents/images/logosmall.png" alt="Logo" class="h-16 w-16 object-contain bg-white rounded-full p-2" />
+                </div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-white">
+                    Saha Kullanıcısı Kayıt
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-200">
+                    İTO Oylama Sistemi'ne saha kullanıcısı olarak kayıt olun
+                </p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-xl p-8">
+                <form id="registerForm" class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- First Name -->
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700">Ad</label>
+                            <input id="firstName" name="firstName" type="text" required
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Last Name -->
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700">Soyad</label>
+                            <input id="lastName" name="lastName" type="text" required
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Email (will be used as username) -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">E-posta Adresi</label>
+                        <input id="email" name="email" type="email" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">Bu e-posta adresi kullanıcı adınız olacaktır</p>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div>
+                        <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Telefon Numarası</label>
+                        <input id="phoneNumber" name="phoneNumber" type="tel" required
+                               placeholder="05XXXXXXXXX"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Şifre</label>
+                        <input id="password" name="password" type="password" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Şifre Tekrar</label>
+                        <input id="confirmPassword" name="confirmPassword" type="password" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Field Reference Selection -->
+                    <div class="space-y-4 p-4 bg-gray-50 rounded-lg" id="fieldReferenceSection">
+                        <h4 class="text-sm font-medium text-gray-700">Saha Referans Bilgileri</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Category Selection -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Ana Kategori *</label>
+                                <select id="fieldCategory" onchange="loadSubCategories()" required
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Ana kategori seçiniz</option>
+                                </select>
+                            </div>
+
+                            <!-- SubCategory Selection -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Alt Kategori *</label>
+                                <select id="fieldSubCategory" required
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Önce ana kategori seçiniz</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit" id="submitBtn"
+                                class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                                <i data-lucide="user-plus" class="h-5 w-5 text-blue-500 group-hover:text-blue-400"></i>
+                            </span>
+                            Kayıt Ol
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="hidden mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                    <div class="flex">
+                        <i data-lucide="check-circle" class="h-5 w-5 text-green-400 mr-2"></i>
+                        <div>
+                            <h3 class="text-sm font-medium">Kayıt Başarılı!</h3>
+                            <p class="mt-1 text-sm">Hesabınız başarıyla oluşturuldu. Giriş yapmak için admin ile iletişime geçin.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="hidden mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                    <div class="flex">
+                        <i data-lucide="alert-circle" class="h-5 w-5 text-red-400 mr-2"></i>
+                        <div>
+                            <h3 class="text-sm font-medium">Hata!</h3>
+                            <p class="mt-1 text-sm" id="errorText"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <p class="text-sm text-gray-200">
+                    Zaten hesabınız var mı?
+                    <a href="/Auth/Login" class="font-medium text-white hover:text-gray-200 underline">Giriş yapın</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let fieldUserRoleId = null;
+        let allFieldCategories = [];
+
+        // Initialize page on load
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Get "Saha Görevlisi" role ID
+            await loadFieldUserRoleId();
+
+            // Load field reference categories
+            await loadFieldReferenceData();
+
+            lucide.createIcons();
+        });
+
+        async function loadFieldUserRoleId() {
+            try {
+                const response = await fetch('/api/user/roles');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        const fieldRole = result.data.find(role => role.roleDescription === 'Saha Görevlisi');
+                        if (fieldRole) {
+                            fieldUserRoleId = fieldRole.id;
+                        } else {
+                            console.warn('Saha Görevlisi rolü bulunamadı');
+                            fieldUserRoleId = 5; // fallback
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading roles:', error);
+                fieldUserRoleId = 5; // fallback
+            }
+        }
+
+        async function loadFieldReferenceData() {
+            try {
+                const response = await fetch('/api/fieldreference/categories');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        allFieldCategories = result.data;
+                        populateFieldCategories();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading field reference data:', error);
+            }
+        }
+
+        function populateFieldCategories() {
+            const categorySelect = document.getElementById('fieldCategory');
+            categorySelect.innerHTML = '<option value="">Ana kategori seçiniz</option>';
+
+            allFieldCategories.forEach(category => {
+                if (category.isActive) {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.categoryName;
+                    categorySelect.appendChild(option);
+                }
+            });
+        }
+
+        function loadSubCategories() {
+            const categorySelect = document.getElementById('fieldCategory');
+            const subCategorySelect = document.getElementById('fieldSubCategory');
+            const selectedCategoryId = categorySelect.value;
+
+            // Clear subcategory options
+            subCategorySelect.innerHTML = '<option value="">Alt kategori seçiniz</option>';
+
+            if (!selectedCategoryId) {
+                subCategorySelect.innerHTML = '<option value="">Önce ana kategori seçiniz</option>';
+                return;
+            }
+
+            // Find selected category
+            const selectedCategory = allFieldCategories.find(c => c.id == selectedCategoryId);
+
+            if (selectedCategory && selectedCategory.subCategories) {
+                selectedCategory.subCategories.forEach(subCategory => {
+                    if (subCategory.isActive) {
+                        const option = document.createElement('option');
+                        option.value = subCategory.id;
+                        option.textContent = subCategory.subCategoryName;
+                        subCategorySelect.appendChild(option);
+                    }
+                });
+            }
+
+            if (subCategorySelect.children.length === 1) {
+                subCategorySelect.innerHTML = '<option value="">Bu kategoride alt kategori yok</option>';
+            }
+        }
+
+        // Form submission
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate password match
+            if (password !== confirmPassword) {
+                showError('Şifreler eşleşmiyor!');
+                return;
+            }
+
+            // Get field reference selections
+            const fieldReferenceCategoryId = document.getElementById('fieldCategory').value;
+            const fieldReferenceSubCategoryId = document.getElementById('fieldSubCategory').value;
+
+            // Validate field reference selections
+            if (!fieldReferenceCategoryId) {
+                showError('Ana kategori seçimi gereklidir!');
+                return;
+            }
+
+            if (!fieldReferenceSubCategoryId) {
+                showError('Alt kategori seçimi gereklidir!');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin mr-2"></i>Kayıt yapılıyor...';
+
+            try {
+                const userData = {
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phoneNumber: document.getElementById('phoneNumber').value.trim(),
+                    userName: document.getElementById('email').value.trim(), // Email as username
+                    password: password,
+                    isActive: true,
+                    roleIds: fieldUserRoleId ? [fieldUserRoleId] : [5], // Dynamic Saha Görevlisi role ID
+                    fieldReferenceCategoryId: parseInt(fieldReferenceCategoryId),
+                    fieldReferenceSubCategoryId: parseInt(fieldReferenceSubCategoryId)
+                };
+
+                const response = await fetch('/api/user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showSuccess();
+                    document.getElementById('registerForm').style.display = 'none';
+                } else {
+                    showError(result.message || 'Kayıt işlemi başarısız!');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showError('Bir hata oluştu. Lütfen tekrar deneyin.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="absolute left-0 inset-y-0 flex items-center pl-3"><i data-lucide="user-plus" class="h-5 w-5 text-blue-500 group-hover:text-blue-400"></i></span>Kayıt Ol';
+                lucide.createIcons();
+            }
+        });
+
+        function showSuccess() {
+            document.getElementById('successMessage').classList.remove('hidden');
+            document.getElementById('errorMessage').classList.add('hidden');
+            lucide.createIcons();
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').classList.remove('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

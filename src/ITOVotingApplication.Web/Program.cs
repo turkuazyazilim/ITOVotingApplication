@@ -42,6 +42,10 @@ builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IVoteService, VoteService>();
 builder.Services.AddScoped<ICommitteeService, CommitteeService>();
+builder.Services.AddScoped<IUserInvitationService, UserInvitationService>();
+
+// Communication Services
+builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

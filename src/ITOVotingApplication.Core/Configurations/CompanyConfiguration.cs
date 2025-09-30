@@ -21,27 +21,14 @@ namespace ITOVotingApplication.Data.Configurations
 				.HasMaxLength(250)
 				.IsRequired();
 
-			builder.Property(e => e.CompanyType)
-				.HasMaxLength(10)
-				.IsRequired();
-
 			builder.Property(e => e.TradeRegistrationNumber)
 				.HasMaxLength(50);
-
-			builder.Property(e => e.Capital)
-				.HasColumnType("decimal(18,2)");
 
 			builder.Property(e => e.RegistrationAddress)
 				.HasMaxLength(500);
 
-			builder.Property(e => e.Degree)
-				.HasMaxLength(50);
-
 			builder.Property(e => e.ProfessionalGroup)
 				.HasMaxLength(100);
-
-			builder.Property(e => e.NaceCode)
-				.HasMaxLength(10);
 
 			builder.Property(e => e.OfficePhone)
 				.HasMaxLength(20);
@@ -52,27 +39,18 @@ namespace ITOVotingApplication.Data.Configurations
 			builder.Property(e => e.Email)
 				.HasMaxLength(100);
 
-			builder.Property(e => e.WebSite)
-				.HasMaxLength(100);
-
 			builder.Property(e => e.IsActive);
 
 			builder.Property(e => e.Has2022AuthorizationCertificate);
 
 			// Relationships
-			builder.HasOne(d => d.CompanyTypeNavigation)
-				.WithMany(p => p.Companies)
-				.HasForeignKey(d => d.CompanyType)
-				.HasPrincipalKey(p => p.CompanyTypeCode);
-
-			builder.HasOne(d => d.NaceCodeNavigation)
-				.WithMany(p => p.Companies)
-				.HasForeignKey(d => d.NaceCode)
-				.HasPrincipalKey(p => p.Code);
-
 			builder.HasOne(d => d.ActiveContact)
 				.WithMany(p => p.ActiveForCompanies)
 				.HasForeignKey(d => d.ActiveContactId);
+
+			builder.HasOne(d => d.Committee)
+				.WithMany(p => p.Companies)
+				.HasForeignKey(d => d.CommitteeId);
 
 			// Index
 			builder.HasIndex(e => e.RegistrationNumber).IsUnique();

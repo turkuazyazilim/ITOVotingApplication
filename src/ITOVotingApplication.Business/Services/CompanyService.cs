@@ -23,9 +23,8 @@ namespace ITOVotingApplication.Business.Services
 			try
 			{
 				var query = _unitOfWork.Companies.Query()
-					.Include(c => c.CompanyTypeNavigation)
-					.Include(c => c.NaceCodeNavigation)
 					.Include(c => c.ActiveContact)
+					.Include(c => c.Committee)
 					.AsQueryable();
 
 				// Search filter
@@ -45,12 +44,6 @@ namespace ITOVotingApplication.Business.Services
 						"title" => request.IsDescending ?
 							query.OrderByDescending(c => c.Title) :
 							query.OrderBy(c => c.Title),
-						"registrationdate" => request.IsDescending ?
-							query.OrderByDescending(c => c.MemberRegistrationDate) :
-							query.OrderBy(c => c.MemberRegistrationDate),
-						"capital" => request.IsDescending ?
-							query.OrderByDescending(c => c.Capital) :
-							query.OrderBy(c => c.Capital),
 						_ => query.OrderBy(c => c.Id)
 					};
 				}
@@ -81,6 +74,59 @@ namespace ITOVotingApplication.Business.Services
 				return ApiResponse<PagedResult<CompanyDto>>.ErrorResult($"Firma listesi getirme hatası: {ex.Message}");
 			}
 		}
+
+		public async Task<ApiResponse<CompanyDto>> GetByIdAsync(int id)
+		{
+			try
+			{
+				var company = await _unitOfWork.Companies.Query()
+					.Include(c => c.ActiveContact)
+					.Include(c => c.Committee)
+					.FirstOrDefaultAsync(c => c.Id == id);
+
+				if (company == null)
+				{
+					return ApiResponse<CompanyDto>.ErrorResult("Firma bulunamadı");
+				}
+
+				var companyDto = _mapper.Map<CompanyDto>(company);
+				return ApiResponse<CompanyDto>.SuccessResult(companyDto);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<CompanyDto>.ErrorResult($"Firma getirme hatası: {ex.Message}");
+			}
+		}
+
+		public async Task<ApiResponse<CompanyDto>> UpdateAsync(UpdateCompanyDto dto)
+		{
+			try
+			{
+				var company = await _unitOfWork.Companies.GetByIdAsync(dto.Id);
+				if (company == null)
+				{
+					return ApiResponse<CompanyDto>.ErrorResult("Firma bulunamadı");
+				}
+
+				// Update only the allowed fields
+				company.Title = dto.Title;
+				company.TradeRegistrationNumber = dto.TradeRegistrationNumber;
+				company.RegistrationAddress = dto.RegistrationAddress;
+				company.IsActive = dto.IsActive;
+				company.Has2022AuthorizationCertificate = dto.Has2022AuthorizationCertificate;
+
+				_unitOfWork.Companies.Update(company);
+				await _unitOfWork.CompleteAsync();
+
+				var updatedCompanyDto = _mapper.Map<CompanyDto>(company);
+				return ApiResponse<CompanyDto>.SuccessResult(updatedCompanyDto);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<CompanyDto>.ErrorResult($"Firma güncelleme hatası: {ex.Message}");
+			}
+		}
+
 		public async Task<ApiResponse<int>> GetCountAsync(bool onlyActive = true)
 		{
 			try

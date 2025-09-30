@@ -8,8 +8,6 @@ namespace ITOVotingApplication.Data.Repositories
 	{
 		private readonly VotingDbContext _context;
 		private IGenericRepository<Company> _companies;
-		private IGenericRepository<CompanyType> _companyTypes;
-		private IGenericRepository<NaceCode> _naceCodes;
 		private IGenericRepository<Contact> _contacts;
 		private IGenericRepository<Committee> _committees;
 		private IGenericRepository<User> _users;
@@ -17,6 +15,9 @@ namespace ITOVotingApplication.Data.Repositories
 		private IGenericRepository<UserRole> _userRoles;
 		private IGenericRepository<BallotBox> _ballotBoxes;
 		private IGenericRepository<VoteTransaction> _voteTransactions;
+		private IGenericRepository<FieldReferenceCategory> _fieldReferenceCategories;
+		private IGenericRepository<FieldReferenceSubCategory> _fieldReferenceSubCategories;
+		private IGenericRepository<UserInvitation> _userInvitations;
 
 		public UnitOfWork(VotingDbContext context)
 		{
@@ -25,12 +26,6 @@ namespace ITOVotingApplication.Data.Repositories
 
 		public IGenericRepository<Company> Companies =>
 			_companies ??= new GenericRepository<Company>(_context);
-
-		public IGenericRepository<CompanyType> CompanyTypes =>
-			_companyTypes ??= new GenericRepository<CompanyType>(_context);
-
-		public IGenericRepository<NaceCode> NaceCodes =>
-			_naceCodes ??= new GenericRepository<NaceCode>(_context);
 
 		public IGenericRepository<Contact> Contacts =>
 			_contacts ??= new GenericRepository<Contact>(_context);
@@ -52,6 +47,15 @@ namespace ITOVotingApplication.Data.Repositories
 
 		public IGenericRepository<VoteTransaction> VoteTransactions =>
 			_voteTransactions ??= new GenericRepository<VoteTransaction>(_context);
+
+		public IGenericRepository<FieldReferenceCategory> FieldReferenceCategories =>
+			_fieldReferenceCategories ??= new GenericRepository<FieldReferenceCategory>(_context);
+
+		public IGenericRepository<FieldReferenceSubCategory> FieldReferenceSubCategories =>
+			_fieldReferenceSubCategories ??= new GenericRepository<FieldReferenceSubCategory>(_context);
+
+		public IGenericRepository<UserInvitation> UserInvitations =>
+			_userInvitations ??= new GenericRepository<UserInvitation>(_context);
 
 		public async Task<int> CompleteAsync()
 		{

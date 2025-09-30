@@ -119,6 +119,18 @@
                         <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
                     </div>
 
+                    <!-- Field Reference Button -->
+                    <button onclick="openFieldReferenceModal()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+                        <i data-lucide="map-pin" class="h-4 w-4"></i>
+                        <span class="hidden sm:inline">Saha Referansı</span>
+                    </button>
+
+                    <!-- Send Field User Link Button -->
+                    <button onclick="openSendLinkModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2">
+                        <i data-lucide="send" class="h-4 w-4"></i>
+                        <span class="hidden sm:inline">Saha Kullanıcısı Link Gönder</span>
+                    </button>
+
                     <!-- Add New User Button -->
                     <button onclick="openCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
                         <i data-lucide="plus" class="h-4 w-4"></i>
@@ -273,11 +285,31 @@
                         <h4 class="text-base font-medium text-gray-900 mb-3">Yetki</h4>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Yetkisi *</label>
-                            <select id="createRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="createRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleFieldReferenceSection('create')">
                                 <option value="">Yetki seçiniz</option>
-                                <option value="1">Admin</option>
-                                <option value="2">Sandık Görevlisi</option>
+                                <!-- Roles will be loaded dynamically -->
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Saha Referansı (Only for Saha Görevlisi role) -->
+                    <div id="createFieldReferenceSection" class="hidden">
+                        <h4 class="text-base font-medium text-gray-900 mb-3">Saha Referansı</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ana Kategori</label>
+                                <select id="createFieldCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="loadCreateSubCategories()">
+                                    <option value="">Ana kategori seçiniz</option>
+                                    <!-- Categories will be loaded dynamically -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Alt Kategori</label>
+                                <select id="createFieldSubCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Önce ana kategori seçiniz</option>
+                                    <!-- SubCategories will be loaded dynamically -->
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -390,11 +422,31 @@
                         <h4 class="text-base font-medium text-gray-900 mb-3">Yetki</h4>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Yetkisi *</label>
-                            <select id="editRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="editRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleFieldReferenceSection('edit')">
                                 <option value="">Yetki seçiniz</option>
-                                <option value="1">Admin</option>
-                                <option value="2">Sandık Görevlisi</option>
+                                <!-- Roles will be loaded dynamically -->
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Saha Referansı (Only for Saha Görevlisi role) -->
+                    <div id="editFieldReferenceSection" class="hidden">
+                        <h4 class="text-base font-medium text-gray-900 mb-3">Saha Referansı</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ana Kategori</label>
+                                <select id="editFieldCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="loadEditSubCategories()">
+                                    <option value="">Ana kategori seçiniz</option>
+                                    <!-- Categories will be loaded dynamically -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Alt Kategori</label>
+                                <select id="editFieldSubCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Önce ana kategori seçiniz</option>
+                                    <!-- SubCategories will be loaded dynamically -->
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -432,13 +484,296 @@
     </div>
     </div>
 
+<!-- Field Reference Modal -->
+<div id="fieldReferenceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[70] overflow-y-auto">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Saha Referansı Yönetimi</h3>
+                    <button onclick="closeFieldReferenceModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="flex-1 overflow-y-auto" style="max-height: calc(90vh - 140px);">
+                <div class="p-6">
+                    <!-- Two Column Layout -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                        <!-- Level 1 Categories -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-base font-medium text-gray-900">1. Seviye Kategoriler</h4>
+                                <button onclick="addLevel1Category()" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                                    <i data-lucide="plus" class="h-3 w-3 inline mr-1"></i>
+                                    Ekle
+                                </button>
+                            </div>
+
+                            <!-- Add Level 1 Form -->
+                            <div id="addLevel1Form" class="hidden bg-gray-50 p-4 rounded-lg border">
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Adı</label>
+                                        <input type="text" id="level1Name" placeholder="Örn: Parti, STK, Dernek"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="saveLevel1Category()" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                                            Kaydet
+                                        </button>
+                                        <button onclick="cancelLevel1Add()" class="px-3 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600">
+                                            İptal
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Level 1 List -->
+                            <div id="level1List" class="space-y-2">
+                                <!-- Level 1 categories will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- Level 2 Categories -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-base font-medium text-gray-900">2. Seviye Alt Kategoriler</h4>
+                                <button onclick="addLevel2Category()" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                                    <i data-lucide="plus" class="h-3 w-3 inline mr-1"></i>
+                                    Ekle
+                                </button>
+                            </div>
+
+                            <!-- Add Level 2 Form -->
+                            <div id="addLevel2Form" class="hidden bg-gray-50 p-4 rounded-lg border">
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Üst Kategori</label>
+                                        <select id="level2ParentId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option value="">Üst kategori seçiniz</option>
+                                            <!-- Will be populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Alt Kategori Adı</label>
+                                        <input type="text" id="level2Name" placeholder="Örn: CHP, MÜSİAD, TÜSİAD"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button onclick="saveLevel2Category()" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                                            Kaydet
+                                        </button>
+                                        <button onclick="cancelLevel2Add()" class="px-3 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600">
+                                            İptal
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selected Level 1 Info -->
+                            <div id="selectedLevel1Info" class="hidden bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                <p class="text-sm text-blue-800">
+                                    <span class="font-medium">Seçili Kategori:</span>
+                                    <span id="selectedLevel1Name">-</span>
+                                </p>
+                            </div>
+
+                            <!-- Level 2 List -->
+                            <div id="level2List" class="space-y-2">
+                                <p class="text-sm text-gray-500 text-center py-4">Önce 1. seviye kategori seçiniz</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Data Summary -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h4 class="text-base font-medium text-gray-900 mb-3">Mevcut Veri Yapısı</h4>
+                        <div id="dataStructureView" class="bg-gray-50 p-4 rounded-lg border max-h-60 overflow-y-auto">
+                            <!-- Structure view will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+                <div class="flex justify-between items-center">
+                    <p class="text-xs text-gray-500">Hiyerarşik veri yapısını yönetin</p>
+                    <button onclick="closeFieldReferenceModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- Mobile Sidebar Overlay -->
 <div id="sidebarOverlay" onclick="toggleSidebar()"
      class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
 
+<!-- Send Link Modal -->
+<div id="sendLinkModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] overflow-y-auto">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Saha Kullanıcısı Link Gönder</h3>
+                    <button onclick="closeSendLinkModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="px-6 py-4">
+                <form id="sendLinkForm">
+                    <div class="space-y-4">
+                        <!-- Contact Method Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">İletişim Yöntemi</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="contactMethod" value="email" checked class="mr-2">
+                                    <span class="text-sm">E-posta</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="contactMethod" value="phone" class="mr-2">
+                                    <span class="text-sm">WhatsApp</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Email Input -->
+                        <div id="emailInput">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">E-posta Adresi</label>
+                            <input type="email" id="linkEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="ornek@email.com">
+                        </div>
+
+                        <!-- Phone Input -->
+                        <div id="phoneInput" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefon Numarası</label>
+                            <input type="tel" id="linkPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="05XXXXXXXXX">
+                        </div>
+
+                        <!-- Note -->
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <div class="flex">
+                                <i data-lucide="info" class="h-5 w-5 text-blue-400 mr-2 flex-shrink-0"></i>
+                                <div>
+                                    <h4 class="text-sm font-medium text-blue-800">Bilgilendirme</h4>
+                                    <p class="mt-1 text-sm text-blue-700">
+                                        Saha referans bilgileri kayıt formunda kullanıcı tarafından seçilecektir.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                <button onclick="closeSendLinkModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">İptal</button>
+                <button onclick="sendRegistrationLink()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Link Gönder</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Message Modal -->
+<div id="shareMessageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[70] overflow-y-auto">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Kayıt Linki Hazırlandı</h3>
+                    <button onclick="closeShareMessageModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="px-6 py-4">
+                <div class="space-y-4">
+                    <!-- Phone Number Display -->
+                    <div class="p-3 bg-blue-50 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="phone" class="h-5 w-5 text-blue-600"></i>
+                            <span class="text-sm font-medium text-blue-800">Alıcı:</span>
+                            <span id="recipientPhone" class="text-sm text-blue-700"></span>
+                        </div>
+                    </div>
+
+                    <!-- Message Content -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gönderilecek Mesaj:</label>
+                        <textarea id="shareMessage" readonly rows="8"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        <!-- Copy Message Button -->
+                        <button onclick="copyMessage()" class="w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            <i data-lucide="copy" class="h-4 w-4 mr-2"></i>
+                            <span>Mesajı Kopyala</span>
+                        </button>
+
+                        <!-- WhatsApp Buttons -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- Desktop WhatsApp -->
+                            <button onclick="openWhatsAppDesktop()" class="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                <i data-lucide="monitor" class="h-4 w-4 mr-2"></i>
+                                <span class="text-sm">WhatsApp Web</span>
+                            </button>
+
+                            <!-- Mobile WhatsApp -->
+                            <button onclick="openWhatsAppMobile()" class="flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                <i data-lucide="smartphone" class="h-4 w-4 mr-2"></i>
+                                <span class="text-sm">WhatsApp Mobile</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="p-3 bg-yellow-50 rounded-lg">
+                        <div class="flex">
+                            <i data-lucide="info" class="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0"></i>
+                            <div class="text-sm text-yellow-800">
+                                <p class="font-medium mb-1">Nasıl Gönderilir:</p>
+                                <ul class="list-disc list-inside space-y-1 text-xs">
+                                    <li><strong>Mesajı Kopyala:</strong> Mesajı panoya kopyalar, istediğiniz uygulamada paylaşabilirsiniz</li>
+                                    <li><strong>WhatsApp Web:</strong> Masaüstü/laptop için WhatsApp Web'i açar</li>
+                                    <li><strong>WhatsApp Mobile:</strong> Mobil cihazlar için WhatsApp uygulamasını açar</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+                <button onclick="closeShareMessageModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     let allUsers = [];
     let filteredUsers = [];
+    let allRoles = [];
+    let allFieldCategories = [];
     let currentPage = 1;
     let pageSize = 10;
     let totalCount = 0;
@@ -460,11 +795,13 @@
         }
 
         console.log('User authenticated, loading users...');
-        
+
         // Load user info
         loadUserInfo();
 
         lucide.createIcons();
+        loadRoles();
+        loadFieldCategories();
         loadUsers();
         
         // Global search event handler
@@ -494,6 +831,261 @@
             const lastName = user.lastName || '';
             const initials = (firstName[0] || '') + (lastName[0] || '');
             document.getElementById('userInitials').textContent = initials.toUpperCase() || 'KA';
+        }
+    }
+
+    // Load Roles
+    async function loadRoles() {
+        try {
+            const response = await fetch('/api/user/roles', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+
+                if (result && result.success && result.data) {
+                    allRoles = result.data;
+                    populateRoleDropdowns();
+                } else {
+                    console.error('Failed to load roles:', result);
+                    // Use default roles if API fails
+                    allRoles = getDefaultRoles();
+                    populateRoleDropdowns();
+                }
+            } else {
+                console.error('Failed to load roles, status:', response.status);
+                // Use default roles if API fails
+                allRoles = getDefaultRoles();
+                populateRoleDropdowns();
+            }
+        } catch (error) {
+            console.error('Error loading roles:', error);
+            // Use default roles if network error
+            allRoles = getDefaultRoles();
+            populateRoleDropdowns();
+        }
+    }
+
+    // Get Default Roles (fallback)
+    function getDefaultRoles() {
+        return [
+            { id: 1, roleDescription: 'Admin', isActive: true },
+            { id: 2, roleDescription: 'Sandık Görevlisi', isActive: true }
+        ];
+    }
+
+    // Populate Role Dropdowns
+    function populateRoleDropdowns() {
+        const createRoleSelect = document.getElementById('createRole');
+        const editRoleSelect = document.getElementById('editRole');
+
+        // Clear existing options (except the first default option)
+        createRoleSelect.innerHTML = '<option value="">Yetki seçiniz</option>';
+        editRoleSelect.innerHTML = '<option value="">Yetki seçiniz</option>';
+
+        // Add role options
+        allRoles.forEach(role => {
+            if (role.isActive) {
+                const option1 = document.createElement('option');
+                option1.value = role.id;
+                option1.textContent = role.roleDescription;
+                createRoleSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = role.id;
+                option2.textContent = role.roleDescription;
+                editRoleSelect.appendChild(option2);
+            }
+        });
+    }
+
+    // ===== FIELD REFERENCE FUNCTIONS =====
+
+    // Load Field Categories
+    async function loadFieldCategories() {
+        try {
+            const response = await fetch('/api/fieldreference/categories', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+
+                if (result && result.success && result.data) {
+                    allFieldCategories = result.data;
+                    populateFieldCategoryDropdowns();
+                } else {
+                    console.error('Failed to load field categories:', result);
+                    // Use mock data if API fails
+                    allFieldCategories = getDefaultFieldCategories();
+                    populateFieldCategoryDropdowns();
+                }
+            } else {
+                console.error('Failed to load field categories, status:', response.status);
+                // Use mock data if API fails
+                allFieldCategories = getDefaultFieldCategories();
+                populateFieldCategoryDropdowns();
+            }
+        } catch (error) {
+            console.error('Error loading field categories:', error);
+            // Use mock data if network error
+            allFieldCategories = getDefaultFieldCategories();
+            populateFieldCategoryDropdowns();
+        }
+    }
+
+    // Get Default Field Categories (fallback)
+    function getDefaultFieldCategories() {
+        return [
+            { id: 1, categoryName: 'Parti', subCategories: [
+                { id: 1, subCategoryName: 'CHP' },
+                { id: 2, subCategoryName: 'AK Parti' }
+            ]},
+            { id: 2, categoryName: 'STK', subCategories: [
+                { id: 4, subCategoryName: 'MÜSİAD' },
+                { id: 5, subCategoryName: 'TÜSİAD' }
+            ]}
+        ];
+    }
+
+    // Populate Field Category Dropdowns
+    function populateFieldCategoryDropdowns() {
+        const createCategorySelect = document.getElementById('createFieldCategory');
+        const editCategorySelect = document.getElementById('editFieldCategory');
+
+        // Clear existing options (except the first default option)
+        createCategorySelect.innerHTML = '<option value="">Ana kategori seçiniz</option>';
+        editCategorySelect.innerHTML = '<option value="">Ana kategori seçiniz</option>';
+
+        // Add category options
+        allFieldCategories.forEach(category => {
+            if (category.isActive !== false) {
+                const option1 = document.createElement('option');
+                option1.value = category.id;
+                option1.textContent = category.categoryName;
+                createCategorySelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = category.id;
+                option2.textContent = category.categoryName;
+                editCategorySelect.appendChild(option2);
+            }
+        });
+    }
+
+    // Toggle Field Reference Section based on role
+    function toggleFieldReferenceSection(type) {
+        const roleSelect = document.getElementById(type + 'Role');
+        const fieldReferenceSection = document.getElementById(type + 'FieldReferenceSection');
+
+        if (!roleSelect || !fieldReferenceSection) return;
+
+        const selectedRoleId = roleSelect.value;
+        const selectedRole = allRoles.find(r => r.id == selectedRoleId);
+
+        // Show field reference section only for "Saha Görevlisi" role
+        if (selectedRole && selectedRole.roleDescription === 'Saha Görevlisi') {
+            fieldReferenceSection.classList.remove('hidden');
+        } else {
+            fieldReferenceSection.classList.add('hidden');
+            // Clear selections when hiding
+            document.getElementById(type + 'FieldCategory').value = '';
+            document.getElementById(type + 'FieldSubCategory').innerHTML = '<option value="">Önce ana kategori seçiniz</option>';
+        }
+    }
+
+    // Load SubCategories for Create Form
+    function loadCreateSubCategories() {
+        loadSubCategories('create');
+    }
+
+    // Load SubCategories for Edit Form
+    function loadEditSubCategories() {
+        loadSubCategories('edit');
+    }
+
+    // Load SubCategories
+    function loadSubCategories(type) {
+        const categorySelect = document.getElementById(type + 'FieldCategory');
+        const subCategorySelect = document.getElementById(type + 'FieldSubCategory');
+
+        const selectedCategoryId = categorySelect.value;
+
+        // Clear subcategory options
+        subCategorySelect.innerHTML = '<option value="">Alt kategori seçiniz</option>';
+
+        if (!selectedCategoryId) {
+            subCategorySelect.innerHTML = '<option value="">Önce ana kategori seçiniz</option>';
+            return;
+        }
+
+        // Find selected category
+        const selectedCategory = allFieldCategories.find(c => c.id == selectedCategoryId);
+
+        if (selectedCategory && selectedCategory.subCategories) {
+            selectedCategory.subCategories.forEach(subCategory => {
+                if (subCategory.isActive !== false) {
+                    const option = document.createElement('option');
+                    option.value = subCategory.id;
+                    option.textContent = subCategory.subCategoryName;
+                    subCategorySelect.appendChild(option);
+                }
+            });
+        }
+
+        if (subCategorySelect.children.length === 1) {
+            subCategorySelect.innerHTML = '<option value="">Bu kategoride alt kategori yok</option>';
+        }
+    }
+
+    // Get Field Reference Data
+    function getFieldReferenceData(type) {
+        const roleSelect = document.getElementById(type + 'Role');
+        const categorySelect = document.getElementById(type + 'FieldCategory');
+        const subCategorySelect = document.getElementById(type + 'FieldSubCategory');
+
+        // Check if this is a Saha Görevlisi role
+        const selectedRoleId = roleSelect?.value;
+        const selectedRole = allRoles.find(r => r.id == selectedRoleId);
+
+        if (selectedRole && selectedRole.roleDescription === 'Saha Görevlisi') {
+            return {
+                categoryId: categorySelect?.value ? parseInt(categorySelect.value) : null,
+                subCategoryId: subCategorySelect?.value ? parseInt(subCategorySelect.value) : null
+            };
+        }
+
+        return { categoryId: null, subCategoryId: null };
+    }
+
+    // Set Field Reference Values for Edit Form
+    function setFieldReferenceValues(type, user) {
+        if (!user || !user.fieldReferenceCategoryId) return;
+
+        const categorySelect = document.getElementById(type + 'FieldCategory');
+        const subCategorySelect = document.getElementById(type + 'FieldSubCategory');
+
+        if (categorySelect && user.fieldReferenceCategoryId) {
+            categorySelect.value = user.fieldReferenceCategoryId;
+
+            // Load subcategories for the selected category
+            loadSubCategories(type);
+
+            // Set subcategory after a short delay to ensure subcategories are loaded
+            setTimeout(() => {
+                if (subCategorySelect && user.fieldReferenceSubCategoryId) {
+                    subCategorySelect.value = user.fieldReferenceSubCategoryId;
+                }
+            }, 100);
         }
     }
 
@@ -964,17 +1556,22 @@
                     document.getElementById('editPassword').value = ''; // Always empty for security
                     document.getElementById('editIsActive').checked = user.isActive;
                     
-                    // Set role - assume first role or default to empty
+                    // Set role - match role description with loaded roles
                     if (user.roles && user.roles.length > 0) {
-                        const role = user.roles[0];
-                        if (role === 'Admin') {
-                            document.getElementById('editRole').value = '1';
-                        } else if (role === 'Sandık Görevlisi') {
-                            document.getElementById('editRole').value = '2';
+                        const userRoleName = user.roles[0];
+                        const matchingRole = allRoles.find(r => r.roleDescription === userRoleName);
+                        if (matchingRole) {
+                            document.getElementById('editRole').value = matchingRole.id;
+                        } else {
+                            document.getElementById('editRole').value = '';
                         }
                     } else {
                         document.getElementById('editRole').value = '';
                     }
+
+                    // Toggle field reference section and set values
+                    toggleFieldReferenceSection('edit');
+                    setFieldReferenceValues('edit', user);
 
                     // Show modal
                     document.getElementById('editUserModal').classList.remove('hidden');
@@ -1037,7 +1634,9 @@
             userName: document.getElementById('createUsername').value,
             password: document.getElementById('createPassword').value,
             isActive: document.getElementById('createIsActive').checked,
-            roleIds: roleId ? [parseInt(roleId)] : []
+            roleIds: roleId ? [parseInt(roleId)] : [],
+            fieldReferenceCategoryId: getFieldReferenceData('create').categoryId,
+            fieldReferenceSubCategoryId: getFieldReferenceData('create').subCategoryId
         };
 
         try {
@@ -1079,7 +1678,9 @@
             phoneNumber: document.getElementById('editMobilePhone').value,
             userName: document.getElementById('editUsername').value,
             isActive: document.getElementById('editIsActive').checked,
-            roleIds: roleId ? [parseInt(roleId)] : []
+            roleIds: roleId ? [parseInt(roleId)] : [],
+            fieldReferenceCategoryId: getFieldReferenceData('edit').categoryId,
+            fieldReferenceSubCategoryId: getFieldReferenceData('edit').subCategoryId
         };
 
         // Only include password if it's provided
@@ -1185,6 +1786,602 @@
             }
         ];
         return users;
+    }
+
+    // ===== FIELD REFERENCE FUNCTIONS =====
+
+    let allLevel1Categories = [];
+    let allLevel2Categories = [];
+    let selectedLevel1Id = null;
+
+    // Open Field Reference Modal
+    function openFieldReferenceModal() {
+        console.log('Opening field reference modal');
+        try {
+            const modal = document.getElementById('fieldReferenceModal');
+            modal.classList.remove('hidden');
+
+            // Load data when modal opens
+            loadFieldReferenceData();
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error opening field reference modal:', error);
+        }
+    }
+
+    // Close Field Reference Modal
+    function closeFieldReferenceModal() {
+        document.getElementById('fieldReferenceModal').classList.add('hidden');
+        // Reset forms
+        document.getElementById('addLevel1Form').classList.add('hidden');
+        document.getElementById('addLevel2Form').classList.add('hidden');
+        document.getElementById('selectedLevel1Info').classList.add('hidden');
+        selectedLevel1Id = null;
+    }
+
+    // Load Field Reference Data from API
+    async function loadFieldReferenceData() {
+        try {
+            const response = await fetch('/api/fieldreference/categories', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+
+                if (result && result.success && result.data) {
+                    // Map API data to the expected format
+                    allLevel1Categories = result.data.map(category => ({
+                        id: category.id,
+                        name: category.categoryName,
+                        isActive: category.isActive
+                    }));
+
+                    // Flatten all subcategories from all categories
+                    allLevel2Categories = [];
+                    result.data.forEach(category => {
+                        if (category.subCategories && category.subCategories.length > 0) {
+                            category.subCategories.forEach(subCategory => {
+                                allLevel2Categories.push({
+                                    id: subCategory.id,
+                                    parentId: subCategory.categoryId,
+                                    name: subCategory.subCategoryName,
+                                    isActive: subCategory.isActive
+                                });
+                            });
+                        }
+                    });
+
+                    displayLevel1Categories();
+                    displayDataStructure();
+                } else {
+                    console.error('Failed to load field reference data:', result);
+                    alert('Saha referans verileri yüklenirken hata oluştu!');
+                }
+            } else {
+                console.error('API request failed:', response.status);
+                alert('Saha referans verileri yüklenirken hata oluştu!');
+            }
+        } catch (error) {
+            console.error('Error loading field reference data:', error);
+            alert('Saha referans verileri yüklenirken hata oluştu!');
+        }
+    }
+
+    // Display Level 1 Categories
+    function displayLevel1Categories() {
+        const container = document.getElementById('level1List');
+        let html = '';
+
+        allLevel1Categories.forEach(category => {
+            const isSelected = selectedLevel1Id === category.id;
+            html += `
+                <div class="flex items-center justify-between p-3 border rounded-lg ${isSelected ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'} hover:bg-gray-50 transition-colors cursor-pointer" onclick="selectLevel1Category(${category.id})">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">${category.name}</span>
+                            <div class="text-xs text-gray-500">
+                                ${allLevel2Categories.filter(c => c.parentId === category.id).length} alt kategori
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${isSelected ? '<i data-lucide="check" class="h-4 w-4 text-blue-600"></i>' : ''}
+                        <button onclick="event.stopPropagation(); editLevel1Category(${category.id})" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="edit" class="h-4 w-4"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); deleteLevel1Category(${category.id})" class="text-red-400 hover:text-red-600">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        lucide.createIcons();
+    }
+
+    // Select Level 1 Category
+    function selectLevel1Category(id) {
+        selectedLevel1Id = id;
+        const category = allLevel1Categories.find(c => c.id === id);
+
+        // Update UI
+        displayLevel1Categories();
+        displayLevel2Categories();
+
+        // Show selected category info
+        document.getElementById('selectedLevel1Name').textContent = category.name;
+        document.getElementById('selectedLevel1Info').classList.remove('hidden');
+
+        // Populate level 2 parent dropdown
+        populateLevel2ParentDropdown();
+    }
+
+    // Display Level 2 Categories
+    function displayLevel2Categories() {
+        const container = document.getElementById('level2List');
+
+        if (!selectedLevel1Id) {
+            container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Önce 1. seviye kategori seçiniz</p>';
+            return;
+        }
+
+        const level2Items = allLevel2Categories.filter(c => c.parentId === selectedLevel1Id);
+
+        if (level2Items.length === 0) {
+            container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Bu kategoride alt kategori bulunmuyor</p>';
+            return;
+        }
+
+        let html = '';
+        level2Items.forEach(category => {
+            html += `
+                <div class="flex items-center justify-between p-3 border rounded-lg bg-white border-gray-200 hover:bg-gray-50 transition-colors">
+                    <div>
+                        <span class="font-medium text-gray-900">${category.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editLevel2Category(${category.id})" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="edit" class="h-4 w-4"></i>
+                        </button>
+                        <button onclick="deleteLevel2Category(${category.id})" class="text-red-400 hover:text-red-600">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        lucide.createIcons();
+    }
+
+    // Level 1 Functions
+    function addLevel1Category() {
+        document.getElementById('addLevel1Form').classList.remove('hidden');
+        document.getElementById('level1Name').focus();
+    }
+
+    function cancelLevel1Add() {
+        document.getElementById('addLevel1Form').classList.add('hidden');
+        document.getElementById('level1Name').value = '';
+    }
+
+    async function saveLevel1Category() {
+        const name = document.getElementById('level1Name').value.trim();
+        if (!name) {
+            alert('Kategori adı gereklidir!');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/fieldreference/categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    categoryName: name,
+                    description: '',
+                    isActive: true
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Reload data to reflect changes
+                await loadFieldReferenceData();
+                cancelLevel1Add();
+                alert('Kategori başarıyla eklendi!');
+            } else {
+                alert(result.message || 'Kategori eklenirken hata oluştu!');
+            }
+        } catch (error) {
+            console.error('Error saving category:', error);
+            alert('Kategori eklenirken hata oluştu!');
+        }
+    }
+
+    // Level 2 Functions
+    function addLevel2Category() {
+        if (!selectedLevel1Id) {
+            alert('Önce 1. seviye kategori seçiniz!');
+            return;
+        }
+
+        populateLevel2ParentDropdown();
+        document.getElementById('addLevel2Form').classList.remove('hidden');
+        document.getElementById('level2Name').focus();
+    }
+
+    function cancelLevel2Add() {
+        document.getElementById('addLevel2Form').classList.add('hidden');
+        document.getElementById('level2Name').value = '';
+        document.getElementById('level2ParentId').value = '';
+    }
+
+    async function saveLevel2Category() {
+        const parentId = parseInt(document.getElementById('level2ParentId').value);
+        const name = document.getElementById('level2Name').value.trim();
+
+        if (!parentId) {
+            alert('Üst kategori seçilmeli!');
+            return;
+        }
+
+        if (!name) {
+            alert('Alt kategori adı gereklidir!');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/fieldreference/subcategories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    categoryId: parentId,
+                    subCategoryName: name,
+                    description: '',
+                    isActive: true
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Reload data to reflect changes
+                await loadFieldReferenceData();
+
+                // Maintain selected category
+                if (selectedLevel1Id === parentId) {
+                    displayLevel2Categories();
+                }
+
+                cancelLevel2Add();
+                alert('Alt kategori başarıyla eklendi!');
+            } else {
+                alert(result.message || 'Alt kategori eklenirken hata oluştu!');
+            }
+        } catch (error) {
+            console.error('Error saving subcategory:', error);
+            alert('Alt kategori eklenirken hata oluştu!');
+        }
+    }
+
+    function populateLevel2ParentDropdown() {
+        const select = document.getElementById('level2ParentId');
+        select.innerHTML = '<option value="">Üst kategori seçiniz</option>';
+
+        allLevel1Categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            if (category.id === selectedLevel1Id) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+    }
+
+    // Display Data Structure
+    function displayDataStructure() {
+        const container = document.getElementById('dataStructureView');
+        let html = '';
+
+        allLevel1Categories.forEach(level1 => {
+            const level2Items = allLevel2Categories.filter(c => c.parentId === level1.id);
+            html += `
+                <div class="mb-3">
+                    <div class="font-medium text-gray-900 mb-1">📁 ${level1.name}</div>
+                    <div class="ml-4 space-y-1">
+            `;
+
+            if (level2Items.length > 0) {
+                level2Items.forEach(level2 => {
+                    html += `<div class="text-sm text-gray-600">└── ${level2.name}</div>`;
+                });
+            } else {
+                html += `<div class="text-sm text-gray-400">└── (Alt kategori yok)</div>`;
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+
+        if (allLevel1Categories.length === 0) {
+            html = '<p class="text-sm text-gray-500 text-center py-4">Henüz kategori eklenmemiş</p>';
+        }
+
+        container.innerHTML = html;
+    }
+
+    // Edit and Delete functions (placeholders for now)
+    function editLevel1Category(id) {
+        alert('Düzenleme özelliği sonraki aşamada eklenecek');
+    }
+
+    async function deleteLevel1Category(id) {
+        if (confirm('Bu kategoriyi ve tüm alt kategorilerini silmek istediğinizden emin misiniz?')) {
+            try {
+                const response = await fetch(`/api/fieldreference/categories/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Clear selection if deleted category was selected
+                    if (selectedLevel1Id === id) {
+                        selectedLevel1Id = null;
+                        document.getElementById('selectedLevel1Info').classList.add('hidden');
+                    }
+
+                    // Reload data to reflect changes
+                    await loadFieldReferenceData();
+                    displayLevel2Categories();
+                    alert('Kategori başarıyla silindi!');
+                } else {
+                    alert(result.message || 'Kategori silinirken hata oluştu!');
+                }
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                alert('Kategori silinirken hata oluştu!');
+            }
+        }
+    }
+
+    function editLevel2Category(id) {
+        alert('Düzenleme özelliği sonraki aşamada eklenecek');
+    }
+
+    async function deleteLevel2Category(id) {
+        if (confirm('Bu alt kategoriyi silmek istediğinizden emin misiniz?')) {
+            try {
+                const response = await fetch(`/api/fieldreference/subcategories/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Reload data to reflect changes
+                    await loadFieldReferenceData();
+                    displayLevel2Categories();
+                    alert('Alt kategori başarıyla silindi!');
+                } else {
+                    alert(result.message || 'Alt kategori silinirken hata oluştu!');
+                }
+            } catch (error) {
+                console.error('Error deleting subcategory:', error);
+                alert('Alt kategori silinirken hata oluştu!');
+            }
+        }
+    }
+
+    // Send Link Modal Functions
+    function openSendLinkModal() {
+        console.log('Opening send link modal');
+        try {
+            const modal = document.getElementById('sendLinkModal');
+            modal.classList.remove('hidden');
+
+            // Setup contact method toggle
+            setupContactMethodToggle();
+
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error opening send link modal:', error);
+        }
+    }
+
+    function closeSendLinkModal() {
+        document.getElementById('sendLinkModal').classList.add('hidden');
+        // Reset form
+        document.getElementById('sendLinkForm').reset();
+    }
+
+    function setupContactMethodToggle() {
+        const emailRadio = document.querySelector('input[name="contactMethod"][value="email"]');
+        const phoneRadio = document.querySelector('input[name="contactMethod"][value="phone"]');
+        const emailInput = document.getElementById('emailInput');
+        const phoneInput = document.getElementById('phoneInput');
+
+        function toggleInputs() {
+            if (emailRadio.checked) {
+                emailInput.classList.remove('hidden');
+                phoneInput.classList.add('hidden');
+            } else {
+                emailInput.classList.add('hidden');
+                phoneInput.classList.remove('hidden');
+            }
+        }
+
+        emailRadio.addEventListener('change', toggleInputs);
+        phoneRadio.addEventListener('change', toggleInputs);
+        toggleInputs(); // Initial state
+    }
+
+
+    async function sendRegistrationLink() {
+        try {
+            // Get contact method
+            const contactMethod = document.querySelector('input[name="contactMethod"]:checked').value;
+            const email = document.getElementById('linkEmail').value.trim();
+            const phone = document.getElementById('linkPhone').value.trim();
+
+            // Validation
+            if (contactMethod === 'email' && !email) {
+                alert('E-posta adresi gereklidir!');
+                return;
+            }
+
+            if (contactMethod === 'phone' && !phone) {
+                alert('Telefon numarası gereklidir!');
+                return;
+            }
+
+            const requestData = {
+                contactMethod: contactMethod,
+                email: contactMethod === 'email' ? email : null,
+                phone: contactMethod === 'phone' ? phone : null
+            };
+
+            const response = await fetch('/api/user/send-registration-link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                if (contactMethod === 'phone' && result.data && typeof result.data === 'object') {
+                    // Show share message modal for WhatsApp
+                    showShareMessageModal(result.data);
+                    closeSendLinkModal();
+                } else {
+                    // Show regular success message for email
+                    alert(result.data || 'Kayıt linki başarıyla gönderildi!');
+                    closeSendLinkModal();
+                }
+            } else {
+                alert(result.message || 'Link gönderme işlemi başarısız!');
+            }
+        } catch (error) {
+            console.error('Send link error:', error);
+            alert('Bir hata oluştu!');
+        }
+    }
+
+    // Share Message Modal Functions
+    let currentShareData = null;
+
+    function showShareMessageModal(data) {
+        currentShareData = data;
+
+        // Set recipient phone
+        document.getElementById('recipientPhone').textContent = data.phoneNumber;
+
+        // Set message content
+        document.getElementById('shareMessage').value = data.message;
+
+        // Show modal
+        document.getElementById('shareMessageModal').classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeShareMessageModal() {
+        document.getElementById('shareMessageModal').classList.add('hidden');
+        currentShareData = null;
+    }
+
+    function copyMessage() {
+        const messageTextarea = document.getElementById('shareMessage');
+        messageTextarea.select();
+        messageTextarea.setSelectionRange(0, 99999); // For mobile
+
+        try {
+            document.execCommand('copy');
+
+            // Update button text temporarily
+            const copyBtn = event.target.closest('button');
+            const originalHTML = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i data-lucide="check" class="h-4 w-4 mr-2"></i><span>Kopyalandı!</span>';
+            copyBtn.classList.add('bg-green-600');
+            copyBtn.classList.remove('bg-gray-600');
+
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHTML;
+                copyBtn.classList.remove('bg-green-600');
+                copyBtn.classList.add('bg-gray-600');
+                lucide.createIcons();
+            }, 2000);
+
+        } catch (err) {
+            // Fallback for newer browsers
+            navigator.clipboard.writeText(messageTextarea.value).then(() => {
+                alert('Mesaj kopyalandı!');
+            }).catch(() => {
+                alert('Kopyalama işlemi başarısız! Lütfen manuel olarak kopyalayın.');
+            });
+        }
+    }
+
+    function openWhatsAppDesktop() {
+        if (!currentShareData) return;
+
+        const message = encodeURIComponent(currentShareData.message);
+        const phoneNumber = currentShareData.phoneNumber.replace(/[^\d]/g, '');
+
+        // WhatsApp Web URL
+        const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+
+        window.open(whatsappURL, '_blank');
+    }
+
+    function openWhatsAppMobile() {
+        if (!currentShareData) return;
+
+        const message = encodeURIComponent(currentShareData.message);
+        const phoneNumber = currentShareData.phoneNumber.replace(/[^\d]/g, '');
+
+        // Check if mobile device
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        let whatsappURL;
+        if (isMobile) {
+            // Mobile app URL
+            whatsappURL = `whatsapp://send?phone=${phoneNumber}&text=${message}`;
+        } else {
+            // Fallback to web for desktop
+            whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+        }
+
+        window.open(whatsappURL, '_blank');
     }
 </script>
 </body>

@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Davet Süresi Dolmuş";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ITO Oylama Sistemi</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50">
+
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-red-100">
+                <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+            </div>
+            <h2 class="mt-6 text-3xl font-bold text-gray-900">
+                Davet Linki Geçersiz
+            </h2>
+            <div class="mt-2 text-base text-gray-600">
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <p class="mb-4">@TempData["ErrorMessage"]</p>
+                }
+                <p>Bu davet linki artık geçerli değil.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div class="space-y-4">
+                <div class="text-center">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Neler olmuş olabilir?</h3>
+                    <ul class="text-left text-gray-600 space-y-2 text-sm">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-gray-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Davet linkinin süresi dolmuş (24 saat)
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-gray-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Link daha önce kullanılmış
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 text-gray-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            Geçersiz davet linki
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="border-t border-gray-200 pt-6">
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600 mb-4">
+                            Yeni bir davet linki almak için sistem yöneticiniz ile iletişime geçin.
+                        </p>
+                        <a href="@Url.Action("Login", "Auth")"
+                           class="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                            Giriş Sayfasına Dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

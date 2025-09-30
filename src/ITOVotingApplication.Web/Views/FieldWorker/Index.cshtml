@@ -1,0 +1,1174 @@
+@{
+    ViewData["Title"] = "Firma Arama";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ITO Saha Görevlisi</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
+                    <span class="text-gray-900 font-semibold text-lg">ITO Saha Görevlisi</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        <span id="userWelcome">Hoş geldiniz</span>
+                    </div>
+                    <button onclick="logout()" class="text-gray-500 hover:text-gray-700">
+                        <i data-lucide="log-out" class="h-5 w-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Initial Search Section (Google-like) -->
+        <div id="initialSearchSection" class="flex flex-col items-center justify-center min-h-[60vh]">
+            <div class="text-center mb-8">
+                <img src="/Documents/images/logosmall.png" alt="ITO Logo" class="h-20 w-20 mx-auto mb-6 object-contain" />
+                <h1 class="text-4xl font-light text-gray-900 mb-2">Firma Arama</h1>
+                <p class="text-gray-600">Firma adı veya sicil numarası ile arama yapın</p>
+            </div>
+
+            <!-- Google-like Search Box -->
+            <div class="w-full max-w-2xl">
+                <div class="relative">
+                    <input type="text" id="mainSearchInput"
+                           class="w-full px-4 py-4 pl-12 pr-12 text-lg border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-lg hover:shadow-xl transition-shadow"
+                           placeholder="Firma adı veya sicil numarası girin..."
+                           autocomplete="off">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400"></i>
+                    <button id="clearSearchBtn" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-5 w-5"></i>
+                    </button>
+                </div>
+
+                <!-- Search Buttons -->
+                <div class="flex justify-center space-x-4 mt-8">
+                    <button id="searchBtn"
+                            class="px-6 py-3 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300">
+                        <i data-lucide="search" class="h-4 w-4 inline mr-2"></i>
+                        Firma Ara
+                    </button>
+                    <button id="clearAllBtn"
+                            class="px-6 py-3 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300">
+                        <i data-lucide="refresh-cw" class="h-4 w-4 inline mr-2"></i>
+                        Temizle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Search Tips -->
+            <div class="mt-12 text-center">
+                <p class="text-sm text-gray-500 mb-2">Arama ipuçları:</p>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">En az 3 karakter</span>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">Firma adı</span>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">Sicil numarası</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section (Hidden by default) -->
+        <div id="resultsSection" class="hidden py-6">
+            <!-- Compact Search Bar -->
+            <div class="mb-6">
+                <div class="flex items-center space-x-4">
+                    <img src="/Documents/images/logosmall.png" alt="ITO Logo" class="h-8 w-8 object-contain" />
+                    <div class="flex-1 relative">
+                        <input type="text" id="compactSearchInput"
+                               class="w-full px-4 py-3 pl-10 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="Firma adı veya sicil numarası..."
+                               autocomplete="off">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"></i>
+                        <button id="compactClearBtn" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                    <button id="newSearchBtn"
+                            class="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i data-lucide="search" class="h-4 w-4 inline mr-2"></i>
+                        Ara
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Results Info -->
+            <div id="searchInfo" class="mb-4">
+                <p class="text-sm text-gray-600">
+                    <span id="searchTerm"></span> için <span id="resultCount">0</span> sonuç bulundu
+                    <span id="searchTime" class="text-gray-500"></span>
+                </p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden text-center py-12">
+                <div class="inline-flex items-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-gray-600">Aranıyor...</span>
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="resultsContainer" class="space-y-3">
+                <!-- Results will be populated here -->
+            </div>
+
+            <!-- Pagination -->
+            <div id="paginationContainer" class="mt-8 flex justify-center">
+                <!-- Pagination will be loaded here -->
+            </div>
+
+            <!-- No Results -->
+            <div id="noResults" class="hidden text-center py-12">
+                <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="search-x" class="w-8 h-8 text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Sonuç bulunamadı</h3>
+                <p class="text-gray-600 mb-4">Arama teriminizi değiştirip tekrar deneyiniz</p>
+                <button onclick="goBackToSearch()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Yeni Arama Yap
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Company Edit Modal -->
+    <div id="editCompanyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">Firma Bilgileri</h3>
+                        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="flex-1 overflow-y-auto p-6">
+                    <div id="modalContent">
+                        <!-- Content will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div>
+                        <button type="button" onclick="openDocumentManagement()"
+                                class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span>Belge Yönetimi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Management Modal -->
+    <div id="documentManagementModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[90] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-gray-900 flex items-center space-x-2">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                            <span>Belge Yönetimi</span>
+                        </h3>
+                        <button onclick="closeDocumentManagement()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="flex-1 overflow-y-auto" style="max-height: calc(90vh - 140px);">
+                    <!-- Documents List -->
+                    <div class="p-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Belgeler</h4>
+                        <div id="documentsList" class="space-y-3">
+                            <!-- Documents will be loaded here -->
+                            <div class="text-center py-8 text-gray-500">
+                                <i data-lucide="file-x" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+                                <p>Henüz belge eklenmemiş</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+                    <div class="flex justify-end">
+                        <button type="button" onclick="closeDocumentManagement()"
+                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            Kapat
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Document Modal -->
+    <div id="sendDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                            <span>Belgeyi Gönder</span>
+                        </h3>
+                        <button onclick="closeSendDocumentModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="flex-1 overflow-y-auto p-6">
+                    <form id="sendDocumentForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Yetkili Seçin</label>
+                            <select id="contactSelect" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Yetkili seçin...</option>
+                            </select>
+                        </div>
+
+                        <div id="selectedContactInfo" class="hidden">
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">Seçilen Yetkili</h4>
+                                <div class="text-sm text-gray-600">
+                                    <p><strong>Ad Soyad:</strong> <span id="contactName"></span></p>
+                                    <p><strong>Telefon:</strong> <span id="contactPhone"></span></p>
+                                    <p><strong>E-posta:</strong> <span id="contactEmail"></span></p>
+                                    <p><strong>Yetki:</strong> <span id="contactType"></span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end space-x-3 pt-4">
+                            <button type="button" onclick="closeSendDocumentModal()"
+                                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                İptal
+                            </button>
+                            <button type="button" onclick="sendDocumentViaWhatsApp()"
+                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+                                    title="WhatsApp'la Gönder">
+                                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                            </button>
+                            <button type="button" onclick="sendDocumentViaEmail()"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                                    title="Email ile Gönder">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İmzalı Belge Yükleme Modal -->
+    <div id="uploadSignedDocumentModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">İmzalı Belge Yükle</h3>
+                        <button type="button" onclick="closeUploadSignedDocumentModal()"
+                                class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <form id="uploadSignedDocumentForm" enctype="multipart/form-data">
+                        <input type="hidden" id="uploadCompanyId" value="">
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                İmzalı Yetki Belgesi Dosyası
+                            </label>
+                            <input type="file" id="signedDocumentFile" name="signedDocumentFile"
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   required>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Desteklenen formatlar: PDF, DOC, DOCX, JPG, JPEG, PNG
+                            </p>
+                        </div>
+
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="closeUploadSignedDocumentModal()"
+                                    class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                                İptal
+                            </button>
+                            <button type="button" onclick="submitUploadSignedDocument()"
+                                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                <i data-lucide="upload" class="w-4 h-4 inline mr-1"></i>
+                                Yükle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let currentSearchTerm = '';
+        let totalPages = 0;
+        let isSearching = false;
+
+        $(document).ready(function() {
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // Event listeners
+            $('#mainSearchInput').on('keyup', handleMainSearchInput);
+            $('#compactSearchInput').on('keyup', handleCompactSearchInput);
+            $('#searchBtn').click(performSearch);
+            $('#newSearchBtn').click(performSearch);
+            $('#clearAllBtn').click(clearSearch);
+            $('#clearSearchBtn').click(clearMainSearch);
+            $('#compactClearBtn').click(clearCompactSearch);
+
+            // Enter key handling
+            $('#mainSearchInput').keypress(function(e) {
+                if (e.which === 13) performSearch();
+            });
+
+            $('#compactSearchInput').keypress(function(e) {
+                if (e.which === 13) performSearch();
+            });
+
+            // Load user info
+            loadUserInfo();
+        });
+
+        function handleMainSearchInput() {
+            const value = $('#mainSearchInput').val();
+            if (value.length > 0) {
+                $('#clearSearchBtn').removeClass('hidden');
+            } else {
+                $('#clearSearchBtn').addClass('hidden');
+            }
+        }
+
+        function handleCompactSearchInput() {
+            const value = $('#compactSearchInput').val();
+            if (value.length > 0) {
+                $('#compactClearBtn').removeClass('hidden');
+            } else {
+                $('#compactClearBtn').addClass('hidden');
+            }
+        }
+
+        function clearMainSearch() {
+            $('#mainSearchInput').val('').focus();
+            $('#clearSearchBtn').addClass('hidden');
+        }
+
+        function clearCompactSearch() {
+            $('#compactSearchInput').val('').focus();
+            $('#compactClearBtn').addClass('hidden');
+        }
+
+        function clearSearch() {
+            $('#mainSearchInput').val('');
+            $('#compactSearchInput').val('');
+            $('#clearSearchBtn').addClass('hidden');
+            $('#compactClearBtn').addClass('hidden');
+            goBackToSearch();
+        }
+
+        function getCurrentSearchTerm() {
+            // Hangi input aktif kullanılıyorsa ondan al
+            if ($('#resultsSection').hasClass('hidden')) {
+                // Ana sayfa - main input kullanılıyor
+                return $('#mainSearchInput').val().trim();
+            } else {
+                // Sonuç sayfası - compact input kullanılıyor
+                return $('#compactSearchInput').val().trim();
+            }
+        }
+
+        async function performSearch(page = 1) {
+            const searchTerm = getCurrentSearchTerm();
+
+            if (!searchTerm || searchTerm.length < 3) {
+                alert('En az 3 karakter girin');
+                return;
+            }
+
+            if (isSearching) return;
+
+            currentSearchTerm = searchTerm;
+            currentPage = page;
+            isSearching = true;
+
+            // Sync search inputs - sadece aktif olan input'tan diğerine kopyala
+            if ($('#resultsSection').hasClass('hidden')) {
+                // Ana sayfadayız, compact input'u güncelle
+                $('#compactSearchInput').val(searchTerm);
+            } else {
+                // Sonuç sayfasındayız, ana input'u güncelle
+                $('#mainSearchInput').val(searchTerm);
+            }
+
+            // Show results section
+            $('#initialSearchSection').addClass('hidden');
+            $('#resultsSection').removeClass('hidden');
+            $('#loadingState').removeClass('hidden');
+            $('#resultsContainer').addClass('hidden');
+            $('#noResults').addClass('hidden');
+            $('#paginationContainer').addClass('hidden');
+
+            // Update search info
+            $('#searchTerm').text(`"${searchTerm}"`);
+
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(`/FieldWorker/SearchCompanies?searchTerm=${encodeURIComponent(searchTerm)}&page=${page}&pageSize=10`);
+                const result = await response.json();
+
+                const searchTime = Date.now() - startTime;
+                $('#searchTime').text(`(${(searchTime / 1000).toFixed(2)} saniye)`);
+
+                if (result.success && result.data && result.data.length > 0) {
+                    displayResults(result.data);
+                    updatePagination(result.currentPage, result.totalPages, result.totalItems);
+                    $('#resultCount').text(result.totalItems);
+                } else {
+                    $('#noResults').removeClass('hidden');
+                    $('#resultCount').text('0');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('Arama sırasında hata oluştu');
+                goBackToSearch();
+            } finally {
+                $('#loadingState').addClass('hidden');
+                isSearching = false;
+            }
+        }
+
+        function displayResults(companies) {
+            const container = $('#resultsContainer');
+            container.empty();
+
+            companies.forEach(company => {
+                const resultCard = createCompanyCard(company);
+                container.append(resultCard);
+            });
+
+            container.removeClass('hidden');
+        }
+
+        function createCompanyCard(company) {
+            const authBadge = company.has2022AuthorizationCertificate
+                ? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">2022 Yetkili</span>'
+                : '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Yetkisiz</span>';
+
+            const statusBadge = company.isActive
+                ? '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Aktif</span>'
+                : '<span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">Pasif</span>';
+
+            return $(`
+                <div class="bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer p-4"
+                     onclick="openCompanyDetails(${company.id})">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-medium text-gray-900 mb-1">${company.title || 'N/A'}</h3>
+                            <p class="text-sm text-gray-600 mb-2">Sicil No: ${company.tradeRegistrationNumber || 'N/A'}</p>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                ${authBadge}
+                                ${statusBadge}
+                            </div>
+                            ${company.registrationAddress ? `<p class="text-sm text-gray-500">${company.registrationAddress}</p>` : ''}
+                        </div>
+                        <div class="ml-4">
+                            <i data-lucide="chevron-right" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function updatePagination(current, total, totalItems) {
+            if (total <= 1) {
+                $('#paginationContainer').addClass('hidden');
+                return;
+            }
+
+            const container = $('#paginationContainer');
+            container.empty();
+
+            // Previous button
+            if (current > 1) {
+                container.append(`
+                    <button onclick="performSearch(${current - 1})"
+                            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                        Önceki
+                    </button>
+                `);
+            }
+
+            // Page numbers
+            for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
+                const isActive = i === current;
+                container.append(`
+                    <button onclick="performSearch(${i})"
+                            class="px-3 py-2 text-sm font-medium ${isActive ? 'text-blue-600 bg-blue-50 border-blue-300' : 'text-gray-500 bg-white border-gray-300'} border hover:bg-gray-50">
+                        ${i}
+                    </button>
+                `);
+            }
+
+            // Next button
+            if (current < total) {
+                container.append(`
+                    <button onclick="performSearch(${current + 1})"
+                            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                        Sonraki
+                    </button>
+                `);
+            }
+
+            container.removeClass('hidden');
+        }
+
+        function goBackToSearch() {
+            $('#resultsSection').addClass('hidden');
+            $('#initialSearchSection').removeClass('hidden');
+
+            // Ana sayfaya dönerken compact search'ten ana search'e kopyala (eğer varsa)
+            const compactValue = $('#compactSearchInput').val().trim();
+            if (compactValue) {
+                $('#mainSearchInput').val(compactValue);
+            }
+
+            $('#mainSearchInput').focus();
+            currentSearchTerm = '';
+            currentPage = 1;
+        }
+
+        async function openCompanyDetails(companyId) {
+            try {
+                const response = await fetch(`/FieldWorker/GetCompanyDetails?id=${companyId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    loadCompanyModal(result.data);
+                    $('#editCompanyModal').removeClass('hidden');
+                } else {
+                    alert(result.message || 'Firma detayları yüklenemedi');
+                }
+            } catch (error) {
+                console.error('Error loading company details:', error);
+                alert('Firma detayları yüklenirken hata oluştu');
+            }
+        }
+
+        function loadCompanyModal(company) {
+            const content = `
+                <form id="editCompanyForm">
+                    <input type="hidden" id="editCompanyId" value="${company.id}">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Firma Adı</label>
+                            <input type="text" id="editTitle" value="${company.title || ''}" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sicil Numarası</label>
+                            <input type="text" id="editTradeRegistrationNumber" value="${company.tradeRegistrationNumber || ''}" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
+                            <textarea id="editRegistrationAddress" rows="3" readonly
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">${company.registrationAddress || ''}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Durum</label>
+                            <select id="editIsActive" disabled class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                                <option value="true" ${company.isActive ? 'selected' : ''}>Aktif</option>
+                                <option value="false" ${!company.isActive ? 'selected' : ''}>Pasif</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">2022 Yetki Belgesi</label>
+                            <select id="editHas2022AuthorizationCertificate" disabled class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                                <option value="true" ${company.has2022AuthorizationCertificate ? 'selected' : ''}>Var</option>
+                                <option value="false" ${!company.has2022AuthorizationCertificate ? 'selected' : ''}>Yok</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            `;
+
+            $('#modalContent').html(content);
+        }
+
+        function closeEditModal() {
+            $('#editCompanyModal').addClass('hidden');
+        }
+
+        async function saveCompany() {
+            const companyData = {
+                id: parseInt($('#editCompanyId').val()),
+                title: $('#editTitle').val(),
+                tradeRegistrationNumber: $('#editTradeRegistrationNumber').val(),
+                registrationAddress: $('#editRegistrationAddress').val(),
+                isActive: $('#editIsActive').val() === 'true',
+                has2022AuthorizationCertificate: $('#editHas2022AuthorizationCertificate').val() === 'true'
+            };
+
+            // Show loading state
+            $('#saveText').text('Kaydediliyor...');
+            $('#saveSpinner').removeClass('hidden');
+            $('#saveCompanyBtn').prop('disabled', true);
+
+            try {
+                const response = await fetch('/FieldWorker/UpdateCompany', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(companyData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Firma başarıyla güncellendi');
+                    closeEditModal();
+                    // Refresh search results
+                    if (currentSearchTerm) {
+                        performSearch(currentPage);
+                    }
+                } else {
+                    alert(result.message || 'Güncelleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error saving company:', error);
+                alert('Kaydetme sırasında hata oluştu');
+            } finally {
+                // Reset loading state
+                $('#saveText').text('Kaydet');
+                $('#saveSpinner').addClass('hidden');
+                $('#saveCompanyBtn').prop('disabled', false);
+            }
+        }
+
+        // Save button click handler
+        $('#saveCompanyBtn').click(saveCompany);
+
+        // Document Management Variables (from Companies.cshtml)
+        let currentCompanyId = null;
+
+        // Document Management Functions
+        function openDocumentManagement() {
+            const companyId = document.getElementById('editCompanyId').value;
+            if (!companyId) {
+                alert('Lütfen önce firmayı seçin.');
+                return;
+            }
+
+            currentCompanyId = companyId;
+            console.log('Opening document management for company:', companyId);
+            document.getElementById('documentManagementModal').classList.remove('hidden');
+            loadCompanyDocuments(companyId);
+        }
+
+        function closeDocumentManagement() {
+            document.getElementById('documentManagementModal').classList.add('hidden');
+        }
+
+        // Firma Belgelerini Yükle (Field Worker version - authorization only)
+        async function loadCompanyDocuments(companyId) {
+            try {
+                console.log('Loading documents for company:', companyId);
+
+                // Field Worker only sees authorization documents
+                const authDoc = {
+                    id: 1,
+                    type: 'authorization',
+                    name: 'Yetki Belgesi Talep Dilekçesi',
+                    fileName: 'yetki_belgesi_talep_dilekcesi.docx',
+                    size: '45 KB',
+                    uploadDate: new Date(),
+                    status: 'template',
+                    description: 'Firma yetkilileri için resmi yetki belgesi talep dilekçesi'
+                };
+
+                displayCompanyDocuments([authDoc]);
+
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                displayCompanyDocuments([]);
+            }
+        }
+
+        // Belgeleri Görüntüle (Field Worker version - authorization only)
+        function displayCompanyDocuments(documents) {
+            const listContainer = document.getElementById('documentsList');
+
+            if (!documents || documents.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i data-lucide="file-x" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+                        <p>Henüz belge eklenmemiş</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            listContainer.innerHTML = documents.map(doc => {
+                if (doc.type !== 'authorization') return ''; // Field Worker only sees authorization docs
+
+                return `
+                <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative">
+                    <!-- Mobil Dropdown Buton - Sağ Üst Köşe -->
+                    <div class="lg:hidden absolute top-2 right-2">
+                        <button onclick="toggleDocumentActions(${doc.id})"
+                                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                                title="İşlemler">
+                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                        </button>
+                        <div id="docActions${doc.id}" class="hidden absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                            <button onclick="downloadTemplateDocument(); toggleDocumentActions(${doc.id})"
+                                    class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 flex items-center space-x-2">
+                                <i data-lucide="file-text" class="w-4 h-4 text-orange-600"></i>
+                                <span>Örnek İndir</span>
+                            </button>
+                            <button onclick="openSendDocumentModal(); toggleDocumentActions(${doc.id})"
+                                    class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center space-x-2">
+                                <i data-lucide="send" class="w-4 h-4 text-green-600"></i>
+                                <span>Belgeyi Gönder</span>
+                            </button>
+                            <button onclick="uploadSignedDocument(); toggleDocumentActions(${doc.id})"
+                                    class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center space-x-2">
+                                <i data-lucide="upload" class="w-4 h-4 text-purple-600"></i>
+                                <span>İmzalı Belge Yükle</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3 pr-8 lg:pr-0">
+                            <div class="flex-shrink-0">
+                                ${getDocumentIcon(doc.type)}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h5 class="text-sm font-medium text-gray-900 truncate">${doc.name}</h5>
+                                <p class="text-xs text-gray-500">${doc.fileName} • ${doc.size} • ${formatDate(doc.uploadDate)}</p>
+                                ${doc.description ? `<p class="text-xs text-gray-600 mt-1">${doc.description}</p>` : ''}
+                            </div>
+                        </div>
+                        <!-- Desktop Butonlar -->
+                        <div class="hidden lg:flex flex-col items-end space-y-1">
+                            <!-- Ana işlem butonları -->
+                            <div class="flex items-center space-x-1 flex-wrap">
+                                <button onclick="downloadTemplateDocument()"
+                                        class="px-3 py-1.5 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors flex items-center space-x-1 whitespace-nowrap"
+                                        title="Örnek Belge İndir">
+                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    <span>Örnek İndir</span>
+                                </button>
+                                <button onclick="openSendDocumentModal()"
+                                        class="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center space-x-1 whitespace-nowrap"
+                                        title="Örnek Belgeyi Gönder">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                    <span>Belgeyi Gönder</span>
+                                </button>
+                                <button onclick="uploadSignedDocument()"
+                                        class="px-3 py-1.5 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors flex items-center space-x-1 whitespace-nowrap"
+                                        title="İmzalı Belge Yükle">
+                                    <i data-lucide="upload" class="w-4 h-4"></i>
+                                    <span>İmzalı Belge Yükle</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // Belge Türü İkonu
+        function getDocumentIcon(type) {
+            const icons = {
+                'authorization': '<i data-lucide="award" class="w-8 h-8 text-blue-600"></i>',
+                'registration': '<i data-lucide="file-text" class="w-8 h-8 text-green-600"></i>',
+                'tax': '<i data-lucide="receipt" class="w-8 h-8 text-orange-600"></i>',
+                'identity': '<i data-lucide="user-check" class="w-8 h-8 text-purple-600"></i>',
+                'other': '<i data-lucide="file" class="w-8 h-8 text-gray-600"></i>'
+            };
+            return icons[type] || icons['other'];
+        }
+
+        // Tarih formatı
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        // Toggle mobile document actions
+        function toggleDocumentActions(docId) {
+            const actionsDiv = document.getElementById(`docActions${docId}`);
+            if (actionsDiv) {
+                actionsDiv.classList.toggle('hidden');
+            }
+        }
+
+        // Template Document Functions (CompanyController/GenerateAuthorizationDocument)
+        async function downloadTemplateDocument() {
+            if (!currentCompanyId) {
+                alert('Firma ID bulunamadı');
+                return;
+            }
+
+            try {
+                        const response = await fetch(`/api/company/${currentCompanyId}/generate-authorization-document`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    // Dosyayı blob olarak al
+                    const blob = await response.blob();
+
+                    // Dosya adını response header'dan al, yoksa default ad kullan
+                    let fileName = 'Yetki_Belgesi_Talep_Dilekcesi.docx';
+                    const contentDisposition = response.headers.get('content-disposition');
+                    if (contentDisposition) {
+                        const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+                        if (fileNameMatch) {
+                            fileName = fileNameMatch[1];
+                        }
+                    }
+
+                    // Blob'u indirme linki oluştur
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    console.log('Template document downloaded successfully');
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.message || 'Belge indirilemedi');
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Belge indirirken hata oluştu');
+            }
+        }
+
+        // Send Document Modal Functions
+        function openSendDocumentModal() {
+            document.getElementById('sendDocumentModal').classList.remove('hidden');
+            loadContactsForSending();
+        }
+
+        function closeSendDocumentModal() {
+            document.getElementById('sendDocumentModal').classList.add('hidden');
+            // Reset form
+            document.getElementById('contactSelect').value = '';
+            document.getElementById('selectedContactInfo').classList.add('hidden');
+        }
+
+        // Load contacts for sending (ContactController/GetByCompanyId)
+        async function loadContactsForSending() {
+            try {
+                const contactSelect = document.getElementById('contactSelect');
+                contactSelect.innerHTML = '<option value="">Yetkili seçin...</option>';
+
+                if (!currentCompanyId) {
+                    console.log('No company ID available');
+                    return;
+                }
+
+                // Firma contact'larını ContactController'dan getir
+                const response = await fetch(`/api/contact/company/${currentCompanyId}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.length > 0) {
+                        result.data.forEach(contact => {
+                            const option = document.createElement('option');
+                            option.value = contact.id;
+                            option.textContent = `${contact.firstName} ${contact.lastName}`;
+                            option.dataset.contact = JSON.stringify(contact);
+                            contactSelect.appendChild(option);
+                        });
+                    } else {
+                        const noContactOption = document.createElement('option');
+                        noContactOption.value = '';
+                        noContactOption.textContent = 'Bu firmada kayıtlı yetkili bulunmuyor';
+                        noContactOption.disabled = true;
+                        contactSelect.appendChild(noContactOption);
+                    }
+                } else {
+                    console.error('Failed to load contacts:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+            }
+        }
+
+        // Contact selection handler (from Companies.cshtml)
+        document.getElementById('contactSelect').addEventListener('change', function() {
+            const selectedValue = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+
+            if (selectedValue && selectedValue !== '' && selectedOption.dataset.contact) {
+                const contact = JSON.parse(selectedOption.dataset.contact);
+
+                // Show contact info
+                document.getElementById('contactName').textContent = `${contact.firstName} ${contact.lastName}`;
+                document.getElementById('contactPhone').textContent = contact.mobilePhone || 'Telefon bilgisi yok';
+                document.getElementById('contactEmail').textContent = contact.email || 'E-posta bilgisi yok';
+
+                // Contact type mapping
+                const contactTypes = {
+                    1: 'Genel Müdür',
+                    2: 'İnsan Kaynakları Müdürü',
+                    3: 'Mali İşler Müdürü',
+                    4: 'Diğer'
+                };
+                const contactTypeName = contactTypes[contact.contactTypeId] || 'Tanımsız';
+                document.getElementById('contactType').textContent = contactTypeName;
+
+                document.getElementById('selectedContactInfo').classList.remove('hidden');
+            } else {
+                document.getElementById('selectedContactInfo').classList.add('hidden');
+            }
+        });
+
+        // Send via Email (exact copy from Companies.cshtml)
+        async function sendDocumentViaEmail() {
+            const selectedContact = document.getElementById('contactSelect').value;
+            const selectedOption = document.getElementById('contactSelect').options[document.getElementById('contactSelect').selectedIndex];
+
+            if (!selectedContact) {
+                alert('Lütfen bir yetkili seçin');
+                return;
+            }
+
+            if (!selectedOption.dataset.contact) {
+                alert('Seçilen yetkili bilgileri bulunamadı');
+                return;
+            }
+
+            const contact = JSON.parse(selectedOption.dataset.contact);
+
+            try {
+                const response = await fetch(`/api/company/${currentCompanyId}/generate-document-link`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Email konusu ve içeriği (link ile)
+                        const subject = `İstanbul Ticaret Odası - Yetki Belgesi Talep Dilekçesi`;
+                        const body = `Sayın ${contact.firstName} ${contact.lastName},
+
+İstanbul Ticaret Odası yetki belgesi talep dilekçeniz hazırlandı.
+
+📄 Belgeyi indirmek için aşağıdaki linki kullanın:
+${result.downloadUrl}
+
+⏰ Bu link ${result.expiresIn} süreyle geçerlidir.
+
+Bu belge, firmanızın resmi işlemlerinde kullanılmak üzere hazırlanmıştır.
+
+Herhangi bir sorunuz olması durumunda bizimle iletişime geçebilirsiniz.
+
+Saygılarımızla,
+İstanbul Ticaret Odası`;
+
+                        // E-posta istemcisini aç
+                        const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                        window.open(mailtoLink);
+
+                        alert('✅ E-posta istemciniz açıldı. Belgeyi göndermek için e-postayı gönderebilirsiniz.');
+                        closeSendDocumentModal();
+                    } else {
+                        alert('❌ Belge linki oluşturulamadı: ' + result.message);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    alert('❌ ' + (errorData.message || 'Belge linki oluşturulamadı'));
+                }
+            } catch (error) {
+                console.error('Error sending email:', error);
+                alert('❌ E-posta gönderilirken hata oluştu');
+            }
+        }
+
+        // Send via WhatsApp (placeholder)
+        async function sendDocumentViaWhatsApp() {
+            const selectedContact = document.getElementById('contactSelect').value;
+            if (!selectedContact) {
+                alert('Lütfen bir yetkili seçin');
+                return;
+            }
+
+            alert('WhatsApp entegrasyonu geliştirilecek');
+            closeSendDocumentModal();
+        }
+
+        // İmzalı Belge Yükleme Fonksiyonları (from Companies.cshtml)
+        function uploadSignedDocument() {
+            if (!currentCompanyId) {
+                alert('Firma ID bulunamadı');
+                return;
+            }
+
+            // Set company ID in the modal
+            document.getElementById('uploadCompanyId').value = currentCompanyId;
+
+            // Show modal
+            document.getElementById('uploadSignedDocumentModal').classList.remove('hidden');
+
+            // Clear previous file selection
+            document.getElementById('signedDocumentFile').value = '';
+        }
+
+        function closeUploadSignedDocumentModal() {
+            document.getElementById('uploadSignedDocumentModal').classList.add('hidden');
+
+            // Clear form
+            document.getElementById('signedDocumentFile').value = '';
+        }
+
+        async function submitUploadSignedDocument() {
+            const companyId = document.getElementById('uploadCompanyId').value;
+            const fileInput = document.getElementById('signedDocumentFile');
+
+            if (!companyId) {
+                alert('Firma ID bulunamadı');
+                return;
+            }
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Lütfen bir dosya seçin');
+                return;
+            }
+
+            const file = fileInput.files[0];
+
+            // File size check (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Dosya boyutu 10MB\'dan büyük olamaz');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('signedDocument', file);
+
+                const response = await fetch(`/api/company/${currentCompanyId}/upload-signed-document`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ İmzalı belge başarıyla yüklendi!');
+                        closeUploadSignedDocumentModal();
+                        // Belge listesini yenile
+                        loadCompanyDocuments(companyId);
+                    } else {
+                        alert(result.message || 'Dosya yüklenirken hata oluştu.');
+                    }
+                } else {
+                    const errorData = await response.json();
+                    alert(errorData.message || 'Dosya yüklenirken hata oluştu.');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Dosya yüklenirken hata oluştu.');
+            }
+        }
+
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/FieldWorker/GetUserInfo');
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    $('#userWelcome').text(`Hoş geldiniz, ${result.data.fullName}`);
+                } else {
+                    $('#userWelcome').text('Hoş geldiniz, Saha Görevlisi');
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                $('#userWelcome').text('Hoş geldiniz, Saha Görevlisi');
+            }
+        }
+
+        function logout() {
+            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+                window.location.href = '/Auth/Logout';
+            }
+        }
+
+        // Initialize icons when page loads
+        lucide.createIcons();
+    </script>
+</body>
+</html>

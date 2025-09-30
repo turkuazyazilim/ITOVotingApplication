@@ -5,8 +5,6 @@ namespace ITOVotingApplication.Core.Interfaces
 	public interface IUnitOfWork : IDisposable
 	{
 		IGenericRepository<Company> Companies { get; }
-		IGenericRepository<CompanyType> CompanyTypes { get; }
-		IGenericRepository<NaceCode> NaceCodes { get; }
 		IGenericRepository<Contact> Contacts { get; }
 		IGenericRepository<Committee> Committees { get; }
 		IGenericRepository<User> Users { get; }
@@ -14,6 +12,9 @@ namespace ITOVotingApplication.Core.Interfaces
 		IGenericRepository<UserRole> UserRoles { get; }
 		IGenericRepository<BallotBox> BallotBoxes { get; }
 		IGenericRepository<VoteTransaction> VoteTransactions { get; }
+		IGenericRepository<FieldReferenceCategory> FieldReferenceCategories { get; }
+		IGenericRepository<FieldReferenceSubCategory> FieldReferenceSubCategories { get; }
+		IGenericRepository<UserInvitation> UserInvitations { get; }
 		Task<int> CompleteAsync();
 		Task<bool> SaveChangesAsync();
 	}

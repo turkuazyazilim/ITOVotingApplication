@@ -59,6 +59,10 @@ namespace ITOVotingApplication.Business.Services
 				var user = await _unitOfWork.Users.Query()
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.Role)
+					.Include(u => u.UserRoles)
+						.ThenInclude(ur => ur.FieldReferenceCategory)
+					.Include(u => u.UserRoles)
+						.ThenInclude(ur => ur.FieldReferenceSubCategory)
 					.FirstOrDefaultAsync(u => u.Id == id);
 
 				if (user == null)
@@ -82,6 +86,10 @@ namespace ITOVotingApplication.Business.Services
 				var query = _unitOfWork.Users.Query()
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.Role)
+					.Include(u => u.UserRoles)
+						.ThenInclude(ur => ur.FieldReferenceCategory)
+					.Include(u => u.UserRoles)
+						.ThenInclude(ur => ur.FieldReferenceSubCategory)
 					.AsQueryable();
 
 				// Search filter
@@ -188,7 +196,9 @@ namespace ITOVotingApplication.Business.Services
 							{
 								UserId = user.Id,
 								RoleId = roleId,
-								IsActive = true
+								IsActive = true,
+								FieldReferenceCategoryId = dto.FieldReferenceCategoryId,
+								FieldReferenceSubCategoryId = dto.FieldReferenceSubCategoryId
 							};
 							await _unitOfWork.UserRoles.AddAsync(userRole);
 						}
@@ -199,6 +209,10 @@ namespace ITOVotingApplication.Business.Services
 				var createdUser = await _unitOfWork.Users.Query()
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.Role)
+					.Include(u => u.UserRoles)
+						.ThenInclude(ur => ur.FieldReferenceCategory)
+					.Include(u => u.UserRoles)
+						.ThenInclude(ur => ur.FieldReferenceSubCategory)
 					.FirstOrDefaultAsync(u => u.Id == user.Id);
 
 				var result = _mapper.Map<UserDto>(createdUser);
