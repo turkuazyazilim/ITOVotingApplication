@@ -27,8 +27,7 @@ namespace ITOVotingApplication.Data.Configurations
 				.HasMaxLength(100);
 
 			builder.Property(e => e.IdentityNum)
-				.HasMaxLength(11)
-				.IsRequired();
+				.HasMaxLength(11);
 
 			// Relationships
 			builder.HasOne(d => d.Company)
@@ -36,12 +35,7 @@ namespace ITOVotingApplication.Data.Configurations
 				.HasForeignKey(d => d.CompanyId)
 				.OnDelete(DeleteBehavior.Restrict);
 
-			builder.HasOne(d => d.Committee)
-				.WithMany(p => p.Contacts)
-				.HasForeignKey(d => d.CommitteeId);
-
 			// Index
-			builder.HasIndex(e => e.IdentityNum).IsUnique();
 			builder.HasIndex(e => new { e.CompanyId, e.IdentityNum });
 		}
 	}

@@ -203,7 +203,6 @@ namespace VotingApplication.Web.Controllers
 				LastName = model.LastName,
 				IdentityNum = model.IdentityNum,
 				AuthorizationType = model.AuthorizationType,
-				CommitteeId = model.CommitteeId,
 				MobilePhone = model.MobilePhone,
 				Email = model.Email,
 				EligibleToVote = model.EligibleToVote

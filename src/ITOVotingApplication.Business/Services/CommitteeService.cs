@@ -49,12 +49,6 @@ namespace ITOVotingApplication.Business.Services
 
 				var committeeDtos = _mapper.Map<List<CommitteeDto>>(committees);
 
-				// Get contact counts for each committee
-				foreach (var dto in committeeDtos)
-				{
-					dto.ContactCount = await _unitOfWork.Contacts.Query()
-						.CountAsync(c => c.CommitteeId == dto.Id);
-				}
 
 				var result = new PagedResult<CommitteeDto>
 				{
@@ -84,8 +78,6 @@ namespace ITOVotingApplication.Business.Services
 				}
 
 				var dto = _mapper.Map<CommitteeDto>(committee);
-				dto.ContactCount = await _unitOfWork.Contacts.Query()
-					.CountAsync(c => c.CommitteeId == id);
 
 				return ApiResponse<CommitteeDto>.SuccessResult(dto);
 			}
@@ -146,8 +138,6 @@ namespace ITOVotingApplication.Business.Services
 				await _unitOfWork.CompleteAsync();
 
 				var result = _mapper.Map<CommitteeDto>(committee);
-				result.ContactCount = await _unitOfWork.Contacts.Query()
-					.CountAsync(c => c.CommitteeId == dto.Id);
 
 				return ApiResponse<CommitteeDto>.SuccessResult(result, "Komite başarıyla güncellendi.");
 			}
@@ -168,14 +158,7 @@ namespace ITOVotingApplication.Business.Services
 					return ApiResponse<bool>.ErrorResult("Komite bulunamadı.");
 				}
 
-				// Check if committee has any contacts
-				var hasContacts = await _unitOfWork.Contacts.Query()
-					.AnyAsync(c => c.CommitteeId == id);
 
-				if (hasContacts)
-				{
-					return ApiResponse<bool>.ErrorResult("Bu komiteye bağlı kişiler bulunmaktadır. Önce kişileri kaldırın.");
-				}
 
 				_unitOfWork.Committees.Remove(committee);
 				await _unitOfWork.CompleteAsync();

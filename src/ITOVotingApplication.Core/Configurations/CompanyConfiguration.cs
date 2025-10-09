@@ -39,6 +39,12 @@ namespace ITOVotingApplication.Data.Configurations
 			builder.Property(e => e.Email)
 				.HasMaxLength(100);
 
+			builder.Property(e => e.CompanyType)
+				.HasMaxLength(100);
+
+			builder.Property(e => e.DocumentStatus)
+				.IsRequired();
+
 			builder.Property(e => e.IsActive);
 
 			builder.Property(e => e.Has2022AuthorizationCertificate);
@@ -47,10 +53,6 @@ namespace ITOVotingApplication.Data.Configurations
 			builder.HasOne(d => d.ActiveContact)
 				.WithMany(p => p.ActiveForCompanies)
 				.HasForeignKey(d => d.ActiveContactId);
-
-			builder.HasOne(d => d.Committee)
-				.WithMany(p => p.Companies)
-				.HasForeignKey(d => d.CommitteeId);
 
 			// Index
 			builder.HasIndex(e => e.RegistrationNumber).IsUnique();

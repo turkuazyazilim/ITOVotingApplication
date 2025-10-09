@@ -65,7 +65,7 @@ namespace ITOVotingApplication.Web.Controllers
 
 				var loginResponse = await _authService.LoginAsync(loginDto);
 
-				if (loginResponse != null && loginResponse.Data.User != null)
+				if (loginResponse != null && loginResponse.Success && loginResponse.Data?.User != null)
 				{
 					// Cookie authentication için claims oluştur
 					var claims = new List<Claim>
@@ -119,7 +119,7 @@ namespace ITOVotingApplication.Web.Controllers
 					return RedirectToAction("Index", "Dashboard");
 				}
 
-				ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı!");
+				ModelState.AddModelError("", loginResponse?.Message ?? "Kullanıcı adı veya şifre hatalı!");
 				ViewBag.ReturnUrl = returnUrl;
 				return View(model);
 			}

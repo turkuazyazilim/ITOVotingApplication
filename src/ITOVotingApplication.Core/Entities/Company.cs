@@ -1,4 +1,6 @@
-﻿namespace ITOVotingApplication.Core.Entities
+﻿using ITOVotingApplication.Core.Enums;
+
+namespace ITOVotingApplication.Core.Entities
 {
 	public class Company : BaseEntity
 	{
@@ -10,14 +12,14 @@
 		public string OfficePhone { get; set; }
 		public string MobilePhone { get; set; }
 		public string Email { get; set; }
+		public string CompanyType { get; set; }
+		public DocumentStatus DocumentStatus { get; set; }
 		public int? ActiveContactId { get; set; }
-		public int? CommitteeId { get; set; }
 		public bool IsActive { get; set; }
 		public bool Has2022AuthorizationCertificate { get; set; }
 
 		// Navigation Properties
 		public virtual Contact ActiveContact { get; set; }
-		public virtual Committee Committee { get; set; }
 		public virtual ICollection<Contact> Contacts { get; set; }
 		public virtual ICollection<VoteTransaction> VoteTransactions { get; set; }
 

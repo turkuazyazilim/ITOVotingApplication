@@ -2,6 +2,7 @@ using AutoMapper;
 using ITOVotingApplication.Business.Interfaces;
 using ITOVotingApplication.Core.DTOs.Common;
 using ITOVotingApplication.Core.DTOs.Company;
+using ITOVotingApplication.Core.DTOs.Contact;
 using ITOVotingApplication.Core.Entities;
 using ITOVotingApplication.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -15,17 +16,20 @@ namespace ITOVotingApplication.Web.Controllers
     public class FieldWorkerController : Controller
     {
         private readonly ICompanyService _companyService;
+        private readonly IContactService _contactService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<FieldWorkerController> _logger;
 
         public FieldWorkerController(
             ICompanyService companyService,
+            IContactService contactService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<FieldWorkerController> logger)
         {
             _companyService = companyService;
+            _contactService = contactService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
@@ -109,12 +113,16 @@ namespace ITOVotingApplication.Web.Controllers
             {
                 var fullName = User.FindFirst("FullName")?.Value ?? "Saha Görevlisi";
                 var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "";
+                var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+                var mobilePhone = User.FindFirst(System.Security.Claims.ClaimTypes.MobilePhone)?.Value ?? "";
 
                 return Json(new {
                     success = true,
                     data = new {
                         fullName = fullName,
-                        userName = userName
+                        userName = userName,
+                        email = email,
+                        mobilePhone = mobilePhone
                     }
                 });
             }
@@ -162,6 +170,36 @@ namespace ITOVotingApplication.Web.Controllers
             {
                 _logger.LogError(ex, "Firma güncelleme hatası: {CompanyId}", companyDto.Id);
                 return Json(new { success = false, message = "Firma güncellenirken hata oluştu" });
+            }
+        }
+
+        // Yetkili kişi oluştur (Referanslar için)
+        [HttpPost]
+        public async Task<IActionResult> CreateContact([FromBody] CreateContactDto contactDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage);
+                    return Json(new { success = false, message = string.Join(", ", errors) });
+                }
+
+                var result = await _contactService.CreateAsync(contactDto);
+
+                if (result.Success)
+                {
+                    return Json(new { success = true, message = "Yetkili başarıyla oluşturuldu", data = result.Data });
+                }
+
+                return Json(new { success = false, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Yetkili oluşturma hatası: {CompanyId}, {AuthorizationType}", contactDto.CompanyId, contactDto.AuthorizationType);
+                return Json(new { success = false, message = "Yetkili oluşturulurken hata oluştu" });
             }
         }
     }

@@ -4,6 +4,7 @@ using ITOVotingApplication.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ITOVotingApplication.Core.Migrations
 {
     [DbContext(typeof(VotingDbContext))]
-    partial class VotingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251002214050_RemoveCommitteeIdFromContact")]
+    partial class RemoveCommitteeIdFromContact
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,12 +72,7 @@ namespace ITOVotingApplication.Core.Migrations
                     b.Property<int?>("ActiveContactId")
                         .HasColumnType("int");
 
-                    b.Property<string>("CompanyType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("DocumentStatus")
+                    b.Property<int?>("CommitteeId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
@@ -127,6 +125,8 @@ namespace ITOVotingApplication.Core.Migrations
 
                     b.HasIndex("ActiveContactId");
 
+                    b.HasIndex("CommitteeId");
+
                     b.HasIndex("RegistrationNumber")
                         .IsUnique();
 
@@ -142,6 +142,9 @@ namespace ITOVotingApplication.Core.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AuthorizationType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CommitteeId")
                         .HasColumnType("int");
 
                     b.Property<int>("CompanyId")
@@ -176,6 +179,11 @@ namespace ITOVotingApplication.Core.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CommitteeId");
+
+                    b.HasIndex("IdentityNum")
+                        .IsUnique();
 
                     b.HasIndex("CompanyId", "IdentityNum");
 
@@ -466,11 +474,21 @@ namespace ITOVotingApplication.Core.Migrations
                         .WithMany("ActiveForCompanies")
                         .HasForeignKey("ActiveContactId");
 
+                    b.HasOne("ITOVotingApplication.Core.Entities.Committee", "Committee")
+                        .WithMany("Companies")
+                        .HasForeignKey("CommitteeId");
+
                     b.Navigation("ActiveContact");
+
+                    b.Navigation("Committee");
                 });
 
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.Contact", b =>
                 {
+                    b.HasOne("ITOVotingApplication.Core.Entities.Committee", null)
+                        .WithMany("Contacts")
+                        .HasForeignKey("CommitteeId");
+
                     b.HasOne("ITOVotingApplication.Core.Entities.Company", "Company")
                         .WithMany("Contacts")
                         .HasForeignKey("CompanyId")
@@ -580,6 +598,13 @@ namespace ITOVotingApplication.Core.Migrations
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.BallotBox", b =>
                 {
                     b.Navigation("VoteTransactions");
+                });
+
+            modelBuilder.Entity("ITOVotingApplication.Core.Entities.Committee", b =>
+                {
+                    b.Navigation("Companies");
+
+                    b.Navigation("Contacts");
                 });
 
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.Company", b =>

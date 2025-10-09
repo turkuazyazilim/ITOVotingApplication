@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ITOVotingApplication.Core.DTOs.Company;
 using ITOVotingApplication.Core.DTOs.Contact;
 using ITOVotingApplication.Core.DTOs.User;
@@ -14,9 +14,7 @@ namespace ITOVotingApplication.Business.Mappings
 			// Company Mappings
 			CreateMap<Company, CompanyDto>()
 				.ForMember(dest => dest.ActiveContactName,
-					opt => opt.MapFrom(src => src.ActiveContact != null ? src.ActiveContact.FullName : null))
-				.ForMember(dest => dest.CommitteeDescription,
-					opt => opt.MapFrom(src => src.Committee != null ? src.Committee.CommitteeDescription : null));
+					opt => opt.MapFrom(src => src.ActiveContact != null ? src.ActiveContact.FullName : null));
 
 			CreateMap<CreateCompanyDto, Company>();
 			CreateMap<UpdateCompanyDto, Company>();
@@ -25,8 +23,6 @@ namespace ITOVotingApplication.Business.Mappings
 			CreateMap<Contact, ContactDto>()
 				.ForMember(dest => dest.CompanyTitle,
 					opt => opt.MapFrom(src => src.Company.Title))
-				.ForMember(dest => dest.CommitteeDescription,
-					opt => opt.MapFrom(src => src.Committee != null ? src.Committee.CommitteeDescription : null))
 				.ForMember(dest => dest.FullName,
 					opt => opt.MapFrom(src => src.FullName));
 

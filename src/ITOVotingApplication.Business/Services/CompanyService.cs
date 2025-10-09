@@ -24,7 +24,6 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var query = _unitOfWork.Companies.Query()
 					.Include(c => c.ActiveContact)
-					.Include(c => c.Committee)
 					.AsQueryable();
 
 				// Search filter
@@ -81,7 +80,6 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var company = await _unitOfWork.Companies.Query()
 					.Include(c => c.ActiveContact)
-					.Include(c => c.Committee)
 					.FirstOrDefaultAsync(c => c.Id == id);
 
 				if (company == null)

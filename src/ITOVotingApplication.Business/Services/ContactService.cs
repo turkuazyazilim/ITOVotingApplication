@@ -44,7 +44,6 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var contact = await _unitOfWork.Contacts.Query()
 					.Include(c => c.Company)
-					.Include(c => c.Committee)
 					.FirstOrDefaultAsync(c => c.Id == id);
 
 				if (contact == null)
@@ -73,7 +72,6 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var query = _unitOfWork.Contacts.Query()
 					.Include(c => c.Company)
-					.Include(c => c.Committee)
 					.AsQueryable();
 
 				// Search filter
@@ -98,9 +96,6 @@ namespace ITOVotingApplication.Business.Services
 						"company" => request.IsDescending ?
 							query.OrderByDescending(c => c.Company.Title) :
 							query.OrderBy(c => c.Company.Title),
-						"committee" => request.IsDescending ?
-							query.OrderByDescending(c => c.Committee.CommitteeDescription) :
-							query.OrderBy(c => c.Committee.CommitteeDescription),
 						_ => query.OrderBy(c => c.Id)
 					};
 				}
@@ -154,21 +149,15 @@ namespace ITOVotingApplication.Business.Services
 				}
 
 				// Check for duplicate identity number
-				var existingContact = await _unitOfWork.Contacts
+
+				if (dto.IdentityNum != "")
+				{
+					var existingContact = await _unitOfWork.Contacts
 					.SingleOrDefaultAsync(c => c.IdentityNum == dto.IdentityNum);
 
-				if (existingContact != null)
-				{
-					return ApiResponse<ContactDto>.ErrorResult("Bu TC kimlik numarası ile kayıtlı kişi bulunmaktadır.");
-				}
-
-				// Validate committee if provided
-				if (dto.CommitteeId.HasValue)
-				{
-					var committee = await _unitOfWork.Committees.GetByIdAsync(dto.CommitteeId.Value);
-					if (committee == null)
+					if (existingContact != null)
 					{
-						return ApiResponse<ContactDto>.ErrorResult("Komite bulunamadı.");
+						return ApiResponse<ContactDto>.ErrorResult("Bu TC kimlik numarası ile kayıtlı kişi bulunmaktadır.");
 					}
 				}
 
@@ -178,7 +167,6 @@ namespace ITOVotingApplication.Business.Services
 
 				var createdContact = await _unitOfWork.Contacts.Query()
 					.Include(c => c.Company)
-					.Include(c => c.Committee)
 					.FirstOrDefaultAsync(c => c.Id == contact.Id);
 
 				var result = _mapper.Map<ContactDto>(createdContact);
@@ -216,7 +204,6 @@ namespace ITOVotingApplication.Business.Services
 
 				var updatedContact = await _unitOfWork.Contacts.Query()
 					.Include(c => c.Company)
-					.Include(c => c.Committee)
 					.FirstOrDefaultAsync(c => c.Id == contact.Id);
 
 				var result = _mapper.Map<ContactDto>(updatedContact);
@@ -280,7 +267,6 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var contacts = await _unitOfWork.Contacts.Query()
 					.Include(c => c.Company)
-					.Include(c => c.Committee)
 					.Where(c => c.CompanyId == companyId)
 					.OrderBy(c => c.FirstName)
 					.ThenBy(c => c.LastName)
@@ -310,7 +296,6 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var contacts = await _unitOfWork.Contacts.Query()
 					.Include(c => c.Company)
-					.Include(c => c.Committee)
 					.Where(c => c.EligibleToVote)
 					.ToListAsync();
 
@@ -341,7 +326,6 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var contact = await _unitOfWork.Contacts.Query()
 					.Include(c => c.Company)
-					.Include(c => c.Committee)
 					.FirstOrDefaultAsync(c => c.IdentityNum == identityNum);
 
 				if (contact == null)

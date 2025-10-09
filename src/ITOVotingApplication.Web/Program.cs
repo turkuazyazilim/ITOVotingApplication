@@ -229,10 +229,8 @@ app.Use(async (context, next) =>
 	await next();
 });
 
-// API Routes i�in
 app.MapControllers();
 
-// Auth routes - �LK SIRADA olmal�
 app.MapControllerRoute(
 	name: "auth",
 	pattern: "Auth/{action=Login}/{id?}",
@@ -260,7 +258,6 @@ app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Auth}/{action=Login}/{id?}");
 
-// Root path'i Login'e y�nlendir
 app.MapGet("/", context =>
 {
 	context.Response.Redirect("/Auth/Login");

@@ -1,4 +1,6 @@
-﻿namespace ITOVotingApplication.Core.DTOs.Company
+﻿using ITOVotingApplication.Core.Enums;
+
+namespace ITOVotingApplication.Core.DTOs.Company
 {
 	public class CompanyDto : BaseDto
 	{
@@ -10,10 +12,10 @@
 		public string OfficePhone { get; set; }
 		public string MobilePhone { get; set; }
 		public string Email { get; set; }
+		public string CompanyType { get; set; }
+		public DocumentStatus DocumentStatus { get; set; }
 		public int? ActiveContactId { get; set; }
 		public string ActiveContactName { get; set; }
-		public int? CommitteeId { get; set; }
-		public string CommitteeDescription { get; set; }
 		public bool IsActive { get; set; }
 		public bool Has2022AuthorizationCertificate { get; set; }
 	}
@@ -28,7 +30,8 @@
 		public string OfficePhone { get; set; }
 		public string MobilePhone { get; set; }
 		public string Email { get; set; }
-		public int? CommitteeId { get; set; }
+		public string CompanyType { get; set; }
+		public DocumentStatus DocumentStatus { get; set; }
 		public bool IsActive { get; set; }
 		public bool Has2022AuthorizationCertificate { get; set; }
 	}

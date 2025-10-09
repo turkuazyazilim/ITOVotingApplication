@@ -294,9 +294,9 @@
     </div>
 
     <!-- İmzalı Belge Yükleme Modal -->
-    <div id="uploadSignedDocumentModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden">
+    <div id="uploadSignedDocumentModal" class="fixed inset-0 bg-black bg-opacity-50 z-[100] hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full my-8">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold text-gray-900">İmzalı Belge Yükle</h3>
@@ -320,6 +320,62 @@
                             <p class="text-xs text-gray-500 mt-1">
                                 Desteklenen formatlar: PDF, DOC, DOCX, JPG, JPEG, PNG
                             </p>
+                        </div>
+
+                        <!-- Referans 1 (Zorunlu) -->
+                        <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">1</span>
+                                Referans 1 Bilgileri <span class="text-red-500 ml-1">*</span>
+                            </h4>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad *</label>
+                                    <input type="text" id="reference1FirstName" required
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="Referans 1 adı">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad *</label>
+                                    <input type="text" id="reference1LastName" required
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="Referans 1 soyadı">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Telefon *</label>
+                                    <input type="tel" id="reference1Phone" required
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="0 (5XX) XXX XX XX">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Referans 2 (Opsiyonel) -->
+                        <div class="mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">2</span>
+                                Referans 2 Bilgileri <span class="text-gray-400 text-xs ml-1">(İsteğe bağlı)</span>
+                            </h4>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad</label>
+                                    <input type="text" id="reference2FirstName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                           placeholder="Referans 2 adı (opsiyonel)">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad</label>
+                                    <input type="text" id="reference2LastName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                           placeholder="Referans 2 soyadı (opsiyonel)">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Telefon</label>
+                                    <input type="tel" id="reference2Phone"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                           placeholder="0 (5XX) XXX XX XX (opsiyonel)">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="flex justify-end space-x-3">
@@ -500,6 +556,12 @@
                 ? '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Aktif</span>'
                 : '<span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">Pasif</span>';
 
+            const documentStatusBadge = company.documentStatus === 1
+                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Belge Yüklendi</span>'
+                : company.documentStatus === 2
+                ? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Onaylı Belge</span>'
+                : '';
+
             return $(`
                 <div class="bg-white rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer p-4"
                      onclick="openCompanyDetails(${company.id})">
@@ -510,6 +572,7 @@
                             <div class="flex flex-wrap gap-2 mb-2">
                                 ${authBadge}
                                 ${statusBadge}
+                                ${documentStatusBadge}
                             </div>
                             ${company.registrationAddress ? `<p class="text-sm text-gray-500">${company.registrationAddress}</p>` : ''}
                         </div>
@@ -614,6 +677,12 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
                         </div>
 
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Şirket Tipi</label>
+                            <input type="text" id="editCompanyType" value="${company.companyType || ''}" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                        </div>
+
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Adres</label>
                             <textarea id="editRegistrationAddress" rows="3" readonly
@@ -633,6 +702,15 @@
                             <select id="editHas2022AuthorizationCertificate" disabled class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
                                 <option value="true" ${company.has2022AuthorizationCertificate ? 'selected' : ''}>Var</option>
                                 <option value="false" ${!company.has2022AuthorizationCertificate ? 'selected' : ''}>Yok</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Belge Durumu</label>
+                            <select id="editDocumentStatus" disabled class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                                <option value="0" ${company.documentStatus === 0 ? 'selected' : ''}>-</option>
+                                <option value="1" ${company.documentStatus === 1 ? 'selected' : ''}>Yetki Belgesi Yüklendi</option>
+                                <option value="2" ${company.documentStatus === 2 ? 'selected' : ''}>Onaylanmış Yetki Belgesi Yüklendi</option>
                             </select>
                         </div>
                     </div>
@@ -1091,14 +1169,36 @@ Saygılarımızla,
 
             // Clear form
             document.getElementById('signedDocumentFile').value = '';
+            document.getElementById('reference1FirstName').value = '';
+            document.getElementById('reference1LastName').value = '';
+            document.getElementById('reference1Phone').value = '';
+            document.getElementById('reference2FirstName').value = '';
+            document.getElementById('reference2LastName').value = '';
+            document.getElementById('reference2Phone').value = '';
         }
 
         async function submitUploadSignedDocument() {
             const companyId = document.getElementById('uploadCompanyId').value;
             const fileInput = document.getElementById('signedDocumentFile');
 
+            // Referans 1 bilgileri (zorunlu)
+            const ref1FirstName = document.getElementById('reference1FirstName').value.trim();
+            const ref1LastName = document.getElementById('reference1LastName').value.trim();
+            const ref1Phone = document.getElementById('reference1Phone').value.trim();
+
+            // Referans 2 bilgileri (opsiyonel)
+            const ref2FirstName = document.getElementById('reference2FirstName').value.trim();
+            const ref2LastName = document.getElementById('reference2LastName').value.trim();
+            const ref2Phone = document.getElementById('reference2Phone').value.trim();
+
             if (!companyId) {
                 alert('Firma ID bulunamadı');
+                return;
+            }
+
+            // Referans 1 zorunlu kontrol
+            if (!ref1FirstName || !ref1LastName || !ref1Phone) {
+                alert('Referans 1 bilgileri zorunludur! Lütfen Ad, Soyad ve Telefon bilgilerini giriniz.');
                 return;
             }
 
@@ -1128,7 +1228,89 @@ Saygılarımızla,
                 if (response.ok) {
                     const result = await response.json();
                     if (result.success) {
-                        alert('✅ İmzalı belge başarıyla yüklendi!');
+                        // Belge yükleme başarılı, şimdi Contact kayıtlarını oluştur
+
+                        // 1. Referans 1 Contact kaydı oluştur (AuthorizationType: 4)
+                        const ref1Data = {
+                            companyId: parseInt(companyId),
+                            firstName: ref1FirstName,
+                            lastName: ref1LastName,
+                            authorizationType: 4,
+                            mobilePhone: ref1Phone,
+                            email: '',
+                            identityNum: '',
+                            eligibleToVote: false
+                        };
+
+                        const ref1Response = await fetch('/FieldWorker/CreateContact', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify(ref1Data)
+                        });
+
+                        if (!ref1Response.ok) {
+                            console.error('Referans 1 kaydı oluşturulamadı');
+                        }
+
+                        // 2. Referans 2 Contact kaydı oluştur (eğer doldurulmuşsa) (AuthorizationType: 5)
+                        if (ref2FirstName && ref2LastName && ref2Phone) {
+                            const ref2Data = {
+                                companyId: parseInt(companyId),
+                                firstName: ref2FirstName,
+                                lastName: ref2LastName,
+                                authorizationType: 5,
+                                mobilePhone: ref2Phone,
+                                email: '',
+                                identityNum: '',
+                                eligibleToVote: false
+                            };
+
+                            const ref2Response = await fetch('/FieldWorker/CreateContact', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify(ref2Data)
+                            });
+
+                            if (!ref2Response.ok) {
+                                console.error('Referans 2 kaydı oluşturulamadı');
+                            }
+                        }
+
+                        // 3. Saha kullanıcısı Contact kaydı oluştur (AuthorizationType: 6)
+                        const userInfoResponse = await fetch('/FieldWorker/GetUserInfo');
+                        const userInfoResult = await userInfoResponse.json();
+
+                        if (userInfoResult.success && userInfoResult.data) {
+                            const nameParts = userInfoResult.data.fullName.split(' ');
+                            const firstName = nameParts[0] || '';
+                            const lastName = nameParts.slice(1).join(' ') || '';
+
+                            const fieldWorkerData = {
+                                companyId: parseInt(companyId),
+                                firstName: firstName,
+                                lastName: lastName,
+                                authorizationType: 6,
+                                mobilePhone: userInfoResult.data.mobilePhone || '',
+                                email: userInfoResult.data.email || '',
+                                identityNum: '',
+                                eligibleToVote: false
+                            };
+
+                            const fieldWorkerResponse = await fetch('/FieldWorker/CreateContact', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify(fieldWorkerData)
+                            });
+
+                            if (!fieldWorkerResponse.ok) {
+                                console.error('Saha kullanıcısı kaydı oluşturulamadı');
+                            }
+                        }
+
+                        alert('✅ İmzalı belge başarıyla yüklendi ve referans kayıtları oluşturuldu!');
                         closeUploadSignedDocumentModal();
                         // Belge listesini yenile
                         loadCompanyDocuments(companyId);

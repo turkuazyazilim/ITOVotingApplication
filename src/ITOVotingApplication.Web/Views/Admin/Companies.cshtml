@@ -210,10 +210,10 @@
 
     <!-- Edit Company Modal -->
     <div id="editCompanyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
-                <!-- Modal Header - Fixed -->
-                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <div class="min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col my-8" style="margin-left: auto; margin-right: auto;">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-900">Firma Düzenle</h3>
                         <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
@@ -222,16 +222,16 @@
                     </div>
                 </div>
 
-                <!-- Modal Content - Scrollable -->
-                <div class="flex-1 overflow-y-auto" style="max-height: calc(95vh - 120px);">
-                    <form id="editCompanyForm" class="p-4 space-y-4">
+                <!-- Modal Content -->
+                <div class="flex-1 overflow-y-auto p-6">
+                    <form id="editCompanyForm" class="space-y-4">
                 <input type="hidden" id="editCompanyId">
 
                 <!-- Temel Bilgiler -->
                 <div class="mb-4">
                     <h4 class="text-base font-medium text-gray-900 mb-3">Temel Bilgiler</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="md:col-span-2">
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="col-span-1">
                             <label class="block text-xs font-medium text-gray-700 mb-1">Firma Unvanı *</label>
                             <input type="text" id="editTitle" required
                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -259,22 +259,10 @@
                     </div>
                 </div>
 
-                <!-- Meslek Grubu ve Komite -->
-                <div class="mb-4">
-                    <h4 class="text-base font-medium text-gray-900 mb-3">Komite</h4>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
-                        <select id="editCommitteeId"
-                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="">-- Seçiniz --</option>
-                        </select>
-                    </div>
-                </div>
-
                 <!-- İletişim Bilgileri -->
                 <div class="mb-4">
                     <h4 class="text-base font-medium text-gray-900 mb-3">İletişim Bilgileri</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Ofis Telefonu</label>
                             <input type="tel" id="editOfficePhone"
@@ -293,7 +281,25 @@
                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                    placeholder="info@firma.com">
                         </div>
-                        <div class="md:col-span-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Şirket Tipi</label>
+                            <select id="editCompanyType"
+                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Seçiniz</option>
+                                <option value="AS">AS - Anonim Şirket</option>
+                                <option value="DERNEK">DERNEK</option>
+                                <option value="DIG">DIG - Diğer</option>
+                                <option value="ISORTK">ISORTK - İş Ortaklığı</option>
+                                <option value="KOLL">KOLL - Kollektif Şirket</option>
+                                <option value="KOMAN">KOMAN - Komandit Şirket</option>
+                                <option value="KOOP">KOOP - Kooperatif</option>
+                                <option value="LTD">LTD - Limited Şirket</option>
+                                <option value="TC">TC - Ticari İşletme</option>
+                                <option value="VKF">VKF - Vakıf</option>
+                                <option value="YABMER">YABMER - Yabancı Merkez</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1">
                             <label class="block text-xs font-medium text-gray-700 mb-1">Adres</label>
                             <textarea id="editRegistrationAddress" rows="2"
                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -305,7 +311,16 @@
                 <!-- Durum ve Yetkiler -->
                 <div class="mb-4">
                     <h4 class="text-base font-medium text-gray-900 mb-3">Durum ve Yetkiler</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Belge Durumu</label>
+                            <select id="editDocumentStatus"
+                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="0">-</option>
+                                <option value="1">Yetki Belgesi Yüklendi</option>
+                                <option value="2">Onaylanmış Yetki Belgesi Yüklendi</option>
+                            </select>
+                        </div>
                         <div>
                             <label class="flex items-center space-x-2">
                                 <input type="checkbox" id="editIsActive" class="rounded border-gray-300 text-blue-600">
@@ -383,10 +398,10 @@
 
     <!-- Create Company Modal -->
     <div id="createCompanyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col">
-                <!-- Modal Header - Fixed -->
-                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+        <div class="min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[95vh] flex flex-col my-8" style="margin-left: auto; margin-right: auto;">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-900">Yeni Firma Ekle</h3>
                         <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-600">
@@ -395,14 +410,14 @@
                     </div>
                 </div>
 
-                <!-- Modal Content - Scrollable -->
-                <div class="flex-1 overflow-y-auto" style="max-height: calc(95vh - 120px);">
-                    <form id="createCompanyForm" class="p-4 space-y-4">
+                <!-- Modal Content -->
+                <div class="flex-1 overflow-y-auto p-6">
+                    <form id="createCompanyForm" class="space-y-4">
                 <!-- Temel Bilgiler -->
                 <div class="mb-4">
                     <h4 class="text-base font-medium text-gray-900 mb-3">Temel Bilgiler</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="md:col-span-2">
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="col-span-1">
                             <label class="block text-xs font-medium text-gray-700 mb-1">Firma Unvanı *</label>
                             <input type="text" id="createTitle" required
                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -430,22 +445,10 @@
                     </div>
                 </div>
 
-                <!-- Meslek Grubu ve Komite -->
-                <div class="mb-4">
-                    <h4 class="text-base font-medium text-gray-900 mb-3">Komite</h4>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
-                        <select id="createCommitteeId"
-                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="">-- Seçiniz --</option>
-                        </select>
-                    </div>
-                </div>
-
                 <!-- İletişim Bilgileri -->
                 <div class="mb-4">
                     <h4 class="text-base font-medium text-gray-900 mb-3">İletişim Bilgileri</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-700 mb-1">Ofis Telefonu</label>
                             <input type="tel" id="createOfficePhone"
@@ -464,7 +467,25 @@
                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                    placeholder="info@firma.com">
                         </div>
-                        <div class="md:col-span-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Şirket Tipi</label>
+                            <select id="createCompanyType"
+                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Seçiniz</option>
+                                <option value="AS">AS - Anonim Şirket</option>
+                                <option value="DERNEK">DERNEK</option>
+                                <option value="DIG">DIG - Diğer</option>
+                                <option value="ISORTK">ISORTK - İş Ortaklığı</option>
+                                <option value="KOLL">KOLL - Kollektif Şirket</option>
+                                <option value="KOMAN">KOMAN - Komandit Şirket</option>
+                                <option value="KOOP">KOOP - Kooperatif</option>
+                                <option value="LTD">LTD - Limited Şirket</option>
+                                <option value="TC">TC - Ticari İşletme</option>
+                                <option value="VKF">VKF - Vakıf</option>
+                                <option value="YABMER">YABMER - Yabancı Merkez</option>
+                            </select>
+                        </div>
+                        <div class="col-span-1">
                             <label class="block text-xs font-medium text-gray-700 mb-1">Adres</label>
                             <textarea id="createRegistrationAddress" rows="2"
                                       class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -476,7 +497,16 @@
                 <!-- Durum ve Yetkiler -->
                 <div class="mb-4">
                     <h4 class="text-base font-medium text-gray-900 mb-3">Durum ve Yetkiler</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Belge Durumu</label>
+                            <select id="createDocumentStatus"
+                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="0">-</option>
+                                <option value="1">Yetki Belgesi Yüklendi</option>
+                                <option value="2">Onaylanmış Yetki Belgesi Yüklendi</option>
+                            </select>
+                        </div>
                         <div>
                             <label class="flex items-center space-x-2">
                                 <input type="checkbox" id="createIsActive" checked class="rounded border-gray-300 text-blue-600">
@@ -518,10 +548,10 @@
 
     <!-- Add Contact Modal -->
     <div id="addContactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[80] overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col my-8" style="margin-left: auto; margin-right: auto;">
                 <!-- Modal Header -->
-                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+                <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-900">Firmaya Yetkili Ekle</h3>
                         <button onclick="closeAddContactModal()" class="text-gray-400 hover:text-gray-600">
@@ -531,15 +561,15 @@
                 </div>
 
                 <!-- Modal Content -->
-                <div class="flex-1 overflow-y-auto" style="max-height: calc(90vh - 120px);">
-                    <form id="addContactForm" class="p-4 space-y-4">
+                <div class="flex-1 overflow-y-auto p-6">
+                    <form id="addContactForm" class="space-y-4">
                         <!-- Mevcut Company ID (hidden) -->
                         <input type="hidden" id="addContactCompanyId">
 
                         <!-- Kişisel Bilgiler -->
                         <div class="mb-4">
                             <h4 class="text-base font-medium text-gray-900 mb-3">Kişisel Bilgiler</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Ad *</label>
                                     <input type="text" id="addContactFirstName" required
@@ -552,7 +582,7 @@
                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                            placeholder="Soyadını giriniz">
                                 </div>
-                                <div class="md:col-span-2">
+                                <div class="col-span-1">
                                     <label class="block text-xs font-medium text-gray-700 mb-1">TC Kimlik No *</label>
                                     <input type="text" id="addContactIdentityNum" maxlength="11" required
                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -564,7 +594,7 @@
                         <!-- Yetki Bilgileri -->
                         <div class="mb-4">
                             <h4 class="text-base font-medium text-gray-900 mb-3">Yetki Bilgileri</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Yetki Tipi</label>
                                     <select id="addContactAuthorizationType"
@@ -573,16 +603,9 @@
                                         <option value="1">Firma Yetkilisi</option>
                                         <option value="2">Vekil</option>
                                         <option value="3">Temsilci</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
-                                    <select id="addContactCommitteeId"
-                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="">-- Seçiniz --</option>
-                                        <option value="1">Yönetim Kurulu</option>
-                                        <option value="2">Denetleme Kurulu</option>
-                                        <option value="3">Disiplin Kurulu</option>
+                                        <option value="4">Referans 1</option>
+                                        <option value="5">Referans 2</option>
+                                        <option value="6">Saha Referansı</option>
                                     </select>
                                 </div>
                             </div>
@@ -591,7 +614,7 @@
                         <!-- İletişim Bilgileri -->
                         <div class="mb-4">
                             <h4 class="text-base font-medium text-gray-900 mb-3">İletişim Bilgileri</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Cep Telefonu</label>
                                     <input type="tel" id="addContactMobilePhone"
@@ -648,10 +671,10 @@
 
     <!-- Edit Contact Modal -->
     <div id="editContactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[80] overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col my-8" style="margin-left: auto; margin-right: auto;">
                 <!-- Modal Header -->
-                <div class="px-4 py-3 border-b border-gray-200 flex-shrink-0">
+                <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-900">Yetkili Düzenle</h3>
                         <button onclick="closeEditContactModal()" class="text-gray-400 hover:text-gray-600">
@@ -661,8 +684,8 @@
                 </div>
 
                 <!-- Modal Content -->
-                <div class="flex-1 overflow-y-auto" style="max-height: calc(90vh - 120px);">
-                    <form id="editContactForm" class="p-4 space-y-4">
+                <div class="flex-1 overflow-y-auto p-6">
+                    <form id="editContactForm" class="space-y-4">
                         <!-- Contact ID (hidden) -->
                         <input type="hidden" id="editContactId">
                         <input type="hidden" id="editContactCompanyId">
@@ -670,7 +693,7 @@
                         <!-- Kişisel Bilgiler -->
                         <div class="mb-4">
                             <h4 class="text-base font-medium text-gray-900 mb-3">Kişisel Bilgiler</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Ad *</label>
                                     <input type="text" id="editContactFirstName" required
@@ -683,7 +706,7 @@
                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                            placeholder="Soyadını giriniz">
                                 </div>
-                                <div class="md:col-span-2">
+                                <div class="col-span-1">
                                     <label class="block text-xs font-medium text-gray-700 mb-1">TC Kimlik No *</label>
                                     <input type="text" id="editContactIdentityNum" maxlength="11" required
                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -695,7 +718,7 @@
                         <!-- Yetki Bilgileri -->
                         <div class="mb-4">
                             <h4 class="text-base font-medium text-gray-900 mb-3">Yetki Bilgileri</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Yetki Tipi</label>
                                     <select id="editContactAuthorizationType"
@@ -704,16 +727,9 @@
                                         <option value="1">Firma Yetkilisi</option>
                                         <option value="2">Vekil</option>
                                         <option value="3">Temsilci</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
-                                    <select id="editContactCommitteeId"
-                                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                        <option value="">-- Seçiniz --</option>
-                                        <option value="1">Yönetim Kurulu</option>
-                                        <option value="2">Denetleme Kurulu</option>
-                                        <option value="3">Disiplin Kurulu</option>
+                                        <option value="4">Referans 1</option>
+                                        <option value="5">Referans 2</option>
+                                        <option value="6">Saha Referansı</option>
                                     </select>
                                 </div>
                             </div>
@@ -722,7 +738,7 @@
                         <!-- İletişim Bilgileri -->
                         <div class="mb-4">
                             <h4 class="text-base font-medium text-gray-900 mb-3">İletişim Bilgileri</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 gap-3">
                                 <div>
                                     <label class="block text-xs font-medium text-gray-700 mb-1">Cep Telefonu</label>
                                     <input type="tel" id="editContactMobilePhone"
@@ -824,8 +840,8 @@
 
     <!-- Send Document Modal -->
     <div id="sendDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <div class="min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col my-8" style="margin-left: auto; margin-right: auto;">
                 <!-- Modal Header -->
                 <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                     <div class="flex items-center justify-between">
@@ -1031,9 +1047,6 @@
             
             // Load user info
             loadUserInfo();
-
-            // Load committees
-            loadCommittees();
 
             // jQuery yüklenmiş mi kontrol et
             if (typeof jQuery === 'undefined') {
@@ -1405,10 +1418,10 @@
                         <thead class="bg-gray-50 border-b border-gray-200">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Firma</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Komite</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İletişim</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">2022 Yetki Belgesi</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Belge Durumu</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
                             </tr>
                         </thead>
@@ -1425,11 +1438,6 @@
                             </div>
                         </td>
                         <td class="px-4 py-4">
-                            <span class="text-sm text-gray-900">
-                                ${company.committeeDescription || '-'}
-                            </span>
-                        </td>
-                        <td class="px-4 py-4">
                             <p class="text-sm text-gray-900">${company.officePhone || company.mobilePhone || '-'}</p>
                             <p class="text-xs text-gray-500">${company.email || '-'}</p>
                         </td>
@@ -1443,6 +1451,14 @@
                             ${company.has2022AuthorizationCertificate ?
                                 '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">Var</span>' :
                                 '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Yok</span>'
+                            }
+                        </td>
+                        <td class="px-4 py-4 text-center">
+                            ${company.documentStatus === 1 ?
+                                '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">Yetki Belgesi</span>' :
+                                company.documentStatus === 2 ?
+                                '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Onaylı Belge</span>' :
+                                '<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">-</span>'
                             }
                         </td>
                         <td class="px-4 py-4 text-center">
@@ -1488,10 +1504,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-4 text-xs">
-                            <span class="inline-flex px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                ${company.committeeDescription || 'Komite Yok'}
-                            </span>
+                        <div class="flex items-center flex-wrap gap-2 text-xs">
                             ${company.isActive ?
                                 '<span class="inline-flex px-2 py-1 rounded-full bg-green-100 text-green-800">Aktif</span>' :
                                 '<span class="inline-flex px-2 py-1 rounded-full bg-red-100 text-red-800">Pasif</span>'
@@ -1499,6 +1512,12 @@
                             ${company.has2022AuthorizationCertificate ?
                                 '<span class="inline-flex px-2 py-1 rounded-full bg-blue-100 text-blue-800">Yetkili</span>' :
                                 '<span class="inline-flex px-2 py-1 rounded-full bg-gray-100 text-gray-600">Yetkisiz</span>'
+                            }
+                            ${company.documentStatus === 1 ?
+                                '<span class="inline-flex px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Belge Yüklendi</span>' :
+                                company.documentStatus === 2 ?
+                                '<span class="inline-flex px-2 py-1 rounded-full bg-green-100 text-green-800">Onaylı</span>' :
+                                ''
                             }
                         </div>
                         ${(company.officePhone || company.mobilePhone || company.email) ? `
@@ -1654,11 +1673,12 @@
                 document.getElementById('editRegistrationNumber').value = company.registrationNumber || '';
                 document.getElementById('editTradeRegistrationNumber').value = company.tradeRegistrationNumber || '';
 
-                document.getElementById('editCommitteeId').value = company.committeeId || '';
                 document.getElementById('editOfficePhone').value = company.officePhone || '';
                 document.getElementById('editMobilePhone').value = company.mobilePhone || '';
                 document.getElementById('editEmail').value = company.email || '';
+                document.getElementById('editCompanyType').value = company.companyType || '';
                 document.getElementById('editRegistrationAddress').value = company.registrationAddress || '';
+                document.getElementById('editDocumentStatus').value = company.documentStatus || '0';
                 document.getElementById('editIsActive').checked = company.isActive;
                 document.getElementById('editHas2022Authorization').checked = company.has2022AuthorizationCertificate;
 
@@ -2391,6 +2411,16 @@ Saygılarımızla,
 
             emptyState.classList.add('hidden');
 
+            // AuthorizationType mapping
+            const authTypeMap = {
+                1: 'Firma Yetkilisi',
+                2: 'Vekil',
+                3: 'Temsilci',
+                4: 'Referans 1',
+                5: 'Referans 2',
+                6: 'Saha Referansı'
+            };
+
             container.innerHTML = contacts.map(contact => `
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                     <div class="flex items-center space-x-3">
@@ -2402,14 +2432,18 @@ Saygılarımızla,
                         <div>
                             <h5 class="text-sm font-medium text-gray-900">${contact.firstName} ${contact.lastName}</h5>
                             <div class="flex items-center space-x-2 text-xs text-gray-600">
-                                <span>${contact.identityNum}</span>
+                                <span>${contact.identityNum || '-'}</span>
+                                <span>•</span>
+                                <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                    ${authTypeMap[contact.authorizationType] || 'Bilinmiyor'}
+                                </span>
                                 <span>•</span>
                                 <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium ${
-                                    contact.eligibleToVote 
-                                        ? 'bg-green-100 text-green-800' 
+                                    contact.eligibleToVote
+                                        ? 'bg-green-100 text-green-800'
                                         : 'bg-gray-100 text-gray-600'
                                 }">
-                                    ${contact.eligibleToVote ? 'Oy Kullanacak Kişi' : 'Bağlantı Kişi'}
+                                    ${contact.eligibleToVote ? 'Oy Kullanacak' : 'Bağlantı'}
                                 </span>
                             </div>
                             ${contact.mobilePhone || contact.email ? `
@@ -2583,7 +2617,6 @@ Saygılarımızla,
             
             // Yetki bilgileri
             document.getElementById('editContactAuthorizationType').value = contact.authorizationType || '';
-            document.getElementById('editContactCommitteeId').value = contact.committeeId || '';
             
             // İletişim bilgileri
             document.getElementById('editContactMobilePhone').value = contact.mobilePhone || '';
@@ -2671,7 +2704,6 @@ Saygılarımızla,
                 lastName: document.getElementById('addContactLastName').value,
                 identityNum: document.getElementById('addContactIdentityNum').value,
                 authorizationType: parseInt(document.getElementById('addContactAuthorizationType').value) || 1,
-                committeeId: parseInt(document.getElementById('addContactCommitteeId').value) || null,
                 mobilePhone: document.getElementById('addContactMobilePhone').value,
                 email: document.getElementById('addContactEmail').value,
                 eligibleToVote: document.getElementById('addContactEligibleToVote').checked
@@ -2719,7 +2751,6 @@ Saygılarımızla,
                 lastName: document.getElementById('editContactLastName').value,
                 identityNum: document.getElementById('editContactIdentityNum').value,
                 authorizationType: parseInt(document.getElementById('editContactAuthorizationType').value) || 1,
-                committeeId: parseInt(document.getElementById('editContactCommitteeId').value) || null,
                 mobilePhone: document.getElementById('editContactMobilePhone').value,
                 email: document.getElementById('editContactEmail').value,
                 eligibleToVote: document.getElementById('editContactEligibleToVote').checked
@@ -2766,8 +2797,9 @@ Saygılarımızla,
                 officePhone: document.getElementById('createOfficePhone').value,
                 mobilePhone: document.getElementById('createMobilePhone').value,
                 email: document.getElementById('createEmail').value,
+                companyType: document.getElementById('createCompanyType').value,
                 registrationAddress: document.getElementById('createRegistrationAddress').value,
-                committeeId: document.getElementById('createCommitteeId').value || null,
+                documentStatus: parseInt(document.getElementById('createDocumentStatus').value),
                 isActive: document.getElementById('createIsActive').checked,
                 has2022AuthorizationCertificate: document.getElementById('createHas2022Authorization').checked
             };
@@ -2811,8 +2843,9 @@ Saygılarımızla,
                 officePhone: document.getElementById('editOfficePhone').value,
                 mobilePhone: document.getElementById('editMobilePhone').value,
                 email: document.getElementById('editEmail').value,
+                companyType: document.getElementById('editCompanyType').value,
                 registrationAddress: document.getElementById('editRegistrationAddress').value,
-                committeeId: document.getElementById('editCommitteeId').value || null,
+                documentStatus: parseInt(document.getElementById('editDocumentStatus').value),
                 isActive: document.getElementById('editIsActive').checked,
                 has2022AuthorizationCertificate: document.getElementById('editHas2022Authorization').checked
             };
@@ -3366,71 +3399,6 @@ Saygılarımızla,
                 
                 // Redirect to logout endpoint
                 window.location.href = '/Auth/Logout';
-            }
-        }
-
-        // Load Committees
-        async function loadCommittees() {
-            try {
-                const response = await fetch('/api/Company/committees', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                const committees = result.data || [];
-
-                // Create ve Edit formlarındaki committee select'lerini doldur
-                const createCommitteeSelect = document.getElementById('createCommitteeId');
-                const editCommitteeSelect = document.getElementById('editCommitteeId');
-
-                [createCommitteeSelect, editCommitteeSelect].forEach(select => {
-                    if (select) {
-                        select.innerHTML = '<option value="">-- Seçiniz --</option>';
-                        committees.forEach(committee => {
-                            const option = document.createElement('option');
-                            option.value = committee.id;
-                            option.textContent = committee.committeeDescription;
-                            select.appendChild(option);
-                        });
-                    }
-                });
-
-                console.log('Committees loaded successfully');
-            } catch (error) {
-                console.error('Error loading committees:', error);
-
-                // Fallback demo data if API fails
-                const committees = [
-                    { id: 1, committeeDescription: 'Yazılım Geliştirme Komitesi' },
-                    { id: 2, committeeDescription: 'Mobil Uygulama Komitesi' },
-                    { id: 3, committeeDescription: 'Web Teknolojileri Komitesi' },
-                    { id: 4, committeeDescription: 'Veri Analizi Komitesi' },
-                    { id: 5, committeeDescription: 'Siber Güvenlik Komitesi' }
-                ];
-
-                // Create ve Edit formlarındaki committee select'lerini doldur
-                const createCommitteeSelect = document.getElementById('createCommitteeId');
-                const editCommitteeSelect = document.getElementById('editCommitteeId');
-
-                [createCommitteeSelect, editCommitteeSelect].forEach(select => {
-                    if (select) {
-                        select.innerHTML = '<option value="">-- Seçiniz --</option>';
-                        committees.forEach(committee => {
-                            const option = document.createElement('option');
-                            option.value = committee.id;
-                            option.textContent = committee.committeeDescription;
-                            select.appendChild(option);
-                        });
-                    }
-                });
             }
         }
     </script>
