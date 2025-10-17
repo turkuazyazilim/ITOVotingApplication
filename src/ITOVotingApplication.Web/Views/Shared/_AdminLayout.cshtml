@@ -41,7 +41,7 @@
             position: fixed;
             top: var(--header-height);
             left: 0;
-            width: var(--sidebar-width);
+            width: 60px;
             height: calc(100vh - var(--header-height));
             background-color: #2c3e50;
             overflow-y: auto;
@@ -49,8 +49,8 @@
             z-index: 999;
         }
 
-            .sidebar.collapsed {
-                width: 60px;
+            .sidebar.expanded {
+                width: var(--sidebar-width);
             }
 
         .sidebar-nav {
@@ -87,24 +87,32 @@
                 text-align: center;
             }
 
-        .sidebar.collapsed .sidebar-nav span {
+        .sidebar .sidebar-nav span {
             display: none;
         }
 
-        .sidebar.collapsed .sidebar-nav i {
+        .sidebar.expanded .sidebar-nav span {
+            display: inline;
+        }
+
+        .sidebar .sidebar-nav i {
             margin-right: 0;
+        }
+
+        .sidebar.expanded .sidebar-nav i {
+            margin-right: 10px;
         }
 
         /* Main Content */
         .main-content {
-            margin-left: var(--sidebar-width);
+            margin-left: 60px;
             padding-top: var(--header-height);
             min-height: 100vh;
             transition: all 0.3s;
         }
 
             .main-content.expanded {
-                margin-left: 60px;
+                margin-left: var(--sidebar-width);
             }
 
         .content-wrapper {
@@ -149,24 +157,9 @@
 
         /* Responsive */
         @@media (max-width: 768px) {
-            .sidebar
-
-        {
-            width: 60px;
-        }
-
-        .sidebar-nav span {
-            display: none;
-        }
-
-        .main-content {
-            margin-left: 60px;
-        }
-
-        .user-info {
-            display: none;
-        }
-
+            .user-info {
+                display: none;
+            }
         }
 
         /* Cards */
@@ -240,7 +233,7 @@
     </nav>
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <nav class="sidebar" id="sidebar" style="width: 60px;">
         <ul class="sidebar-nav">
             <li>
                 <a href="/Admin/Dashboard" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")">
@@ -347,20 +340,35 @@
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('mainContent');
 
-            sidebar.classList.toggle('collapsed');
+            const isExpanded = sidebar.classList.toggle('expanded');
             mainContent.classList.toggle('expanded');
 
+            // Update inline style
+            if (isExpanded) {
+                sidebar.style.width = '250px';
+            } else {
+                sidebar.style.width = '60px';
+            }
+
             // Save state
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            localStorage.setItem('sidebarExpanded', isExpanded);
         }
 
-        // Restore sidebar state
+        // Ensure sidebar always starts collapsed
         document.addEventListener('DOMContentLoaded', function() {
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                document.getElementById('sidebar').classList.add('collapsed');
-                document.getElementById('mainContent').classList.add('expanded');
-            }
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            // Remove any saved state
+            localStorage.removeItem('sidebarExpanded');
+            localStorage.removeItem('sidebarCollapsed');
+
+            // Force sidebar to be collapsed
+            sidebar.classList.remove('expanded');
+            mainContent.classList.remove('expanded');
+
+            // Force inline styles to ensure it's collapsed
+            sidebar.style.width = '60px';
         });
 
         // Logout function

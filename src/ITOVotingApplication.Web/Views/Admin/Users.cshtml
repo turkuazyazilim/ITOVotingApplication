@@ -14,16 +14,16 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 </head>
 <body class="bg-gray-50">
-    <div class="flex min-h-screen bg-gray-50">
+
     <!-- Sidebar -->
-    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-900 to-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out">
         <!-- Logo -->
         <div class="flex items-center justify-between h-16 px-6 bg-black bg-opacity-20">
             <div class="flex items-center space-x-3">
                 <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
                 <span class="text-white font-semibold text-lg">ITOP</span>
             </div>
-            <button onclick="toggleSidebar()" class="lg:hidden text-white hover:text-gray-300">
+            <button onclick="toggleSidebar()" class="text-white hover:text-gray-300">
                 <i data-lucide="x" class="h-5 w-5"></i>
             </button>
         </div>
@@ -93,15 +93,15 @@
     </div>
 
     <!-- Main Content -->
-    <div class="lg:ml-64 min-h-screen">
+    <div class="min-h-screen">
         <!-- Top Bar -->
         <div class="bg-white shadow-sm border-b border-gray-200">
             <div class="flex items-center justify-between h-16 px-4 lg:px-6">
                 <div class="flex items-center space-x-4">
-                    <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
+                    <button onclick="toggleSidebar()" class="text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors touch-manipulation">
                         <i data-lucide="menu" class="h-6 w-6"></i>
                     </button>
-                    <div class="lg:hidden">
+                    <div class="">
                         <div class="flex items-center justify-between h-16 px-4 lg:px-6 bg-opacity-20">
                             <div class="flex items-center space-x-3">
                                 <img src="/Documents/images/logosmall.png" alt="Logo" class="h-8 w-8 object-contain" />
@@ -611,11 +611,10 @@
             </div>
         </div>
     </div>
-</div>
 
     <!-- Mobile Sidebar Overlay -->
 <div id="sidebarOverlay" onclick="toggleSidebar()"
-     class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+     class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
 <!-- Send Link Modal -->
 <div id="sendLinkModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] overflow-y-auto">
