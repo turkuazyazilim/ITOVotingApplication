@@ -6,6 +6,7 @@ using ITOVotingApplication.Core.DTOs.Common;
 using ITOVotingApplication.Core.DTOs.Company;
 using ITOVotingApplication.Core.Entities;
 using ITOVotingApplication.Core.Interfaces;
+using ITOVotingApplication.Core.Enums;
 using ITOVotingApplication.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -551,6 +552,11 @@ namespace ITOVotingApplication.Web.Controllers
 				{
 					await signedDocument.CopyToAsync(stream);
 				}
+
+				company.DocumentStatus = DocumentStatus.YetkiBelgesiYuklendi;
+
+				_unitOfWork.Companies.Update(company);
+				await _unitOfWork.CompleteAsync();
 
 				return Ok(new { 
 					success = true, 

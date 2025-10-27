@@ -150,7 +150,7 @@ namespace ITOVotingApplication.Business.Services
 
 				// Check for duplicate identity number
 
-				if (dto.IdentityNum != "")
+				if (dto.IdentityNum != "" && dto.IdentityNum != "11111111111")
 				{
 					var existingContact = await _unitOfWork.Contacts
 					.SingleOrDefaultAsync(c => c.IdentityNum == dto.IdentityNum);
@@ -190,14 +190,17 @@ namespace ITOVotingApplication.Business.Services
 				}
 
 				// Check for duplicate identity number
-				var existingContact = await _unitOfWork.Contacts
+				if (dto.IdentityNum != "11111111111")
+				{
+					var existingContact = await _unitOfWork.Contacts
 					.SingleOrDefaultAsync(c => c.IdentityNum == dto.IdentityNum && c.Id != dto.Id);
 
-				if (existingContact != null)
-				{
-					return ApiResponse<ContactDto>.ErrorResult("Bu TC kimlik numarası başka bir kişide kullanılmaktadır.");
+					if (existingContact != null)
+					{
+						return ApiResponse<ContactDto>.ErrorResult("Bu TC kimlik numarası başka bir kişide kullanılmaktadır.");
+					}
 				}
-
+				
 				_mapper.Map(dto, contact);
 				_unitOfWork.Contacts.Update(contact);
 				await _unitOfWork.CompleteAsync();
