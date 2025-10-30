@@ -706,6 +706,27 @@
                         </div>
                     </div>
                 </form>
+
+                <!-- Registration Link Display (shown after email send) -->
+                <div id="registrationLinkDisplay" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex items-start space-x-2">
+                        <i data-lucide="check-circle" class="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0"></i>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-medium text-green-800 mb-2">E-posta gönderildi!</h4>
+                            <p class="text-sm text-green-700 mb-3">Kayıt linki aşağıdadır:</p>
+                            <div class="flex items-center space-x-2">
+                                <input type="text" id="registrationUrlText" readonly
+                                       class="flex-1 px-3 py-2 text-sm border border-green-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <button onclick="copyRegistrationUrl()"
+                                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+                                    <i data-lucide="copy" class="h-4 w-4"></i>
+                                    <span class="text-sm">Kopyala</span>
+                                </button>
+                            </div>
+                            <p id="copySuccessMessage" class="hidden text-xs text-green-600 mt-2">✓ Link kopyalandı!</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Modal Footer -->
@@ -2252,6 +2273,50 @@
         document.getElementById('sendLinkModal').classList.add('hidden');
         // Reset form
         document.getElementById('sendLinkForm').reset();
+        // Hide registration link display
+        document.getElementById('registrationLinkDisplay').classList.add('hidden');
+        document.getElementById('registrationUrlText').value = '';
+        document.getElementById('copySuccessMessage').classList.add('hidden');
+    }
+
+    function showRegistrationLinkDisplay(responseText) {
+        // Extract URL from response text
+        // Response format: "E-posta gönderildi: xxx\nKayıt linki: http://..."
+        let url = responseText;
+
+        if (responseText.includes('Kayıt linki: ')) {
+            const parts = responseText.split('Kayıt linki: ');
+            url = parts[1].trim();
+        }
+
+        // Set the URL
+        document.getElementById('registrationUrlText').value = url;
+        // Show the display
+        document.getElementById('registrationLinkDisplay').classList.remove('hidden');
+        // Recreate icons
+        lucide.createIcons();
+    }
+
+    function copyRegistrationUrl() {
+        const urlInput = document.getElementById('registrationUrlText');
+        const copySuccessMessage = document.getElementById('copySuccessMessage');
+
+        // Select and copy
+        urlInput.select();
+        urlInput.setSelectionRange(0, 99999); // For mobile devices
+
+        navigator.clipboard.writeText(urlInput.value).then(() => {
+            // Show success message
+            copySuccessMessage.classList.remove('hidden');
+
+            // Hide success message after 2 seconds
+            setTimeout(() => {
+                copySuccessMessage.classList.add('hidden');
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed:', err);
+            alert('Kopyalama başarısız oldu. Lütfen manuel olarak kopyalayın.');
+        });
     }
 
     function setupContactMethodToggle() {
@@ -2334,9 +2399,8 @@
                     showShareMessageModal(result.data);
                     closeSendLinkModal();
                 } else {
-                    // Show regular success message for email
-                    alert(result.data || 'Kayıt linki başarıyla gönderildi!');
-                    closeSendLinkModal();
+                    // Show registration link for email
+                    showRegistrationLinkDisplay(result.data || '');
                 }
             } else {
                 alert(result.message || 'Link gönderme işlemi başarısız!');
