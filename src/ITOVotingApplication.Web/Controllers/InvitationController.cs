@@ -42,7 +42,9 @@ namespace ITOVotingApplication.Web.Controllers
                 {
                     Token = token,
                     Email = validationResult.Data?.Email,
-                    PhoneNumber = validationResult.Data?.PhoneNumber
+                    PhoneNumber = validationResult.Data?.PhoneNumber,
+                    FieldReferenceCategoryId = validationResult.Data?.FieldReferenceCategoryId,
+                    FieldReferenceSubCategoryId = validationResult.Data?.FieldReferenceSubCategoryId
                 };
 
                 return View("InvitationRegister", model);

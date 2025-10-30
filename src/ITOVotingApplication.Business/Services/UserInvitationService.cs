@@ -20,7 +20,7 @@ namespace ITOVotingApplication.Business.Services
             _logger = logger;
         }
 
-        public async Task<ApiResponse<string>> CreateInvitationAsync(string? email, string? phoneNumber, int createdByUserId)
+        public async Task<ApiResponse<string>> CreateInvitationAsync(string? email, string? phoneNumber, int createdByUserId, int? fieldReferenceCategoryId = null, int? fieldReferenceSubCategoryId = null)
         {
             try
             {
@@ -37,14 +37,16 @@ namespace ITOVotingApplication.Business.Services
                     CreatedDate = createdDate,
                     ExpiryDate = expiryDate,
                     IsUsed = false,
-                    CreatedByUserId = createdByUserId
+                    CreatedByUserId = createdByUserId,
+                    FieldReferenceCategoryId = fieldReferenceCategoryId,
+                    FieldReferenceSubCategoryId = fieldReferenceSubCategoryId
                 };
 
                 await _unitOfWork.UserInvitations.AddAsync(invitation);
                 await _unitOfWork.CompleteAsync();
 
-                _logger.LogInformation("Created invitation token {Token} for email: {Email}, phone: {Phone}",
-                    token, email, phoneNumber);
+                _logger.LogInformation("Created invitation token {Token} for email: {Email}, phone: {Phone}, categoryId: {CategoryId}, subCategoryId: {SubCategoryId}",
+                    token, email, phoneNumber, fieldReferenceCategoryId, fieldReferenceSubCategoryId);
 
                 return ApiResponse<string>.SuccessResult(token, "Davet linki başarıyla oluşturuldu");
             }

@@ -186,7 +186,9 @@ namespace ITOVotingApplication.Web.Controllers
                 var invitationResult = await _invitationService.CreateInvitationAsync(
                     dto.ContactMethod == "email" ? dto.Email : null,
                     dto.ContactMethod == "phone" ? dto.Phone : null,
-                    currentUserId);
+                    currentUserId,
+                    dto.FieldReferenceCategoryId,
+                    dto.FieldReferenceSubCategoryId);
 
                 if (!invitationResult.Success)
                 {
@@ -258,5 +260,7 @@ namespace ITOVotingApplication.Web.Controllers
         public string ContactMethod { get; set; } // "email" or "phone"
         public string? Email { get; set; }
         public string? Phone { get; set; }
+        public int? FieldReferenceCategoryId { get; set; }
+        public int? FieldReferenceSubCategoryId { get; set; }
     }
 }

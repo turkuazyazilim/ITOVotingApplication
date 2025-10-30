@@ -5,7 +5,7 @@ namespace ITOVotingApplication.Business.Interfaces
 {
     public interface IUserInvitationService
     {
-        Task<ApiResponse<string>> CreateInvitationAsync(string? email, string? phoneNumber, int createdByUserId);
+        Task<ApiResponse<string>> CreateInvitationAsync(string? email, string? phoneNumber, int createdByUserId, int? fieldReferenceCategoryId = null, int? fieldReferenceSubCategoryId = null);
         Task<ApiResponse<UserInvitation>> ValidateInvitationTokenAsync(string token);
         Task<ApiResponse<bool>> MarkInvitationAsUsedAsync(string token, int usedByUserId);
         Task<ApiResponse<bool>> CleanupExpiredInvitationsAsync();

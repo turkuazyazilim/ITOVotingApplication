@@ -572,7 +572,7 @@ namespace ITOVotingApplication.Web.Controllers
 		}
 
 		[HttpPost("{id:int}/upload-approved-document")]
-		public async Task<IActionResult> UploadApprovedDocument(int id, [FromForm] IFormFile approvedDocument, [FromForm] string source, [FromForm] string note = "")
+		public async Task<IActionResult> UploadApprovedDocument(int id, [FromForm] IFormFile approvedDocument, [FromForm] string note = "")
 		{
 			try
 			{
@@ -587,19 +587,6 @@ namespace ITOVotingApplication.Web.Controllers
 				if (approvedDocument == null || approvedDocument.Length == 0)
 				{
 					return BadRequest(new { success = false, message = "Dosya seçilmedi." });
-				}
-
-				// Kaynak yeri kontrolü
-				if (string.IsNullOrWhiteSpace(source))
-				{
-					return BadRequest(new { success = false, message = "Kaynak yeri seçilmedi." });
-				}
-
-				// Geçerli kaynak türü kontrolü
-				var validSources = new[] { "STK", "Kurum", "Şahıs" };
-				if (!validSources.Contains(source))
-				{
-					return BadRequest(new { success = false, message = "Geçersiz kaynak yeri." });
 				}
 
 				// Dosya boyutu kontrolü (max 10MB)
@@ -648,15 +635,17 @@ namespace ITOVotingApplication.Web.Controllers
 					await approvedDocument.CopyToAsync(stream);
 				}
 
-				// Log kaynak yeri ve not bilgilerini
-				Console.WriteLine($"Onaylı belge yüklendi - Firma: {company.RegistrationNumber}, Kaynak: {source}, Not: {note ?? "Yok"}");
+				// Log not bilgisini
+				if (!string.IsNullOrWhiteSpace(note))
+				{
+					Console.WriteLine($"Onaylı belge yüklendi - Firma: {company.RegistrationNumber}, Not: {note}");
+				}
 
-				return Ok(new { 
-					success = true, 
+				return Ok(new {
+					success = true,
 					message = "Onaylı belge başarıyla yüklendi.",
 					fileName = fileName,
 					filePath = $"/Documents/{company.RegistrationNumber}/{fileName}",
-					source = source,
 					note = note ?? ""
 				});
 			}

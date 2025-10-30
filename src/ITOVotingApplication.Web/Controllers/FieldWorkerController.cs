@@ -161,6 +161,9 @@ namespace ITOVotingApplication.Web.Controllers
                 existingCompany.IsActive = companyDto.IsActive;
                 existingCompany.Has2022AuthorizationCertificate = companyDto.Has2022AuthorizationCertificate;
 
+                // TC firma için DocumentStatus güncellemesi
+                existingCompany.DocumentStatus = companyDto.DocumentStatus;
+
                 _unitOfWork.Companies.Update(existingCompany);
                 await _unitOfWork.CompleteAsync();
 

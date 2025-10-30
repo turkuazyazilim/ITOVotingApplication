@@ -31,8 +31,14 @@ namespace ITOVotingApplication.Core.Entities
 
         public int CreatedByUserId { get; set; }
 
+        public int? FieldReferenceCategoryId { get; set; }
+
+        public int? FieldReferenceSubCategoryId { get; set; }
+
         // Navigation properties
         public virtual User? UsedByUser { get; set; }
         public virtual User CreatedByUser { get; set; }
+        public virtual FieldReferenceCategory? FieldReferenceCategory { get; set; }
+        public virtual FieldReferenceSubCategory? FieldReferenceSubCategory { get; set; }
     }
 }

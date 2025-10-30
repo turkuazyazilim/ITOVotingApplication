@@ -4,6 +4,7 @@ namespace ITOVotingApplication.Core.Enums
 	{
 		None = 0,
 		YetkiBelgesiYuklendi = 1,
-		OnaylanmisYetkiBelgesiYuklendi = 2
+		OnaylanmisYetkiBelgesiYuklendi = 2,
+		SahisSirketiOlarakKatilacak = 3
 	}
 }

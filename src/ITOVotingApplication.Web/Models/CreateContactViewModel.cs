@@ -18,7 +18,6 @@ namespace ITOVotingApplication.Web.Models
 		[StringLength(50, ErrorMessage = "Soyad en fazla 50 karakter olabilir.")]
 		public string LastName { get; set; }
 
-		[Required(ErrorMessage = "TC Kimlik No zorunludur.")]
 		[Display(Name = "TC Kimlik No")]
 		[StringLength(11, MinimumLength = 11, ErrorMessage = "TC Kimlik No 11 haneli olmalıdır.")]
 		[RegularExpression(@"^\d{11}$", ErrorMessage = "TC Kimlik No sadece rakamlardan oluşmalıdır.")]
@@ -27,9 +26,6 @@ namespace ITOVotingApplication.Web.Models
 		[Required(ErrorMessage = "Yetki tipi zorunludur.")]
 		[Display(Name = "Yetki Tipi")]
 		public int AuthorizationType { get; set; }
-
-		[Display(Name = "Komite")]
-		public int? CommitteeId { get; set; }
 
 		[Display(Name = "Cep Telefonu")]
 		[StringLength(20, ErrorMessage = "Telefon numarası en fazla 20 karakter olabilir.")]

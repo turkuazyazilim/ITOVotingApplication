@@ -174,8 +174,8 @@
 
                 <!-- Modal Footer -->
                 <div class="px-6 py-4 border-t border-gray-200">
-                    <div>
-                        <button type="button" onclick="openDocumentManagement()"
+                    <div id="documentManagementBtnContainer">
+                        <button type="button" id="documentManagementBtn" onclick="openDocumentManagement()"
                                 class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center space-x-2">
                             <i data-lucide="file-text" class="w-4 h-4"></i>
                             <span>Belge Yönetimi</span>
@@ -560,6 +560,8 @@
                 ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">Belge Yüklendi</span>'
                 : company.documentStatus === 2
                 ? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">Onaylı Belge</span>'
+                : company.documentStatus === 3
+                ? '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Seçime Katılacak</span>'
                 : '';
 
             return $(`
@@ -660,6 +662,8 @@
         }
 
         function loadCompanyModal(company) {
+            currentCompany = company; // Global değişkene kaydet
+
             const content = `
                 <form id="editCompanyForm">
                     <input type="hidden" id="editCompanyId" value="${company.id}">
@@ -776,6 +780,7 @@
 
         // Document Management Variables (from Companies.cshtml)
         let currentCompanyId = null;
+        let currentCompany = null; // Global company bilgisi
 
         // Document Management Functions
         function openDocumentManagement() {
@@ -786,13 +791,393 @@
             }
 
             currentCompanyId = companyId;
-            console.log('Opening document management for company:', companyId);
+
+            // Firma tipini kontrol et
+            const isTCCompany = currentCompany && currentCompany.companyType === 'TC';
+
+            console.log('Opening document management for company:', companyId, 'Type:', currentCompany?.companyType);
             document.getElementById('documentManagementModal').classList.remove('hidden');
-            loadCompanyDocuments(companyId);
+
+            if (isTCCompany) {
+                loadTCCompanyManagement(companyId);
+            } else {
+                loadCompanyDocuments(companyId);
+            }
         }
 
         function closeDocumentManagement() {
             document.getElementById('documentManagementModal').classList.add('hidden');
+        }
+
+        // TC Firma Yönetimi İçeriğini Yükle
+        async function loadTCCompanyManagement(companyId) {
+            try {
+                if (!currentCompany) {
+                    alert('Firma bilgisi bulunamadı');
+                    return;
+                }
+
+                // Firma yetkililerini yükle
+                const response = await fetch(`/api/contact/by-company/${companyId}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                let contacts = [];
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        contacts = result.data;
+                    }
+                }
+
+                // Referans 1 ve Referans 2'leri filtrele
+                const reference1 = contacts.filter(c => c.contactType === 4); // Referans 1
+                const reference2 = contacts.filter(c => c.contactType === 5); // Referans 2
+
+                const willParticipate = currentCompany.documentStatus === 3;
+
+                const content = `
+                    <div class="space-y-6">
+                        <!-- Seçime Katılım -->
+                        <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-blue-600"></i>
+                                Seçime Katılım Durumu
+                            </h4>
+                            <label class="flex items-center space-x-3 p-3 bg-white rounded-lg border border-blue-200 cursor-pointer">
+                                <input type="checkbox" id="tcWillParticipateFieldWorker" ${willParticipate ? 'checked' : ''}
+                                       onchange="updateTCCompanyParticipationFieldWorker()"
+                                       class="rounded border-gray-300 text-blue-600 w-5 h-5">
+                                <span class="text-base font-medium text-gray-900">Seçime Katılacak</span>
+                            </label>
+                            <p class="text-sm text-gray-600 mt-2">TC tipi firmalar için belge yükleme işlemi gerekmez</p>
+                        </div>
+
+                        <!-- Referans Bilgileri -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                <i data-lucide="users" class="w-5 h-5 mr-2 text-gray-600"></i>
+                                Referans Bilgileri (İsteğe Bağlı)
+                            </h4>
+
+                            <!-- Referans 1 -->
+                            <div class="mb-4 border border-gray-200 rounded-lg p-4 bg-white">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="text-sm font-medium text-gray-700">Referans 1</h5>
+                                    <button type="button" onclick="toggleTCReference1FormFieldWorker()"
+                                            class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
+                                        <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i>
+                                        Yeni Ekle
+                                    </button>
+                                </div>
+
+                                ${reference1.length > 0 ? `
+                                    <div class="space-y-2 mb-3">
+                                        ${reference1.map(contact => `
+                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                <div>
+                                                    <p class="font-medium text-gray-900">${contact.firstName} ${contact.lastName}</p>
+                                                    <p class="text-sm text-gray-600">${contact.mobilePhone || '-'}</p>
+                                                    ${contact.email ? `<p class="text-sm text-gray-500">${contact.email}</p>` : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : '<p class="text-sm text-gray-500 italic mb-3">Referans 1 eklenmemiş</p>'}
+
+                                <!-- Referans 1 Ekleme Formu -->
+                                <div id="tcReference1FormFieldWorker" class="hidden mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <h6 class="text-sm font-semibold text-gray-900 mb-3">Yeni Referans 1 Ekle</h6>
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Ad <span class="text-red-500">*</span></label>
+                                                <input type="text" id="tcRef1FirstNameFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Soyad <span class="text-red-500">*</span></label>
+                                                <input type="text" id="tcRef1LastNameFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Telefon <span class="text-red-500">*</span></label>
+                                            <input type="tel" id="tcRef1PhoneFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                            <input type="email" id="tcRef1EmailFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                        <div class="flex justify-end space-x-2 pt-2">
+                                            <button type="button" onclick="toggleTCReference1FormFieldWorker()"
+                                                    class="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                                İptal
+                                            </button>
+                                            <button type="button" onclick="saveTCReference1FieldWorker()"
+                                                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                                Kaydet
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Referans 2 -->
+                            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h5 class="text-sm font-medium text-gray-700">Referans 2</h5>
+                                    <button type="button" onclick="toggleTCReference2FormFieldWorker()"
+                                            class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
+                                        <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i>
+                                        Yeni Ekle
+                                    </button>
+                                </div>
+
+                                ${reference2.length > 0 ? `
+                                    <div class="space-y-2 mb-3">
+                                        ${reference2.map(contact => `
+                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                <div>
+                                                    <p class="font-medium text-gray-900">${contact.firstName} ${contact.lastName}</p>
+                                                    <p class="text-sm text-gray-600">${contact.mobilePhone || '-'}</p>
+                                                    ${contact.email ? `<p class="text-sm text-gray-500">${contact.email}</p>` : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : '<p class="text-sm text-gray-500 italic mb-3">Referans 2 eklenmemiş</p>'}
+
+                                <!-- Referans 2 Ekleme Formu -->
+                                <div id="tcReference2FormFieldWorker" class="hidden mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <h6 class="text-sm font-semibold text-gray-900 mb-3">Yeni Referans 2 Ekle</h6>
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Ad <span class="text-red-500">*</span></label>
+                                                <input type="text" id="tcRef2FirstNameFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Soyad <span class="text-red-500">*</span></label>
+                                                <input type="text" id="tcRef2LastNameFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Telefon <span class="text-red-500">*</span></label>
+                                            <input type="tel" id="tcRef2PhoneFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                            <input type="email" id="tcRef2EmailFieldWorker" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                        <div class="flex justify-end space-x-2 pt-2">
+                                            <button type="button" onclick="toggleTCReference2FormFieldWorker()"
+                                                    class="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                                İptal
+                                            </button>
+                                            <button type="button" onclick="saveTCReference2FieldWorker()"
+                                                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                                Kaydet
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('documentsList').innerHTML = content;
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error('Error loading TC company management:', error);
+                alert('TC firma bilgileri yüklenirken hata oluştu');
+            }
+        }
+
+        // TC Firma Seçime Katılım Durumunu Güncelle (FieldWorker)
+        async function updateTCCompanyParticipationFieldWorker() {
+            const willParticipate = document.getElementById('tcWillParticipateFieldWorker').checked;
+            const documentStatus = willParticipate ? 3 : 0;
+
+            try {
+                const companyId = currentCompanyId;
+
+                const updateData = {
+                    id: parseInt(companyId),
+                    title: currentCompany.title,
+                    tradeRegistrationNumber: currentCompany.tradeRegistrationNumber,
+                    registrationAddress: currentCompany.registrationAddress,
+                    isActive: currentCompany.isActive,
+                    has2022AuthorizationCertificate: currentCompany.has2022AuthorizationCertificate,
+                    documentStatus: documentStatus
+                };
+
+                const response = await fetch('/FieldWorker/UpdateCompany', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Katılım durumu güncellendi');
+                        currentCompany.documentStatus = documentStatus;
+                        // Listeyi yenile
+                        loadCompanies();
+                    } else {
+                        alert('Güncelleme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Güncelleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error updating TC company participation:', error);
+                alert('Güncelleme sırasında hata oluştu');
+            }
+        }
+
+        // TC Referans Form Toggle Fonksiyonları (FieldWorker)
+        function toggleTCReference1FormFieldWorker() {
+            const form = document.getElementById('tcReference1FormFieldWorker');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                // Diğer formu kapat
+                document.getElementById('tcReference2FormFieldWorker').classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                // Formu temizle
+                document.getElementById('tcRef1FirstNameFieldWorker').value = '';
+                document.getElementById('tcRef1LastNameFieldWorker').value = '';
+                document.getElementById('tcRef1PhoneFieldWorker').value = '';
+                document.getElementById('tcRef1EmailFieldWorker').value = '';
+            }
+        }
+
+        function toggleTCReference2FormFieldWorker() {
+            const form = document.getElementById('tcReference2FormFieldWorker');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                // Diğer formu kapat
+                document.getElementById('tcReference1FormFieldWorker').classList.add('hidden');
+            } else {
+                form.classList.add('hidden');
+                // Formu temizle
+                document.getElementById('tcRef2FirstNameFieldWorker').value = '';
+                document.getElementById('tcRef2LastNameFieldWorker').value = '';
+                document.getElementById('tcRef2PhoneFieldWorker').value = '';
+                document.getElementById('tcRef2EmailFieldWorker').value = '';
+            }
+        }
+
+        // TC Referans Kaydetme Fonksiyonları (FieldWorker)
+        async function saveTCReference1FieldWorker() {
+            const firstName = document.getElementById('tcRef1FirstNameFieldWorker').value.trim();
+            const lastName = document.getElementById('tcRef1LastNameFieldWorker').value.trim();
+            const phone = document.getElementById('tcRef1PhoneFieldWorker').value.trim();
+            const email = document.getElementById('tcRef1EmailFieldWorker').value.trim();
+
+            // Validasyon
+            if (!firstName || !lastName || !phone) {
+                alert('Ad, Soyad ve Telefon alanları zorunludur!');
+                return;
+            }
+
+            const contactData = {
+                companyId: parseInt(currentCompanyId),
+                firstName: firstName,
+                lastName: lastName,
+                mobilePhone: phone,
+                contactType: 4, // Referans 1
+                authorizationType: 0,
+                email: '',
+                identityNum: '',
+                eligibleToVote: false
+            };
+
+            try {
+                const response = await fetch('/FieldWorker/CreateContact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(contactData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Referans 1 başarıyla eklendi');
+                        // Formu kapat ve temizle
+                        toggleTCReference1FormFieldWorker();
+                        // TC firma modalını yenile
+                        await loadTCCompanyManagement(currentCompanyId);
+                    } else {
+                        alert('Kayıt başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Kayıt başarısız');
+                }
+            } catch (error) {
+                console.error('Error saving reference 1:', error);
+                alert('Kayıt sırasında hata oluştu');
+            }
+        }
+
+        async function saveTCReference2FieldWorker() {
+            const firstName = document.getElementById('tcRef2FirstNameFieldWorker').value.trim();
+            const lastName = document.getElementById('tcRef2LastNameFieldWorker').value.trim();
+            const phone = document.getElementById('tcRef2PhoneFieldWorker').value.trim();
+            const email = document.getElementById('tcRef2EmailFieldWorker').value.trim();
+
+            // Validasyon
+            if (!firstName || !lastName || !phone) {
+                alert('Ad, Soyad ve Telefon alanları zorunludur!');
+                return;
+            }
+
+            const contactData = {
+                companyId: parseInt(currentCompanyId),
+                firstName: firstName,
+                lastName: lastName,
+                mobilePhone: phone,
+                contactType: 5, // Referans 2
+                authorizationType: 0,
+                email: '',
+                identityNum: '',
+                eligibleToVote: false
+            };
+
+            try {
+                const response = await fetch('/FieldWorker/CreateContact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(contactData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Referans 2 başarıyla eklendi');
+                        // Formu kapat ve temizle
+                        toggleTCReference2FormFieldWorker();
+                        // TC firma modalını yenile
+                        await loadTCCompanyManagement(currentCompanyId);
+                    } else {
+                        alert('Kayıt başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Kayıt başarısız');
+                }
+            } catch (error) {
+                console.error('Error saving reference 2:', error);
+                alert('Kayıt sırasında hata oluştu');
+            }
         }
 
         // Firma Belgelerini Yükle (Field Worker version - authorization only)
