@@ -13,6 +13,7 @@ namespace ITOVotingApplication.Business.Interfaces
 		Task<ApiResponse<List<ContactDto>>> GetByCompanyIdAsync(int companyId);
 		Task<ApiResponse<List<ContactDto>>> GetEligibleVotersAsync(int ballotBoxId);
 		Task<ApiResponse<ContactDto>> GetByIdentityNumAsync(string identityNum);
+		Task<ApiResponse<ContactDto>> GetByCompanyRegistrationNumberAsync(string registrationNumber);
 		Task<ApiResponse<int>> GetCountAsync(bool onlyEligible = false);
 	}
 }

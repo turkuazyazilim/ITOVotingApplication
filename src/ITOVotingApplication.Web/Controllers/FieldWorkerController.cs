@@ -205,5 +205,35 @@ namespace ITOVotingApplication.Web.Controllers
                 return Json(new { success = false, message = "Yetkili oluşturulurken hata oluştu" });
             }
         }
+
+        // Yetkili kişi güncelle
+        [HttpPost]
+        public async Task<IActionResult> UpdateContact([FromBody] UpdateContactDto contactDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage);
+                    return Json(new { success = false, message = string.Join(", ", errors) });
+                }
+
+                var result = await _contactService.UpdateAsync(contactDto);
+
+                if (result.Success)
+                {
+                    return Json(new { success = true, message = "Yetkili başarıyla güncellendi", data = result.Data });
+                }
+
+                return Json(new { success = false, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Yetkili güncelleme hatası: {ContactId}", contactDto.Id);
+                return Json(new { success = false, message = "Yetkili güncellenirken hata oluştu" });
+            }
+        }
     }
 }

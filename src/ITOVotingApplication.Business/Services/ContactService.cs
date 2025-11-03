@@ -348,5 +348,32 @@ namespace ITOVotingApplication.Business.Services
 				return ApiResponse<ContactDto>.ErrorResult($"Yetkili kişi getirme hatası: {ex.Message}");
 			}
 		}
+
+		public async Task<ApiResponse<ContactDto>> GetByCompanyRegistrationNumberAsync(string registrationNumber)
+		{
+			try
+			{
+				var contact = await _unitOfWork.Contacts.Query()
+					.Include(c => c.Company)
+					.Where(c => c.Company.RegistrationNumber == registrationNumber && c.EligibleToVote)
+					.FirstOrDefaultAsync();
+
+				if (contact == null)
+				{
+					return ApiResponse<ContactDto>.ErrorResult("Bu sicil numarasına ait oy kullanabilecek seçmen bulunamadı.");
+				}
+
+				var result = _mapper.Map<ContactDto>(contact);
+				result.HasVoted = await _unitOfWork.VoteTransactions
+					.Query()
+					.AnyAsync(v => v.ContactId == contact.Id);
+
+				return ApiResponse<ContactDto>.SuccessResult(result);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<ContactDto>.ErrorResult($"Yetkili kişi getirme hatası: {ex.Message}");
+			}
+		}
 	}
 }

@@ -23,6 +23,7 @@ namespace ITOVotingApplication.Data.Context
 		public DbSet<FieldReferenceCategory> FieldReferenceCategories { get; set; }
 		public DbSet<FieldReferenceSubCategory> FieldReferenceSubCategories { get; set; }
 		public DbSet<UserInvitation> UserInvitations { get; set; }
+		public DbSet<CompanyDocumentTransaction> CompanyDocumentTransactions { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -40,6 +41,7 @@ namespace ITOVotingApplication.Data.Context
 			modelBuilder.ApplyConfiguration(new FieldReferenceCategoryConfiguration());
 			modelBuilder.ApplyConfiguration(new FieldReferenceSubCategoryConfiguration());
 			modelBuilder.ApplyConfiguration(new UserInvitationConfiguration());
+			modelBuilder.ApplyConfiguration(new CompanyDocumentTransactionConfiguration());
 		}
 	}
 }

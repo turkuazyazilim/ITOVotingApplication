@@ -18,6 +18,7 @@ namespace ITOVotingApplication.Data.Repositories
 		private IGenericRepository<FieldReferenceCategory> _fieldReferenceCategories;
 		private IGenericRepository<FieldReferenceSubCategory> _fieldReferenceSubCategories;
 		private IGenericRepository<UserInvitation> _userInvitations;
+		private IGenericRepository<CompanyDocumentTransaction> _companyDocumentTransactions;
 
 		public UnitOfWork(VotingDbContext context)
 		{
@@ -56,6 +57,9 @@ namespace ITOVotingApplication.Data.Repositories
 
 		public IGenericRepository<UserInvitation> UserInvitations =>
 			_userInvitations ??= new GenericRepository<UserInvitation>(_context);
+
+		public IGenericRepository<CompanyDocumentTransaction> CompanyDocumentTransactions =>
+			_companyDocumentTransactions ??= new GenericRepository<CompanyDocumentTransaction>(_context);
 
 		public async Task<int> CompleteAsync()
 		{

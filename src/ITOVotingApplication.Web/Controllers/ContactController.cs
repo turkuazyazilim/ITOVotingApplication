@@ -61,6 +61,17 @@ namespace ITOVotingApplication.Web.Controllers
 			return Ok(result);
 		}
 
+		[HttpGet("by-registration-number/{registrationNumber}")]
+		public async Task<IActionResult> GetByRegistrationNumber(string registrationNumber)
+		{
+			var result = await _contactService.GetByCompanyRegistrationNumberAsync(registrationNumber);
+
+			if (!result.Success)
+				return NotFound(result);
+
+			return Ok(result);
+		}
+
 		[HttpPost]
 		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Create([FromBody] CreateContactDto dto)

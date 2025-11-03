@@ -1014,6 +1014,54 @@
         </div>
     </div>
 
+    <!-- Assign Document Modal -->
+    <div id="assignDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-semibold text-gray-900 flex items-center space-x-2">
+                            <i data-lucide="user-check" class="w-5 h-5"></i>
+                            <span>Belgeyi Yetkili Kişiye Ata</span>
+                        </h3>
+                        <button onclick="closeAssignDocumentModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="p-6">
+                    <p class="text-sm text-gray-600 mb-4">
+                        Onaylanmış Yetki Belgesini hangi yetkili kişiye atamak istiyorsunuz? Firmaya bağlı tüm yetkili kişiler listelenmektedir. (✓ işareti oy kullanma yetkisi olan kişileri gösterir)
+                    </p>
+
+                    <input type="hidden" id="assignTransactionId" />
+
+                    <div id="eligibleContactsList" class="space-y-2">
+                        <!-- Contacts will be loaded here -->
+                    </div>
+
+                    <div id="noContactsMessage" class="hidden text-center py-8 text-gray-500">
+                        <i data-lucide="user-x" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+                        <p>Bu firmaya ait yetkili kişi bulunamadı</p>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="closeAssignDocumentModal()"
+                                class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            İptal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Sidebar Overlay -->
     <div id="sidebarOverlay" onclick="toggleSidebar()"
          class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
@@ -1029,6 +1077,7 @@
         let currentSearchTerm = '';
         let isSearching = false;
         let currentCompanyId = null;
+        let currentIsTCCompany = false;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -1428,8 +1477,13 @@
             `;
 
             currentCompanies.forEach(company => {
+                // DocumentStatus 2 veya 3 ise açık yeşil arkaplan
+                const rowClass = (company.documentStatus === 2 || company.documentStatus === 3)
+                    ? 'bg-green-50 hover:bg-green-100'
+                    : 'hover:bg-gray-50';
+
                 html += `
-                    <tr class="hover:bg-gray-50">
+                    <tr class="${rowClass}">
                         <td class="px-4 py-4">
                             <div>
                                 <p class="font-medium text-gray-900">${company.title}</p>
@@ -1489,8 +1543,13 @@
             // Mobile cards - sadece küçük ekranlarda görünür
             let mobileHtml = '';
             currentCompanies.forEach(company => {
+                // DocumentStatus 2 veya 3 ise açık yeşil arkaplan (mobil için)
+                const mobileRowClass = (company.documentStatus === 2 || company.documentStatus === 3)
+                    ? 'p-4 bg-green-50 hover:bg-green-100'
+                    : 'p-4 hover:bg-gray-50';
+
                 mobileHtml += `
-                    <div class="p-4 hover:bg-gray-50">
+                    <div class="${mobileRowClass}">
                         <div class="flex items-start justify-between mb-2">
                             <div class="flex-1">
                                 <h3 class="font-medium text-gray-900 text-sm">${company.title}</h3>
@@ -1737,23 +1796,21 @@
             // Firma tipini kontrol et
             const companyType = document.getElementById('editCompanyType').value;
             const isTCCompany = companyType === 'TC';
+            currentIsTCCompany = isTCCompany;
 
             console.log('Opening document management for company:', companyId, 'Type:', companyType);
             document.getElementById('documentManagementModal').classList.remove('hidden');
 
-            if (isTCCompany) {
-                loadTCCompanyManagement(companyId);
-            } else {
-                loadCompanyDocuments(companyId);
-            }
+            // Tüm firma tipleri için aynı transaction-based sistemi kullan
+            loadDocumentTransactions(companyId, isTCCompany);
         }
 
         function closeDocumentManagement() {
             document.getElementById('documentManagementModal').classList.add('hidden');
         }
 
-        // TC Firma Yönetimi İçeriğini Yükle
-        async function loadTCCompanyManagement(companyId) {
+        // Belge Transaction'larını Yükle (Tüm Firma Tipleri İçin)
+        async function loadDocumentTransactions(companyId, isTCCompany) {
             try {
                 const company = allCompanies.find(c => c.id == companyId);
                 if (!company) {
@@ -1761,181 +1818,334 @@
                     return;
                 }
 
-                // Firma yetkililerini yükle
-                const response = await fetch(`/api/contact/by-company/${companyId}`, {
+                // Load document transactions
+                const transactionsResponse = await fetch(`/api/company/${companyId}/document-transactions`, {
                     method: 'GET',
                     credentials: 'same-origin'
                 });
 
-                let contacts = [];
-                if (response.ok) {
-                    const result = await response.json();
+                let transactions = [];
+                if (transactionsResponse.ok) {
+                    const result = await transactionsResponse.json();
                     if (result.success && result.data) {
-                        contacts = result.data;
+                        transactions = result.data;
                     }
                 }
 
-                // Referans 1 ve Referans 2'leri filtrele
-                const reference1 = contacts.filter(c => c.contactType === 4); // Referans 1
-                const reference2 = contacts.filter(c => c.contactType === 5); // Referans 2
+                // Find latest Talep Dilekçesi transaction
+                const talepTransaction = transactions.find(t => t.documentType === 1); // YetkiBelgesiTalepDilekçesi = 1
+                const onayliTransaction = transactions.find(t => t.documentType === 2); // OnaylanmisYetkiBelgesi = 2
 
-                const willParticipate = company.documentStatus === 3;
+                let content = '';
 
-                const content = `
-                    <div class="space-y-6">
-                        <!-- Seçime Katılım -->
-                        <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
-                            <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-blue-600"></i>
-                                Seçime Katılım Durumu
-                            </h4>
-                            <label class="flex items-center space-x-3 p-3 bg-white rounded-lg border border-blue-200 cursor-pointer">
-                                <input type="checkbox" id="tcWillParticipate" ${willParticipate ? 'checked' : ''}
-                                       onchange="updateTCCompanyParticipation()"
-                                       class="rounded border-gray-300 text-blue-600 w-5 h-5">
-                                <span class="text-base font-medium text-gray-900">Seçime Katılacak</span>
-                            </label>
-                            <p class="text-sm text-gray-600 mt-2">TC tipi firmalar için belge yükleme işlemi gerekmez</p>
-                        </div>
+                // TC Firma - Sadece Seçime Katılım
+                if (isTCCompany) {
+                    const tcTransaction = talepTransaction; // TC için de talepTransaction kullanıyoruz
+                    const willParticipate = tcTransaction?.willParticipateInElection || false;
 
-                        <!-- Referans Bilgileri -->
-                        <div>
-                            <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                                <i data-lucide="users" class="w-5 h-5 mr-2 text-gray-600"></i>
-                                Referans Bilgileri (İsteğe Bağlı)
-                            </h4>
+                    content = `
+                        <div class="space-y-6">
+                            <!-- Seçime Katılım (TC Firma) -->
+                            <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                    <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-blue-600"></i>
+                                    Seçime Katılım Durumu
+                                </h4>
+                                <label class="flex items-center space-x-3 p-3 bg-white rounded-lg border border-blue-200 cursor-pointer">
+                                    <input type="checkbox" id="tcWillParticipateCheckbox"
+                                           ${willParticipate ? 'checked' : ''}
+                                           onchange="saveTCParticipation(${companyId})"
+                                           class="rounded border-gray-300 text-blue-600 w-5 h-5">
+                                    <span class="text-base font-medium text-gray-900">Seçime Katılacak</span>
+                                </label>
+                                <p class="text-sm text-gray-600 mt-2">
+                                    TC tipi firmalar için belge yükleme işlemi gerekmez. Sadece seçime katılım durumunu işaretleyin.
+                                </p>
+                                ${tcTransaction ? `
+                                    <p class="text-xs text-gray-500 mt-3">
+                                        Son Güncelleme: ${new Date(tcTransaction.uploadDate).toLocaleDateString('tr-TR')} - ${tcTransaction.uploadedByUserName}
+                                    </p>
+                                ` : ''}
+                            </div>
 
-                            <!-- Referans 1 -->
-                            <div class="mb-4 border border-gray-200 rounded-lg p-4 bg-white">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h5 class="text-sm font-medium text-gray-700">Referans 1</h5>
-                                    <button type="button" onclick="toggleTCReference1Form()"
-                                            class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
-                                        <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i>
-                                        Yeni Ekle
-                                    </button>
-                                </div>
-
-                                ${reference1.length > 0 ? `
-                                    <div class="space-y-2 mb-3">
-                                        ${reference1.map(contact => `
-                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                                <div>
-                                                    <p class="font-medium text-gray-900">${contact.firstName} ${contact.lastName}</p>
-                                                    <p class="text-sm text-gray-600">${contact.mobilePhone || '-'}</p>
-                                                    ${contact.email ? `<p class="text-sm text-gray-500">${contact.email}</p>` : ''}
+                            <!-- Transaction Timeline -->
+                            ${transactions.length > 0 ? `
+                                <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                                    <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                        <i data-lucide="clock" class="w-4 h-4 mr-2 text-gray-600"></i>
+                                        İşlem Geçmişi
+                                    </h4>
+                                    <div class="space-y-2">
+                                        ${transactions.map(t => `
+                                            <div class="text-xs p-2 bg-gray-50 rounded border border-gray-200">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <span class="font-medium">Seçime Katılım: ${t.willParticipateInElection ? 'Evet' : 'Hayır'}</span>
+                                                        <br>
+                                                        <span class="text-gray-600">${new Date(t.uploadDate).toLocaleString('tr-TR')} - ${t.uploadedByUserName}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         `).join('')}
                                     </div>
-                                ` : '<p class="text-sm text-gray-500 italic mb-3">Referans 1 eklenmemiş</p>'}
-
-                                <!-- Referans 1 Ekleme Formu -->
-                                <div id="tcReference1Form" class="hidden mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                    <h6 class="text-sm font-semibold text-gray-900 mb-3">Yeni Referans 1 Ekle</h6>
-                                    <div class="space-y-3">
-                                        <div class="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Ad <span class="text-red-500">*</span></label>
-                                                <input type="text" id="tcRef1FirstName" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Soyad <span class="text-red-500">*</span></label>
-                                                <input type="text" id="tcRef1LastName" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Telefon <span class="text-red-500">*</span></label>
-                                            <input type="tel" id="tcRef1Phone" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
-                                            <input type="email" id="tcRef1Email" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                        </div>
-                                        <div class="flex justify-end space-x-2 pt-2">
-                                            <button type="button" onclick="toggleTCReference1Form()"
-                                                    class="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                                İptal
-                                            </button>
-                                            <button type="button" onclick="saveTCReference1()"
-                                                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                                Kaydet
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
-                            </div>
-
-                            <!-- Referans 2 -->
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    // Non-TC Firma - Belge Yönetimi
+                    content = `
+                        <div class="space-y-6">
+                            <!-- Yetki Belgesi Talep Dilekçesi -->
                             <div class="border border-gray-200 rounded-lg p-4 bg-white">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h5 class="text-sm font-medium text-gray-700">Referans 2</h5>
-                                    <button type="button" onclick="toggleTCReference2Form()"
-                                            class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center">
-                                        <i data-lucide="plus-circle" class="w-4 h-4 mr-1"></i>
-                                        Yeni Ekle
+                                <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                    <i data-lucide="file-text" class="w-5 h-5 mr-2 text-blue-600"></i>
+                                    Yetki Belgesi Talep Dilekçesi
+                                </h4>
+
+                                ${talepTransaction ? `
+                                <!-- Mevcut Belge Bilgileri -->
+                                <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-2">
+                                            <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                                            <span class="text-sm font-medium text-green-900">Belge Yüklendi</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <button type="button" onclick="downloadUploadedDocument('${talepTransaction.documentUrl}', '${company.registrationNumber}_TalepDilekcesi')"
+                                                    class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center space-x-1">
+                                                <i data-lucide="download" class="w-3 h-3"></i>
+                                                <span>İndir</span>
+                                            </button>
+                                            <button type="button" onclick="deleteDocumentTransaction(${talepTransaction.id})"
+                                                    class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                                <i data-lucide="trash-2" class="w-3 h-3 inline"></i> Sil
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-600">
+                                        Yükleyen: ${talepTransaction.uploadedByUserName}<br>
+                                        Tarih: ${new Date(talepTransaction.uploadDate).toLocaleDateString('tr-TR')}
+                                        ${talepTransaction.willParticipateInElection !== null ?
+                                            `<br>Seçime Katılım: ${talepTransaction.willParticipateInElection ? 'Evet' : 'Hayır'}`
+                                            : ''}
+                                    </p>
+                                </div>
+
+                                <!-- Örnek İndir ve Gönder Butonları -->
+                                <div class="flex gap-2 mb-4">
+                                    <button type="button" onclick="downloadTemplateDocument()"
+                                            class="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1">
+                                        <i data-lucide="download" class="w-4 h-4"></i>
+                                        <span>Örnek İndir</span>
+                                    </button>
+                                    <button type="button" onclick="openSendDocumentModal()"
+                                            class="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-1">
+                                        <i data-lucide="send" class="w-4 h-4"></i>
+                                        <span>Belgeyi Gönder</span>
                                     </button>
                                 </div>
 
-                                ${reference2.length > 0 ? `
-                                    <div class="space-y-2 mb-3">
-                                        ${reference2.map(contact => `
-                                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                                <div>
-                                                    <p class="font-medium text-gray-900">${contact.firstName} ${contact.lastName}</p>
-                                                    <p class="text-sm text-gray-600">${contact.mobilePhone || '-'}</p>
-                                                    ${contact.email ? `<p class="text-sm text-gray-500">${contact.email}</p>` : ''}
+                                <!-- Belge Teslim Durumu (Admin Only) -->
+                                <div class="border-t border-gray-200 pt-4">
+                                    <h5 class="text-sm font-semibold text-gray-900 mb-3">Belge Teslim Durumu</h5>
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-xs font-medium text-gray-700 mb-1">Durum</label>
+                                            <select id="deliveryStatus${talepTransaction.id}"
+                                                    onchange="onDeliveryStatusChange(${talepTransaction.id})"
+                                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                <option value="">Seçiniz...</option>
+                                                <option value="1" ${talepTransaction.deliveryStatus === 1 ? 'selected' : ''}>Teslim Edildi</option>
+                                                <option value="2" ${talepTransaction.deliveryStatus === 2 ? 'selected' : ''}>Teslim Alındı (Onaylı)</option>
+                                                <option value="3" ${talepTransaction.deliveryStatus === 3 ? 'selected' : ''}>Red Edildi</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Red Nedeni (Sadece Red Edildi seçildiğinde) -->
+                                        <div id="rejectionSection${talepTransaction.id}" class="${talepTransaction.deliveryStatus === 3 ? '' : 'hidden'}">
+                                            <div class="mb-2">
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Red Nedeni</label>
+                                                <select id="rejectionReason${talepTransaction.id}"
+                                                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                    <option value="">Seçiniz...</option>
+                                                    <option value="1" ${talepTransaction.rejectionReason === 1 ? 'selected' : ''}>İmza Uyuşmadı</option>
+                                                    <option value="2" ${talepTransaction.rejectionReason === 2 ? 'selected' : ''}>Borcu Var</option>
+                                                    <option value="3" ${talepTransaction.rejectionReason === 3 ? 'selected' : ''}>Müşterek İmza Gerekli</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Not</label>
+                                                <textarea id="rejectionNote${talepTransaction.id}"
+                                                          rows="2"
+                                                          class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                          placeholder="Red notu (isteğe bağlı)">${talepTransaction.rejectionNote || ''}</textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- Güncelleme Butonu -->
+                                        <button type="button" id="updateBtn${talepTransaction.id}"
+                                                onclick="updateDeliveryStatus(${talepTransaction.id})"
+                                                class="${talepTransaction.deliveryStatus ? '' : 'hidden'} w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                                            <i data-lucide="save" class="w-4 h-4 inline mr-1"></i>
+                                            Teslim Durumunu Güncelle
+                                        </button>
+                                    </div>
+                                </div>
+                                ` : `
+                                    <!-- Upload Formu -->
+                                    <div class="space-y-3">
+                                        <!-- Örnek İndir ve Gönder Butonları -->
+                                        <div class="flex gap-2 mb-3">
+                                            <button type="button" onclick="downloadTemplateDocument()"
+                                                    class="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1">
+                                                <i data-lucide="download" class="w-4 h-4"></i>
+                                                <span>Örnek İndir</span>
+                                            </button>
+                                            <button type="button" onclick="openSendDocumentModal()"
+                                                    class="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-1">
+                                                <i data-lucide="send" class="w-4 h-4"></i>
+                                                <span>Belgeyi Gönder</span>
+                                            </button>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Belge Dosyası</label>
+                                            <input type="file" id="talepDocumentFile"
+                                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                            <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, JPG, JPEG, PNG dosyaları yükleyebilirsiniz</p>
+                                        </div>
+                                        <button type="button" onclick="uploadTalepDilekcesi(${companyId}, false)"
+                                                class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                            <i data-lucide="upload" class="w-4 h-4 inline mr-1"></i>
+                                            Talep Dilekçesi Yükle
+                                        </button>
+                                    </div>
+                                `}
+                            </div>
+
+                            <!-- Onaylanmış Yetki Belgesi (Sadece Teslim Alındı ise göster) -->
+                            ${talepTransaction && talepTransaction.deliveryStatus === 2 ? `
+                                <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                                    <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                        <i data-lucide="award" class="w-5 h-5 mr-2 text-green-600"></i>
+                                        Onaylanmış Yetki Belgesi
+                                    </h4>
+
+                                    ${onayliTransaction ? `
+                                        <!-- Mevcut Belge Bilgileri -->
+                                        <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <div class="flex items-center space-x-2">
+                                                    <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                                                    <span class="text-sm font-medium text-green-900">Belge Yüklendi</span>
+                                                </div>
+                                                <div class="flex items-center space-x-2">
+                                                    <button type="button" onclick="downloadUploadedDocument('${onayliTransaction.documentUrl}', '${company.registrationNumber}_OnayliBelge')"
+                                                            class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center space-x-1">
+                                                        <i data-lucide="download" class="w-3 h-3"></i>
+                                                        <span>İndir</span>
+                                                    </button>
+                                                    <button type="button" onclick="deleteDocumentTransaction(${onayliTransaction.id})"
+                                                            class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                                        <i data-lucide="trash-2" class="w-3 h-3 inline"></i> Sil
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p class="text-xs text-gray-600 mb-3">
+                                                Yükleyen: ${onayliTransaction.uploadedByUserName}<br>
+                                                Tarih: ${new Date(onayliTransaction.uploadDate).toLocaleDateString('tr-TR')}
+                                            </p>
+
+                                            <!-- Atama Bölümü -->
+                                            <div class="mt-3 pt-3 border-t border-green-300">
+                                                <label class="block text-xs font-medium text-gray-700 mb-2">
+                                                    <i data-lucide="user-check" class="w-3 h-3 inline mr-1"></i>
+                                                    Belge Atama (✓ işareti oy kullanma yetkisini gösterir)
+                                                </label>
+                                                <div class="flex gap-2">
+                                                    <select id="assignContact_${onayliTransaction.id}"
+                                                            class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                        <option value="">Yetkili Seçiniz...</option>
+                                                    </select>
+                                                    <button type="button"
+                                                            onclick="saveDocumentAssignment(${onayliTransaction.id}, ${companyId})"
+                                                            class="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-1">
+                                                        <i data-lucide="save" class="w-4 h-4"></i>
+                                                        <span>Kaydet</span>
+                                                    </button>
+                                                </div>
+                                                ${onayliTransaction.assignedContactName ? `
+                                                    <p class="text-xs text-green-700 mt-2">
+                                                        <i data-lucide="check" class="w-3 h-3 inline mr-1"></i>
+                                                        Atanan: ${onayliTransaction.assignedContactName}
+                                                    </p>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    ` : `
+                                        <!-- Upload Formu -->
+                                        <div class="space-y-3">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Onaylı Belge Dosyası</label>
+                                                <input type="file" id="onayliDocumentFile"
+                                                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, JPG, JPEG, PNG dosyaları yükleyebilirsiniz</p>
+                                            </div>
+                                            <button type="button" onclick="uploadOnayliBelge(${companyId})"
+                                                    class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                                <i data-lucide="upload" class="w-4 h-4 inline mr-1"></i>
+                                                Onaylı Belge Yükle
+                                            </button>
+                                        </div>
+                                    `}
+                                </div>
+                            ` : ''}
+
+                            <!-- Transaction Timeline -->
+                            ${transactions.length > 0 ? `
+                                <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                                    <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                        <i data-lucide="clock" class="w-4 h-4 mr-2 text-gray-600"></i>
+                                        İşlem Geçmişi
+                                    </h4>
+                                    <div class="space-y-2">
+                                        ${transactions.map(t => `
+                                            <div class="text-xs p-2 bg-gray-50 rounded border border-gray-200">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <span class="font-medium">${t.documentTypeName}</span>
+                                                        ${t.deliveryStatusName ? ` - ${t.deliveryStatusName}` : ''}
+                                                        ${t.rejectionReasonName ? ` (${t.rejectionReasonName})` : ''}
+                                                        <br>
+                                                        <span class="text-gray-600">${new Date(t.uploadDate).toLocaleString('tr-TR')}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         `).join('')}
                                     </div>
-                                ` : '<p class="text-sm text-gray-500 italic mb-3">Referans 2 eklenmemiş</p>'}
-
-                                <!-- Referans 2 Ekleme Formu -->
-                                <div id="tcReference2Form" class="hidden mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                    <h6 class="text-sm font-semibold text-gray-900 mb-3">Yeni Referans 2 Ekle</h6>
-                                    <div class="space-y-3">
-                                        <div class="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Ad <span class="text-red-500">*</span></label>
-                                                <input type="text" id="tcRef2FirstName" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Soyad <span class="text-red-500">*</span></label>
-                                                <input type="text" id="tcRef2LastName" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Telefon <span class="text-red-500">*</span></label>
-                                            <input type="tel" id="tcRef2Phone" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required>
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
-                                            <input type="email" id="tcRef2Email" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                        </div>
-                                        <div class="flex justify-end space-x-2 pt-2">
-                                            <button type="button" onclick="toggleTCReference2Form()"
-                                                    class="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                                                İptal
-                                            </button>
-                                            <button type="button" onclick="saveTCReference2()"
-                                                    class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                                Kaydet
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
-                            </div>
+                            ` : ''}
                         </div>
-                    </div>
-                `;
+                    `;
+                }
 
                 document.getElementById('documentsList').innerHTML = content;
                 lucide.createIcons();
 
+                // Eğer onaylanmış yetki belgesi varsa, combobox'ı doldur
+                // DOM'un güncellenmesi için kısa bir bekleme
+                if (onayliTransaction) {
+                    setTimeout(async () => {
+                        await loadEligibleContactsForAssignment(companyId, onayliTransaction.id, onayliTransaction.assignedContactId);
+                    }, 100);
+                }
+
             } catch (error) {
-                console.error('Error loading TC company management:', error);
-                alert('TC firma bilgileri yüklenirken hata oluştu');
+                console.error('Error loading document transactions:', error);
+                alert('Belge bilgileri yüklenirken hata oluştu');
             }
         }
 
@@ -2128,6 +2338,252 @@
                 alert('Kayıt sırasında hata oluştu');
             }
         }
+
+        // ==================== Transaction-Based Document Functions ====================
+
+        // TC Firma Seçime Katılım Kaydı
+        async function saveTCParticipation(companyId) {
+            const willParticipate = document.getElementById('tcWillParticipateCheckbox')?.checked || false;
+
+            const formData = new FormData();
+            formData.append('documentType', '1'); // YetkiBelgesiTalepDilekçesi
+            formData.append('willParticipateInElection', willParticipate.toString());
+            formData.append('isTCParticipation', 'true'); // TC firma olduğunu belirt
+
+            try {
+                const response = await fetch(`/api/company/${companyId}/document-transaction/upload`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Seçime katılım durumu kaydedildi');
+                        await loadDocumentTransactions(companyId, true);
+                    } else {
+                        alert('Kaydetme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Kaydetme başarısız');
+                }
+            } catch (error) {
+                console.error('Error saving TC participation:', error);
+                alert('Kaydetme sırasında hata oluştu');
+            }
+        }
+
+        // Talep Dilekçesi Yükle
+        async function uploadTalepDilekcesi(companyId, isTCCompany) {
+            const fileInput = document.getElementById('talepDocumentFile');
+
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert('Lütfen bir dosya seçin');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('document', fileInput.files[0]);
+            formData.append('documentType', '1'); // YetkiBelgesiTalepDilekçesi
+
+            // TC firmaları için WillParticipateInElection bilgisini gönder
+            if (isTCCompany) {
+                const willParticipate = document.getElementById('tcWillParticipate')?.checked || false;
+                formData.append('willParticipateInElection', willParticipate.toString());
+            }
+
+            try {
+                const response = await fetch(`/api/company/${companyId}/document-transaction/upload`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Talep dilekçesi başarıyla yüklendi');
+                        // Reload with correct company type
+                        await loadDocumentTransactions(companyId, isTCCompany);
+                    } else {
+                        alert('Yükleme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Yükleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error uploading talep dilekcesi:', error);
+                alert('Yükleme sırasında hata oluştu');
+            }
+        }
+
+        // Onaylı Belge Yükle
+        async function uploadOnayliBelge(companyId) {
+            const fileInput = document.getElementById('onayliDocumentFile');
+
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert('Lütfen bir dosya seçin');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('document', fileInput.files[0]);
+            formData.append('documentType', '2'); // OnaylanmisYetkiBelgesi
+
+            try {
+                const response = await fetch(`/api/company/${companyId}/document-transaction/upload`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Onaylı belge başarıyla yüklendi');
+                        await loadDocumentTransactions(companyId, currentIsTCCompany);
+                    } else {
+                        alert('Yükleme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Yükleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error uploading onaylı belge:', error);
+                alert('Yükleme sırasında hata oluştu');
+            }
+        }
+
+        // Teslim Durumu Değiştiğinde
+        function onDeliveryStatusChange(transactionId) {
+            const deliveryStatus = document.getElementById(`deliveryStatus${transactionId}`).value;
+            const rejectionSection = document.getElementById(`rejectionSection${transactionId}`);
+            const updateBtn = document.getElementById(`updateBtn${transactionId}`);
+
+            // Red bölümünü göster/gizle
+            if (deliveryStatus === '3') { // RedEdildi
+                rejectionSection.classList.remove('hidden');
+            } else {
+                rejectionSection.classList.add('hidden');
+            }
+
+            // Güncelleme butonunu göster/gizle
+            if (deliveryStatus) {
+                updateBtn.classList.remove('hidden');
+            } else {
+                updateBtn.classList.add('hidden');
+            }
+        }
+
+        // Teslim Durumunu Güncelle
+        async function updateDeliveryStatus(transactionId) {
+            const deliveryStatus = parseInt(document.getElementById(`deliveryStatus${transactionId}`).value);
+
+            if (!deliveryStatus) {
+                alert('Lütfen bir durum seçin');
+                return;
+            }
+
+            const updateData = {
+                deliveryStatus: deliveryStatus
+            };
+
+            // Eğer Red Edildi seçildiyse, red nedeni zorunlu
+            if (deliveryStatus === 3) {
+                const rejectionReason = parseInt(document.getElementById(`rejectionReason${transactionId}`).value);
+                if (!rejectionReason) {
+                    alert('Red nedeni seçilmelidir');
+                    return;
+                }
+                updateData.rejectionReason = rejectionReason;
+                updateData.rejectionNote = document.getElementById(`rejectionNote${transactionId}`).value || null;
+            }
+
+            try {
+                const response = await fetch(`/api/company/document-transaction/${transactionId}/delivery-status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Teslim durumu güncellendi');
+                        await loadDocumentTransactions(currentCompanyId, currentIsTCCompany);
+                    } else {
+                        alert('Güncelleme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Güncelleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error updating delivery status:', error);
+                alert('Güncelleme sırasında hata oluştu');
+            }
+        }
+
+        // Yüklenen Belgeyi İndir
+        function downloadUploadedDocument(documentUrl, fileName) {
+            try {
+                if (!documentUrl) {
+                    alert('Belge URL\'si bulunamadı.');
+                    return;
+                }
+
+                // Dosya uzantısını URL'den al
+                const extension = documentUrl.split('.').pop();
+                const fullFileName = `${fileName}.${extension}`;
+
+                // Linki oluştur ve indir
+                const link = document.createElement('a');
+                link.href = documentUrl;
+                link.download = fullFileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                console.log('Document downloaded:', documentUrl);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Belge indirme sırasında hata oluştu.');
+            }
+        }
+
+        // Transaction Sil
+        async function deleteDocumentTransaction(transactionId) {
+            if (!confirm('Bu belgeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/company/document-transaction/${transactionId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Belge başarıyla silindi');
+                        await loadDocumentTransactions(currentCompanyId, currentIsTCCompany);
+                    } else {
+                        alert('Silme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Silme başarısız');
+                }
+            } catch (error) {
+                console.error('Error deleting transaction:', error);
+                alert('Silme sırasında hata oluştu');
+            }
+        }
+
+        // ==================== End Transaction Functions ====================
 
         // Firma Belgelerini Yükle
         async function loadCompanyDocuments(companyId) {
@@ -3814,12 +4270,210 @@ Saygılarımızla,
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 localStorage.clear();
-                
+
                 // Clear sessionStorage
                 sessionStorage.clear();
-                
+
                 // Redirect to logout endpoint
                 window.location.href = '/Auth/Logout';
+            }
+        }
+
+        // Assign Document Modal Functions
+        async function openAssignDocumentModal(companyId, transactionId) {
+            try {
+                // TransactionId'yi sakla
+                document.getElementById('assignTransactionId').value = transactionId;
+
+                // Firma yetkililerini yükle (sadece EligibleToVote = true olanlar)
+                const response = await fetch(`/api/contact/company/${companyId}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        const eligibleContacts = result.data.filter(c => c.eligibleToVote === true);
+
+                        if (eligibleContacts.length === 0) {
+                            document.getElementById('eligibleContactsList').innerHTML = '';
+                            document.getElementById('noContactsMessage').classList.remove('hidden');
+                        } else {
+                            document.getElementById('noContactsMessage').classList.add('hidden');
+
+                            const contactsHtml = eligibleContacts.map(contact => `
+                                <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                     onclick="assignDocumentToContact(${contact.id})">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="font-medium text-gray-900">
+                                                ${contact.firstName} ${contact.lastName}
+                                            </div>
+                                            <div class="text-sm text-gray-600">
+                                                TC: ${contact.identityNum || 'Belirtilmemiş'}
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                ${contact.authorizationTypeName || ''}
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <i data-lucide="user-check" class="w-5 h-5 text-green-600"></i>
+                                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('');
+
+                            document.getElementById('eligibleContactsList').innerHTML = contactsHtml;
+                        }
+
+                        // Modalı aç
+                        document.getElementById('assignDocumentModal').classList.remove('hidden');
+                        lucide.createIcons();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading eligible contacts:', error);
+                alert('Yetkili kişiler yüklenirken hata oluştu');
+            }
+        }
+
+        function closeAssignDocumentModal() {
+            document.getElementById('assignDocumentModal').classList.add('hidden');
+        }
+
+        async function assignDocumentToContact(contactId) {
+            try {
+                const transactionId = document.getElementById('assignTransactionId').value;
+
+                const response = await fetch(`/api/company/document-transaction/${transactionId}/assign`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        transactionId: parseInt(transactionId),
+                        contactId: parseInt(contactId)
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Belge başarıyla atandı');
+                        closeAssignDocumentModal();
+                        await loadDocumentTransactions(currentCompanyId, currentIsTCCompany);
+                    } else {
+                        alert('Atama başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Atama başarısız');
+                }
+            } catch (error) {
+                console.error('Error assigning document:', error);
+                alert('Atama sırasında hata oluştu');
+            }
+        }
+
+        // Load eligible contacts for assignment dropdown
+        async function loadEligibleContactsForAssignment(companyId, transactionId, assignedContactId) {
+            try {
+                console.log('Loading contacts for company:', companyId, 'transaction:', transactionId);
+
+                const response = await fetch(`/api/contact/company/${companyId}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Contacts response:', result);
+
+                    if (result.success) {
+                        // Tüm bağlantıları göster (filtreleme yok)
+                        const allContacts = result.data;
+                        console.log('All contacts:', allContacts);
+
+                        const selectElement = document.getElementById(`assignContact_${transactionId}`);
+                        console.log('Select element found:', selectElement);
+
+                        if (selectElement) {
+                            // Clear existing options except first
+                            selectElement.innerHTML = '<option value="">Yetkili Seçiniz...</option>';
+
+                            // Add all contacts
+                            allContacts.forEach(contact => {
+                                const option = document.createElement('option');
+                                option.value = contact.id;
+                                // İsim, soyisim ve yetki türü göster
+                                let displayText = `${contact.firstName} ${contact.lastName}`;
+                                if (contact.authorizationTypeName) {
+                                    displayText += ` - ${contact.authorizationTypeName}`;
+                                }
+                                // Oy kullanma yetkisi varsa belirt
+                                if (contact.eligibleToVote) {
+                                    displayText += ' ✓';
+                                }
+                                option.textContent = displayText;
+
+                                if (assignedContactId && assignedContactId === contact.id) {
+                                    option.selected = true;
+                                }
+                                selectElement.appendChild(option);
+                            });
+
+                            console.log('Added', allContacts.length, 'options to select');
+                        } else {
+                            console.error('Select element not found with id:', `assignContact_${transactionId}`);
+                        }
+                    }
+                } else {
+                    console.error('Response not ok:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading eligible contacts:', error);
+            }
+        }
+
+        // Save document assignment
+        async function saveDocumentAssignment(transactionId, companyId) {
+            try {
+                const selectElement = document.getElementById(`assignContact_${transactionId}`);
+                const contactId = selectElement.value;
+
+                if (!contactId) {
+                    alert('Lütfen bir yetkili seçiniz');
+                    return;
+                }
+
+                const response = await fetch(`/api/company/document-transaction/${transactionId}/assign`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        transactionId: parseInt(transactionId),
+                        contactId: parseInt(contactId)
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('✅ Belge başarıyla atandı');
+                        await loadDocumentTransactions(companyId, currentIsTCCompany);
+                    } else {
+                        alert('Atama başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Atama başarısız');
+                }
+            } catch (error) {
+                console.error('Error saving document assignment:', error);
+                alert('Atama sırasında hata oluştu');
             }
         }
     </script>

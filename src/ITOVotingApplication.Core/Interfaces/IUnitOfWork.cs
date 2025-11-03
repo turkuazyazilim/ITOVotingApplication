@@ -15,6 +15,7 @@ namespace ITOVotingApplication.Core.Interfaces
 		IGenericRepository<FieldReferenceCategory> FieldReferenceCategories { get; }
 		IGenericRepository<FieldReferenceSubCategory> FieldReferenceSubCategories { get; }
 		IGenericRepository<UserInvitation> UserInvitations { get; }
+		IGenericRepository<CompanyDocumentTransaction> CompanyDocumentTransactions { get; }
 		Task<int> CompleteAsync();
 		Task<bool> SaveChangesAsync();
 	}

@@ -4,6 +4,7 @@ using ITOVotingApplication.Business.Services.Interfaces;
 using ITOVotingApplication.Core.DTOs.Committee;
 using ITOVotingApplication.Core.DTOs.Common;
 using ITOVotingApplication.Core.DTOs.Company;
+using ITOVotingApplication.Core.DTOs.CompanyDocument;
 using ITOVotingApplication.Core.Entities;
 using ITOVotingApplication.Core.Interfaces;
 using ITOVotingApplication.Core.Enums;
@@ -14,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Runtime.InteropServices;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Security.Claims;
 
 namespace ITOVotingApplication.Web.Controllers
 {
@@ -27,14 +29,17 @@ namespace ITOVotingApplication.Web.Controllers
 		private readonly IUnitOfWork _unitOfWork;
 		private readonly IMapper _mapper;
 		private readonly IWebHostEnvironment _webHostEnvironment;
-
-		public CompanyController(ICommitteeService committeeService, ICompanyService companyService, IMapper mapper, IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+		private readonly ICompanyDocumentTransactionService _documentTransactionService;
+		private readonly IContactService _contactService;
+		public CompanyController(ICommitteeService committeeService, ICompanyService companyService, IMapper mapper, IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment, ICompanyDocumentTransactionService documentTransactionService, IContactService contactService)
 		{
 			_committeeService = committeeService;
 			_companyService = companyService;
 			_mapper = mapper;
 			_unitOfWork = unitOfWork;
 			_webHostEnvironment = webHostEnvironment;
+			_documentTransactionService = documentTransactionService;
+			_contactService = contactService;
 		}
 
 		[HttpGet("dropdown")]
@@ -309,6 +314,12 @@ namespace ITOVotingApplication.Web.Controllers
 				var userFirstLastName = User.Claims.FirstOrDefault(w => w.Type == "FullName");
 				var userPhoneNumber = User.Claims.FirstOrDefault(w => w.Type == $"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/mobilephone");
 
+				var companyContacts = await _contactService.GetByCompanyIdAsync(company.Id);
+
+				var voterContact = companyContacts.Data.Where(w => w.EligibleToVote ==  true).FirstOrDefault();
+				var ref1Contact = companyContacts.Data.Where(w => w.AuthorizationType == 4).FirstOrDefault();
+				var ref2Contact = companyContacts.Data.Where(w => w.AuthorizationType == 5).FirstOrDefault();
+
 				// Template dosyasının yolunu oluştur
 				string templatePath = Path.Combine(_webHostEnvironment.WebRootPath ?? _webHostEnvironment.ContentRootPath, 
 					"Documents", "yetkidilekcesi.docx");
@@ -355,14 +366,26 @@ namespace ITOVotingApplication.Web.Controllers
 									text.Text = text.Text.Replace("ProfessionalGroup", company.ProfessionalGroup);
 								}
 
-								if (text.Text.Contains("UserFirstLastName"))
+								if (text.Text.Contains("Ref1FirstLastName"))
 								{
-									text.Text = text.Text.Replace("UserFirstLastName", userFirstLastName?.Value.ToString());
+									text.Text = text.Text.Replace("Ref1FirstLastName", string.Concat(ref1Contact?.FirstName," ", ref1Contact?.LastName));
+								}
+								if (text.Text.Contains("Ref2FirstLastName"))
+								{
+									text.Text = text.Text.Replace("Ref2FirstLastName", string.Concat(ref2Contact?.FirstName, " ", ref2Contact?.LastName));
 								}
 								// PhoneNumber eklenecek
-								if (text.Text.Contains("UserPhoneNumber"))
+								if (text.Text.Contains("Ref1PhoneNumber"))
 								{
-									text.Text = text.Text.Replace("UserPhoneNumber", userPhoneNumber?.Value.ToString());
+									text.Text = text.Text.Replace("Ref1PhoneNumber", ref1Contact?.MobilePhone);
+								}
+								if (text.Text.Contains("{{VoterIdentityNumber}}"))
+								{
+									text.Text = text.Text.Replace("{{VoterIdentityNumber}}", voterContact?.IdentityNum);
+								}
+								if (text.Text.Contains("{{VoterFirstLastName}}"))
+								{
+									text.Text = text.Text.Replace("{{VoterFirstLastName}}", string.Concat(voterContact?.FirstName, " ", voterContact?.LastName));
 								}
 							}
 						}
@@ -799,7 +822,7 @@ namespace ITOVotingApplication.Web.Controllers
 				}
 
 				// Silinecek dosyayı bul
-				string filePattern = documentType == "registration" 
+				string filePattern = documentType == "registration"
 					? $"{company.RegistrationNumber}_ImzalıYetkiBelgeDilekcesi.*"
 					: $"{company.RegistrationNumber}_ITOYetkiBelgesi.*";
 
@@ -811,9 +834,9 @@ namespace ITOVotingApplication.Web.Controllers
 					string fileName = documentType == "registration"
 						? $"{company.RegistrationNumber}_ImzalıYetkiBelgeDilekcesi.{ext}"
 						: $"{company.RegistrationNumber}_ITOYetkiBelgesi.{ext}";
-					
+
 					string filePath = Path.Combine(companyFolderPath, fileName);
-					
+
 					if (System.IO.File.Exists(filePath))
 					{
 						System.IO.File.Delete(filePath);
@@ -831,8 +854,8 @@ namespace ITOVotingApplication.Web.Controllers
 				string documentName = documentType == "registration" ? "İmzalı Yetki Belgesi" : "Onaylı Yetki Belgesi";
 				Console.WriteLine($"Belge silindi - Firma: {company.RegistrationNumber}, Belge: {documentName}, Dosya: {deletedFileName}");
 
-				return Ok(new { 
-					success = true, 
+				return Ok(new {
+					success = true,
 					message = $"{documentName} başarıyla silindi.",
 					deletedFile = deletedFileName
 				});
@@ -842,5 +865,307 @@ namespace ITOVotingApplication.Web.Controllers
 				return StatusCode(500, new { success = false, message = $"Belge silme hatası: {ex.Message}" });
 			}
 		}
+
+		// ==================== Document Transaction Endpoints ====================
+
+		/// <summary>
+		/// Upload document and create transaction record
+		/// FieldWorker: Can only upload YetkiBelgesiTalepDilekçesi
+		/// Admin: Can upload both types
+		/// </summary>
+		[HttpPost("{id:int}/document-transaction/upload")]
+		public async Task<IActionResult> UploadDocumentWithTransaction(int id, [FromForm] IFormFile? document, [FromForm] string documentType, [FromForm] bool? willParticipateInElection, [FromForm] bool? isTCParticipation)
+		{
+			try
+			{
+				// Get company
+				var company = await _unitOfWork.Companies.GetByIdAsync(id);
+				if (company == null)
+				{
+					return NotFound(new { success = false, message = "Firma bulunamadı." });
+				}
+
+				// Get user ID from claims
+				var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+				if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+				{
+					return Unauthorized(new { success = false, message = "Kullanıcı bilgisi alınamadı." });
+				}
+
+				// Get user role
+				var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+				// Parse document type
+				if (!Enum.TryParse<CompanyDocumentType>(documentType, out var docType))
+				{
+					return BadRequest(new { success = false, message = "Geçersiz belge türü." });
+				}
+
+				// Role-based permission check
+				if (userRole == "FieldWorker" && docType != CompanyDocumentType.YetkiBelgesiTalepDilekçesi)
+				{
+					return Forbid("Saha görevlisi sadece Yetki Belgesi Talep Dilekçesi yükleyebilir.");
+				}
+
+				string filePath = "";
+				string fileName = "";
+
+				// TC Firma için sadece participation kaydı
+				if (isTCParticipation == true && willParticipateInElection.HasValue)
+				{
+					// TC firmalar için dosya yükleme gerekmiyor, sadece participation durumu
+					filePath = $"TC_Participation_{company.RegistrationNumber}_{DateTime.Now:yyyyMMdd_HHmmss}";
+				fileName = "TC_Participation";
+				}
+				else
+				{
+					// Normal belge yükleme (Non-TC firmalar)
+					// Validate file
+					if (document == null || document.Length == 0)
+					{
+						return BadRequest(new { success = false, message = "Dosya seçilmedi." });
+					}
+
+					// File size check (max 10MB)
+					if (document.Length > 10 * 1024 * 1024)
+					{
+						return BadRequest(new { success = false, message = "Dosya boyutu 10MB'dan büyük olamaz." });
+					}
+
+					// File extension check
+					var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png" };
+					var fileExtension = Path.GetExtension(document.FileName).ToLowerInvariant();
+					if (!allowedExtensions.Contains(fileExtension))
+					{
+						return BadRequest(new { success = false, message = "Sadece PDF, DOC, DOCX, JPG, JPEG ve PNG dosyaları desteklenmektedir." });
+					}
+
+					// Create Documents folder if not exists
+					string documentsPath = Path.Combine(_webHostEnvironment.WebRootPath ?? _webHostEnvironment.ContentRootPath, "Documents");
+					if (!Directory.Exists(documentsPath))
+					{
+						Directory.CreateDirectory(documentsPath);
+					}
+
+					// Create company folder
+					string companyFolderPath = Path.Combine(documentsPath, company.RegistrationNumber);
+					if (!Directory.Exists(companyFolderPath))
+					{
+						Directory.CreateDirectory(companyFolderPath);
+					}
+
+					// Generate file name with timestamp
+					string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+					string docTypeName = docType == CompanyDocumentType.YetkiBelgesiTalepDilekçesi ? "TalepDilekcesi" : "OnaylanmisBelge";
+					fileName = $"{company.RegistrationNumber}_{docTypeName}_{timestamp}{fileExtension}";
+					filePath = Path.Combine(companyFolderPath, fileName);
+
+					// Save file
+					using (var stream = new FileStream(filePath, FileMode.Create))
+					{
+						await document.CopyToAsync(stream);
+					}
+				}
+
+				// Create transaction record
+				var createDto = new CreateDocumentTransactionDto
+				{
+					CompanyId = id,
+					DocumentType = docType,
+					DocumentUrl = isTCParticipation == true ? filePath : $"/Documents/{company.RegistrationNumber}/{fileName}",
+					WillParticipateInElection = willParticipateInElection
+				};
+
+				var result = await _documentTransactionService.CreateAsync(createDto, userId);
+
+				if (!result.Success)
+				{
+					// Delete the uploaded file if transaction creation fails
+					if (System.IO.File.Exists(filePath))
+					{
+						System.IO.File.Delete(filePath);
+					}
+					return BadRequest(new { success = false, message = result.Message });
+				}
+
+				return Ok(new
+				{
+					success = true,
+					message = isTCParticipation == true ? "Seçime katılım durumu başarıyla kaydedildi." : "Belge başarıyla yüklendi ve kayıt oluşturuldu.",
+					data = result.Data,
+					fileName = fileName,
+					filePath = $"/Documents/{company.RegistrationNumber}/{fileName}"
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = $"Belge yükleme hatası: {ex.Message}" });
+			}
+		}
+
+		/// <summary>
+		/// Update delivery status of a document transaction
+		/// Admin only
+		/// </summary>
+		[HttpPut("document-transaction/{transactionId}/delivery-status")]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> UpdateDeliveryStatus(int transactionId, [FromBody] UpdateDeliveryStatusDto dto)
+		{
+			try
+			{
+				// Ensure transaction ID matches
+				dto.TransactionId = transactionId;
+
+				// Validate rejection fields
+				if (dto.DeliveryStatus == DocumentDeliveryStatus.RedEdildi && !dto.RejectionReason.HasValue)
+				{
+					return BadRequest(new { success = false, message = "Red nedeni seçilmelidir." });
+				}
+
+				var result = await _documentTransactionService.UpdateDeliveryStatusAsync(dto);
+
+				if (!result.Success)
+				{
+					return BadRequest(new { success = false, message = result.Message });
+				}
+
+				return Ok(new
+				{
+					success = true,
+					message = "Teslim durumu başarıyla güncellendi.",
+					data = result.Data
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = $"Teslim durumu güncelleme hatası: {ex.Message}" });
+			}
+		}
+
+		/// <summary>
+		/// Assign document transaction to a contact
+		/// Admin only
+		/// </summary>
+		[HttpPut("document-transaction/{transactionId}/assign")]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> AssignDocumentToContact(int transactionId, [FromBody] AssignDocumentRequest request)
+		{
+			try
+			{
+				var result = await _documentTransactionService.AssignToContactAsync(transactionId, request.ContactId);
+
+				if (!result.Success)
+				{
+					return BadRequest(new { success = false, message = result.Message });
+				}
+
+				return Ok(new
+				{
+					success = true,
+					message = "Belge başarıyla atandı.",
+					data = result.Data
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = $"Belge atama hatası: {ex.Message}" });
+			}
+		}
+
+		/// <summary>
+		/// Delete document transaction (hard delete with physical file)
+		/// Admin only
+		/// </summary>
+		[HttpDelete("document-transaction/{transactionId}")]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> DeleteDocumentTransaction(int transactionId)
+		{
+			try
+			{
+				var result = await _documentTransactionService.DeleteAsync(transactionId);
+
+				if (!result.Success)
+				{
+					return BadRequest(new { success = false, message = result.Message });
+				}
+
+				return Ok(new
+				{
+					success = true,
+					message = result.Message
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = $"Belge silme hatası: {ex.Message}" });
+			}
+		}
+
+		/// <summary>
+		/// Get all document transactions for a company
+		/// </summary>
+		[HttpGet("{id:int}/document-transactions")]
+		public async Task<IActionResult> GetCompanyDocumentTransactions(int id)
+		{
+			try
+			{
+				var result = await _documentTransactionService.GetByCompanyIdAsync(id);
+
+				if (!result.Success)
+				{
+					return BadRequest(new { success = false, message = result.Message });
+				}
+
+				return Ok(new
+				{
+					success = true,
+					data = result.Data
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = $"Belge kayıtları getirme hatası: {ex.Message}" });
+			}
+		}
+
+		/// <summary>
+		/// Get latest document transaction by company and type
+		/// </summary>
+		[HttpGet("{id:int}/document-transactions/latest/{documentType}")]
+		public async Task<IActionResult> GetLatestDocumentTransaction(int id, string documentType)
+		{
+			try
+			{
+				// Parse document type
+				if (!Enum.TryParse<CompanyDocumentType>(documentType, out var docType))
+				{
+					return BadRequest(new { success = false, message = "Geçersiz belge türü." });
+				}
+
+				var result = await _documentTransactionService.GetLatestByCompanyAndTypeAsync(id, docType);
+
+				if (!result.Success)
+				{
+					return NotFound(new { success = false, message = result.Message });
+				}
+
+				return Ok(new
+				{
+					success = true,
+					data = result.Data
+				});
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = $"Belge kaydı getirme hatası: {ex.Message}" });
+			}
+		}
+	}
+
+	// Request Models
+	public class AssignDocumentRequest
+	{
+		public int TransactionId { get; set; }
+		public int ContactId { get; set; }
 	}
 }

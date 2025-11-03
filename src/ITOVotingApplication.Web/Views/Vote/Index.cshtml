@@ -124,65 +124,6 @@
         <!-- Page Content -->
         <div class="p-4 lg:p-6">
 
-            <!-- İstatistikler -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-blue-100 text-sm font-medium">Toplam Seçmen</p>
-                                <p class="text-2xl font-bold mt-1">@(Model.VoteResults?.EligibleVoters ?? 0)</p>
-                            </div>
-                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                <i data-lucide="users" class="h-6 w-6 text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-green-100 text-sm font-medium">Oy Kullanan</p>
-                                <p class="text-2xl font-bold mt-1">@(Model.VoteResults?.TotalVotes ?? 0)</p>
-                            </div>
-                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                <i data-lucide="check-circle" class="h-6 w-6 text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-orange-100 text-sm font-medium">Oy Kullanmayan</p>
-                                <p class="text-2xl font-bold mt-1">@((Model.VoteResults?.EligibleVoters ?? 0) - (Model.VoteResults?.TotalVotes ?? 0))</p>
-                            </div>
-                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                <i data-lucide="clock" class="h-6 w-6 text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100 text-sm font-medium">Katılım Oranı</p>
-                                <p class="text-2xl font-bold mt-1">%@((Model.VoteResults?.TurnoutPercentage ?? 0).ToString("F1"))</p>
-                            </div>
-                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                                <i data-lucide="trending-up" class="h-6 w-6 text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- TC Kimlik No ile Arama -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div class="px-6 py-4 border-b border-gray-200">
@@ -192,18 +133,25 @@
                     </h3>
                 </div>
                 <div class="p-6">
-                    <div class="flex flex-col lg:flex-row gap-4">
-                        <div class="flex-1">
-                            <div class="flex">
-                                <input type="text" id="identitySearch" 
-                                       class="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-                                       placeholder="TC Kimlik Numarası Giriniz (11 haneli)" maxlength="11" />
-                                <button class="px-6 py-3 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors flex items-center space-x-2" 
-                                        type="button" onclick="searchContact()">
-                                    <i data-lucide="search" class="h-5 w-5"></i>
-                                    <span>Sorgula</span>
-                                </button>
-                            </div>
+                    <div class="space-y-3">
+                        <!-- Arama Çubuğu -->
+                        <div>
+                            <input type="text" id="identitySearch"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                                   placeholder="TC Kimlik Numarası Giriniz (11 haneli)" maxlength="11" />
+                        </div>
+                        <!-- Butonlar -->
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <button class="w-full sm:flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                                    type="button" onclick="searchContact()">
+                                <i data-lucide="search" class="h-5 w-5"></i>
+                                <span>Sorgula</span>
+                            </button>
+                            <button class="w-full sm:flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
+                                    type="button" onclick="startQRScanner()">
+                                <i data-lucide="qr-code" class="h-5 w-5"></i>
+                                <span>Karekod Okut</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -218,7 +166,7 @@
                     </h3>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                         <div class="space-y-3">
                             <div>
                                 <p class="text-sm font-medium text-gray-700">Ad Soyad:</p>
@@ -237,6 +185,12 @@
                             <div>
                                 <p class="text-sm font-medium text-gray-700">Oy Kullanabilir:</p>
                                 <div id="eligibleStatus">-</div>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Sandık:</p>
+                                <p class="text-lg text-gray-900" id="voterBallotBox">-</p>
                             </div>
                         </div>
                     </div>
@@ -328,12 +282,90 @@
                     }
                 </div>
             </div>
+
+            <!-- İstatistikler -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-100 text-sm font-medium">Toplam Seçmen</p>
+                                <p class="text-2xl font-bold mt-1">@(Model.VoteResults?.EligibleVoters ?? 0)</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="users" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-green-100 text-sm font-medium">Oy Kullanan</p>
+                                <p class="text-2xl font-bold mt-1">@(Model.VoteResults?.TotalVotes ?? 0)</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="check-circle" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-orange-100 text-sm font-medium">Oy Kullanmayan</p>
+                                <p class="text-2xl font-bold mt-1">@((Model.VoteResults?.EligibleVoters ?? 0) - (Model.VoteResults?.TotalVotes ?? 0))</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="clock" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm font-medium">Katılım Oranı</p>
+                                <p class="text-2xl font-bold mt-1">%@((Model.VoteResults?.TurnoutPercentage ?? 0).ToString("F1"))</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i data-lucide="trending-up" class="h-6 w-6 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
 <!-- Mobile Sidebar Overlay -->
 <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
+<!-- QR Scanner Modal -->
+<div id="qrScannerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">Karekod Okuyucu</h3>
+            <button onclick="stopQRScanner()" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="qr-reader" class="w-full"></div>
+            <p class="text-sm text-gray-600 mt-4 text-center">
+                Kamerayı QR koda doğru tutun
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
     let currentContactId = null;
 
@@ -422,6 +454,9 @@
                     castVoteBtn.className = 'px-6 py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center space-x-2 text-lg font-medium';
                 }
 
+                // Dummy sandık bilgisi
+                document.getElementById('voterBallotBox').textContent = '1 Numaralı Sandık - Ana Salon';
+
                 document.getElementById('voterInfo').classList.remove('hidden');
                 lucide.createIcons();
             } else {
@@ -453,6 +488,109 @@
     document.getElementById('identitySearch').addEventListener('input', function(e) {
         this.value = this.value.replace(/[^0-9]/g, '');
     });
+
+    // QR Scanner
+    let html5QrCode = null;
+
+    async function startQRScanner() {
+        const modal = document.getElementById('qrScannerModal');
+        modal.classList.remove('hidden');
+
+        html5QrCode = new Html5Qrcode("qr-reader");
+
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+        };
+
+        try {
+            await html5QrCode.start(
+                { facingMode: "environment" }, // Use back camera
+                config,
+                onScanSuccess,
+                onScanFailure
+            );
+
+            // Re-render lucide icons for modal
+            setTimeout(() => lucide.createIcons(), 100);
+        } catch (err) {
+            console.error('QR Scanner error:', err);
+            alert('Kamera erişimi başarısız. Lütfen tarayıcı ayarlarınızdan kamera izni verin.');
+            stopQRScanner();
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log(`QR Code detected: ${decodedText}`);
+
+        // QR koddan sicil numarasını al
+        // Format: Sicil numarası direkt olabilir veya JSON formatında olabilir
+        let registrationNumber = decodedText;
+
+        // Eğer JSON formatındaysa parse et
+        try {
+            const data = JSON.parse(decodedText);
+            if (data.registrationNumber || data.sicilNo) {
+                registrationNumber = data.registrationNumber || data.sicilNo;
+            }
+        } catch (e) {
+            // JSON değilse, direkt metin olarak kullan
+            registrationNumber = decodedText;
+        }
+
+        // Scanner'ı durdur
+        stopQRScanner();
+
+        // Sicil numarası ile firma ara
+        searchByRegistrationNumber(registrationNumber);
+    }
+
+    function onScanFailure(error) {
+        // Sessizce hata yakalama, sürekli hata mesajı gösterme
+        // console.warn(`QR Code scan error: ${error}`);
+    }
+
+    async function stopQRScanner() {
+        if (html5QrCode) {
+            try {
+                await html5QrCode.stop();
+                html5QrCode.clear();
+            } catch (err) {
+                console.error('Error stopping scanner:', err);
+            }
+            html5QrCode = null;
+        }
+
+        const modal = document.getElementById('qrScannerModal');
+        modal.classList.add('hidden');
+    }
+
+    async function searchByRegistrationNumber(registrationNumber) {
+        try {
+            console.log('Searching by registration number:', registrationNumber);
+
+            const response = await fetch(`/api/contact/by-registration-number/${encodeURIComponent(registrationNumber)}`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.data) {
+                    // TC kimlik numarasını input'a yaz ve ara
+                    document.getElementById('identitySearch').value = result.data.identityNum;
+                    searchContact();
+                } else {
+                    alert('Bu sicil numarasına ait oy kullanabilecek seçmen bulunamadı.');
+                }
+            } else {
+                alert('Sicil numarası ile arama başarısız.');
+            }
+        } catch (error) {
+            console.error('Registration number search error:', error);
+            alert('Arama sırasında bir hata oluştu.');
+        }
+    }
 </script>
 </body>
 </html>

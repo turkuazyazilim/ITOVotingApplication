@@ -43,6 +43,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IVoteService, VoteService>();
 builder.Services.AddScoped<ICommitteeService, CommitteeService>();
 builder.Services.AddScoped<IUserInvitationService, UserInvitationService>();
+builder.Services.AddScoped<ICompanyDocumentTransactionService, CompanyDocumentTransactionService>();
 
 // Communication Services
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
