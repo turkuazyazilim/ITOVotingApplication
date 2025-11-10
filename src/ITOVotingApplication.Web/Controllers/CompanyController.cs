@@ -361,23 +361,23 @@ namespace ITOVotingApplication.Web.Controllers
 									text.Text = text.Text.Replace("{{Title}}", company.Title);
 								}
 
-								if (text.Text.Contains("ProfessionalGroup"))
+								if (text.Text.Contains("{{PG}}"))
 								{
-									text.Text = text.Text.Replace("ProfessionalGroup", company.ProfessionalGroup);
+									text.Text = text.Text.Replace("{{PG}}", company.ProfessionalGroup);
 								}
 
-								if (text.Text.Contains("Ref1FirstLastName"))
+								if (text.Text.Contains("{{Ref1FirstLastName}}"))
 								{
-									text.Text = text.Text.Replace("Ref1FirstLastName", string.Concat(ref1Contact?.FirstName," ", ref1Contact?.LastName));
+									text.Text = text.Text.Replace("{{Ref1FirstLastName}}", string.Concat(ref1Contact?.FirstName," ", ref1Contact?.LastName));
 								}
-								if (text.Text.Contains("Ref2FirstLastName"))
+								if (text.Text.Contains("{{Ref2FirstLastName"))
 								{
-									text.Text = text.Text.Replace("Ref2FirstLastName", string.Concat(ref2Contact?.FirstName, " ", ref2Contact?.LastName));
+									text.Text = text.Text.Replace("{{Ref2FirstLastName}}", string.Concat(ref2Contact?.FirstName, " ", ref2Contact?.LastName));
 								}
 								// PhoneNumber eklenecek
-								if (text.Text.Contains("Ref1PhoneNumber"))
+								if (text.Text.Contains("{{Ref1PhoneNumber}}"))
 								{
-									text.Text = text.Text.Replace("Ref1PhoneNumber", ref1Contact?.MobilePhone);
+									text.Text = text.Text.Replace("{{Ref1PhoneNumber}}", ref1Contact?.MobilePhone);
 								}
 								if (text.Text.Contains("{{VoterIdentityNumber}}"))
 								{
@@ -423,6 +423,12 @@ namespace ITOVotingApplication.Web.Controllers
 				var userFirstLastName = User.Claims.FirstOrDefault(w => w.Type == "FullName");
 				var userPhoneNumber = User.Claims.FirstOrDefault(w => w.Type == "MobilePhone");
 
+				var companyContacts = await _contactService.GetByCompanyIdAsync(company.Id);
+
+				var voterContact = companyContacts.Data.Where(w => w.EligibleToVote == true).FirstOrDefault();
+				var ref1Contact = companyContacts.Data.Where(w => w.AuthorizationType == 4).FirstOrDefault();
+				var ref2Contact = companyContacts.Data.Where(w => w.AuthorizationType == 5).FirstOrDefault();
+
 				// Template dosyasının yolunu oluştur
 				string templatePath = Path.Combine(_webHostEnvironment.WebRootPath ?? _webHostEnvironment.ContentRootPath, 
 					"Documents", "yetkidilekcesi.docx");
@@ -460,29 +466,43 @@ namespace ITOVotingApplication.Web.Controllers
 						{
 							if (text.Text != null)
 							{
+								// {{RegistrationNumber}} placeholder'ını sicil numarası ile değiştir
 								if (text.Text.Contains("RegistrationNumber"))
 								{
 									text.Text = text.Text.Replace("RegistrationNumber", company.RegistrationNumber);
 								}
-								
+
+								// {{Title}} placeholder'ını firma adı ile değiştir
 								if (text.Text.Contains("{{Title}}"))
 								{
 									text.Text = text.Text.Replace("{{Title}}", company.Title);
 								}
 
-								if (text.Text.Contains("ProfessionalGroup"))
+								if (text.Text.Contains("{{PG}}"))
 								{
-									text.Text = text.Text.Replace("ProfessionalGroup", company.ProfessionalGroup);
+									text.Text = text.Text.Replace("{{PG}}", company.ProfessionalGroup);
 								}
 
-								if (text.Text.Contains("UserFirstLastName"))
+								if (text.Text.Contains("{{Ref1FirstLastName}}"))
 								{
-									text.Text = text.Text.Replace("UserFirstLastName", userFirstLastName?.Value.ToString());
+									text.Text = text.Text.Replace("{{Ref1FirstLastName}}", string.Concat(ref1Contact?.FirstName, " ", ref1Contact?.LastName));
 								}
-
-								if (text.Text.Contains("UserPhoneNumber"))
+								if (text.Text.Contains("{{Ref2FirstLastName"))
 								{
-									text.Text = text.Text.Replace("UserPhoneNumber", userPhoneNumber?.Value.ToString());
+									text.Text = text.Text.Replace("{{Ref2FirstLastName}}", string.Concat(ref2Contact?.FirstName, " ", ref2Contact?.LastName));
+								}
+								// PhoneNumber eklenecek
+								if (text.Text.Contains("{{Ref1PhoneNumber}}"))
+								{
+									text.Text = text.Text.Replace("{{Ref1PhoneNumber}}", ref1Contact?.MobilePhone);
+								}
+								if (text.Text.Contains("{{VoterIdentityNumber}}"))
+								{
+									text.Text = text.Text.Replace("{{VoterIdentityNumber}}", voterContact?.IdentityNum);
+								}
+								if (text.Text.Contains("{{VoterFirstLastName}}"))
+								{
+									text.Text = text.Text.Replace("{{VoterFirstLastName}}", string.Concat(voterContact?.FirstName, " ", voterContact?.LastName));
 								}
 							}
 						}

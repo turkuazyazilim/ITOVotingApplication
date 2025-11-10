@@ -20,14 +20,16 @@ namespace ITOVotingApplication.Web.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IWhatsAppService _whatsAppService;
+        private readonly IEmailService _emailService;
         private readonly IUserInvitationService _invitationService;
 
-        public UserController(IUserService userService, IUnitOfWork unitOfWork, IMapper mapper, IWhatsAppService whatsAppService, IUserInvitationService invitationService)
+        public UserController(IUserService userService, IUnitOfWork unitOfWork, IMapper mapper, IWhatsAppService whatsAppService, IEmailService emailService, IUserInvitationService invitationService)
         {
             _userService = userService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _whatsAppService = whatsAppService;
+            _emailService = emailService;
             _invitationService = invitationService;
         }
 
@@ -199,12 +201,27 @@ namespace ITOVotingApplication.Web.Controllers
                 var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
                 var registrationLink = $"{baseUrl}/invitation/{invitationResult.Data}";
 
-                string message = "";
                 if (dto.ContactMethod == "email")
                 {
-                    message = $"E-posta gönderildi: {dto.Email}\nKayıt linki: {registrationLink}";
-                    // TODO: Implement email sending
-                    // await _emailService.SendRegistrationEmailAsync(dto.Email, registrationLink);
+                    // Send email with registration link
+                    var emailResult = await _emailService.SendRegistrationLinkAsync(dto.Email, registrationLink);
+
+                    if (emailResult.Success)
+                    {
+                        // Return structured data for email display
+                        var responseData = new
+                        {
+                            contactMethod = "email",
+                            email = dto.Email,
+                            registrationLink = registrationLink
+                        };
+
+                        return ApiResponse<object>.SuccessResult(responseData, "E-posta başarıyla gönderildi!");
+                    }
+                    else
+                    {
+                        return ApiResponse<object>.ErrorResult($"E-posta gönderilemedi: {emailResult.Message}");
+                    }
                 }
                 else if (dto.ContactMethod == "phone")
                 {
@@ -230,8 +247,8 @@ namespace ITOVotingApplication.Web.Controllers
                     }
                 }
 
-                // Fallback for email (will be implemented later)
-                return ApiResponse<object>.SuccessResult(message, "Kayıt linki başarıyla hazırlandı!");
+                // Invalid contact method
+                return ApiResponse<object>.ErrorResult("Geçersiz iletişim yöntemi!");
             }
             catch (Exception ex)
             {

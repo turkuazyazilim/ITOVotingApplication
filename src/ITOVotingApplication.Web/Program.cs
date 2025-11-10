@@ -47,6 +47,11 @@ builder.Services.AddScoped<ICompanyDocumentTransactionService, CompanyDocumentTr
 
 // Communication Services
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ITuratelSmsService, TuratelSmsService>();
+
+// HTTP Client for external API calls
+builder.Services.AddHttpClient();
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

@@ -2279,14 +2279,20 @@
         document.getElementById('copySuccessMessage').classList.add('hidden');
     }
 
-    function showRegistrationLinkDisplay(responseText) {
-        // Extract URL from response text
-        // Response format: "E-posta gönderildi: xxx\nKayıt linki: http://..."
-        let url = responseText;
+    function showRegistrationLinkDisplay(data) {
+        // data object: { contactMethod, email, registrationLink }
+        let url = '';
 
-        if (responseText.includes('Kayıt linki: ')) {
-            const parts = responseText.split('Kayıt linki: ');
-            url = parts[1].trim();
+        // Handle both object and string formats for backward compatibility
+        if (typeof data === 'object' && data.registrationLink) {
+            url = data.registrationLink;
+        } else if (typeof data === 'string') {
+            // Fallback for old string format
+            url = data;
+            if (data.includes('Kayıt linki: ')) {
+                const parts = data.split('Kayıt linki: ');
+                url = parts[1].trim();
+            }
         }
 
         // Set the URL
@@ -2398,9 +2404,13 @@
                     // Show share message modal for WhatsApp
                     showShareMessageModal(result.data);
                     closeSendLinkModal();
-                } else {
+                } else if (contactMethod === 'email' && result.data && typeof result.data === 'object') {
                     // Show registration link for email
-                    showRegistrationLinkDisplay(result.data || '');
+                    showRegistrationLinkDisplay(result.data);
+                } else {
+                    // Fallback for unexpected response format
+                    alert(result.message || 'Link başarıyla gönderildi!');
+                    closeSendLinkModal();
                 }
             } else {
                 alert(result.message || 'Link gönderme işlemi başarısız!');

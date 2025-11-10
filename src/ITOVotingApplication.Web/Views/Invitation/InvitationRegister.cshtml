@@ -243,8 +243,8 @@
                                         <p class="text-blue-700">
                                             <span id="phoneDisplay"></span> numarasına gönderilen 6 haneli kodu giriniz.
                                         </p>
-                                        <p class="text-blue-600 mt-2 font-mono text-lg">
-                                            <strong>Test Kodu: <span id="dummyCode" class="bg-yellow-200 px-2 py-1 rounded">123456</span></strong>
+                                        <p class="text-blue-600 mt-2 text-xs">
+                                            Kod 5 dakika geçerlidir. Eğer SMS almadıysanız, formu tekrar doldurup yeni kod isteyebilirsiniz.
                                         </p>
                                     </div>
                                 </div>
@@ -467,17 +467,36 @@
             // Store form data for later use
             currentFormData = formData;
 
-            // Generate dummy SMS code
-            generatedSmsCode = generateDummySmsCode(formData.phoneNumber);
-
             // Show loading state
             setLoadingState(true, 'SMS kodu gönderiliyor...');
 
-            // Simulate SMS sending delay
-            setTimeout(() => {
+            try {
+                // Call API to send SMS
+                const response = await fetch('/invitation/send-sms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: formData.phoneNumber,
+                        token: formData.token
+                    })
+                });
+
+                const result = await response.json();
+
                 setLoadingState(false);
-                showSmsVerificationStep(formData.phoneNumber);
-            }, 1500);
+
+                if (response.ok && result.success) {
+                    showSmsVerificationStep(formData.phoneNumber);
+                } else {
+                    showError(result.message || 'SMS gönderilemedi. Lütfen tekrar deneyin.');
+                }
+            } catch (error) {
+                console.error('SMS sending error:', error);
+                setLoadingState(false);
+                showError('SMS gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+            }
         }
 
         // Step 2: Verify SMS and Register User
@@ -491,8 +510,8 @@
                 return;
             }
 
-            if (enteredCode !== generatedSmsCode) {
-                showFieldError('smsCode', 'SMS kodu hatalı');
+            if (enteredCode.length !== 6) {
+                showFieldError('smsCode', 'SMS kodu 6 haneli olmalıdır');
                 return;
             }
 
@@ -500,7 +519,29 @@
             setSmsLoadingState(true);
 
             try {
-                const response = await fetch(`/invitation/${currentFormData.token}`, {
+                // First verify the SMS code
+                const verifyResponse = await fetch('/invitation/verify-sms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: currentFormData.phoneNumber,
+                        token: currentFormData.token,
+                        code: enteredCode
+                    })
+                });
+
+                const verifyResult = await verifyResponse.json();
+
+                if (!verifyResponse.ok || !verifyResult.success) {
+                    setSmsLoadingState(false);
+                    showFieldError('smsCode', verifyResult.message || 'SMS doğrulama başarısız');
+                    return;
+                }
+
+                // SMS verification successful, now register the user
+                const registerResponse = await fetch(`/invitation/${currentFormData.token}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -508,15 +549,15 @@
                     body: JSON.stringify(currentFormData)
                 });
 
-                const result = await response.json();
+                const registerResult = await registerResponse.json();
 
-                if (response.ok && result.success) {
+                if (registerResponse.ok && registerResult.success) {
                     showSuccess('Hesabınız başarıyla oluşturuldu! Giriş sayfasına yönlendiriliyorsunuz...');
                     setTimeout(() => {
                         window.location.href = '/Auth/Login';
                     }, 2500);
                 } else {
-                    showError(result.message || 'Kayıt işlemi başarısız');
+                    showError(registerResult.message || 'Kayıt işlemi başarısız');
                 }
             } catch (error) {
                 console.error('Registration failed:', error);
@@ -541,7 +582,6 @@
             // Hide registration form and show SMS verification
             document.getElementById('smsVerificationStep').classList.remove('hidden');
             document.getElementById('phoneDisplay').textContent = phoneNumber || 'Telefon numaranıza';
-            document.getElementById('dummyCode').textContent = generatedSmsCode;
 
             // Scroll to SMS verification section
             document.getElementById('smsVerificationStep').scrollIntoView({

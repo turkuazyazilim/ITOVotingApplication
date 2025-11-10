@@ -11,15 +11,21 @@ namespace ITOVotingApplication.Web.Controllers
     {
         private readonly IUserInvitationService _invitationService;
         private readonly IUserService _userService;
+        private readonly ITuratelSmsService _turatelSmsService;
         private readonly ILogger<InvitationController> _logger;
+
+        // In-memory storage for SMS codes (in production, use Redis or database)
+        private static readonly Dictionary<string, SmsVerificationData> _smsVerificationStore = new();
 
         public InvitationController(
             IUserInvitationService invitationService,
             IUserService userService,
+            ITuratelSmsService turatelSmsService,
             ILogger<InvitationController> logger)
         {
             _invitationService = invitationService;
             _userService = userService;
+            _turatelSmsService = turatelSmsService;
             _logger = logger;
         }
 
@@ -137,6 +143,102 @@ namespace ITOVotingApplication.Web.Controllers
 
             return errors;
         }
+
+        [HttpPost("invitation/send-sms")]
+        public async Task<IActionResult> SendSmsCode([FromBody] SendSmsCodeRequest request)
+        {
+            try
+            {
+                // Validate phone number
+                if (string.IsNullOrWhiteSpace(request.PhoneNumber))
+                {
+                    return Json(new { success = false, message = "Telefon numarası gereklidir" });
+                }
+
+                // Generate 6-digit verification code
+                var verificationCode = GenerateVerificationCode();
+
+                // Send SMS via Turatel
+                var smsResult = await _turatelSmsService.SendVerificationCodeAsync(request.PhoneNumber, verificationCode);
+
+                if (!smsResult.Success || smsResult.Data == null || !smsResult.Data.IsSuccess)
+                {
+                    _logger.LogWarning("SMS sending failed for phone {PhoneNumber}. Error: {Error}",
+                        request.PhoneNumber, smsResult.Message);
+                    return Json(new { success = false, message = smsResult.Message ?? "SMS gönderilemedi" });
+                }
+
+                // Store verification code with expiry (5 minutes)
+                var key = $"{request.PhoneNumber}:{request.Token}";
+                _smsVerificationStore[key] = new SmsVerificationData
+                {
+                    Code = verificationCode,
+                    ExpiryTime = DateTime.UtcNow.AddMinutes(5),
+                    PhoneNumber = request.PhoneNumber
+                };
+
+                _logger.LogInformation("SMS verification code sent to {PhoneNumber}. PacketId: {PacketId}",
+                    request.PhoneNumber, smsResult.Data.PacketId);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "SMS doğrulama kodu gönderildi",
+                    packetId = smsResult.Data.PacketId
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending SMS code to {PhoneNumber}", request.PhoneNumber);
+                return Json(new { success = false, message = "SMS gönderilirken bir hata oluştu" });
+            }
+        }
+
+        [HttpPost("invitation/verify-sms")]
+        public IActionResult VerifySmsCode([FromBody] VerifySmsCodeRequest request)
+        {
+            try
+            {
+                var key = $"{request.PhoneNumber}:{request.Token}";
+
+                // Check if verification code exists
+                if (!_smsVerificationStore.TryGetValue(key, out var storedData))
+                {
+                    return Json(new { success = false, message = "Doğrulama kodu bulunamadı. Lütfen yeni kod isteyin." });
+                }
+
+                // Check if code is expired
+                if (DateTime.UtcNow > storedData.ExpiryTime)
+                {
+                    _smsVerificationStore.Remove(key);
+                    return Json(new { success = false, message = "Doğrulama kodu süresi dolmuş. Lütfen yeni kod isteyin." });
+                }
+
+                // Verify code
+                if (storedData.Code != request.Code)
+                {
+                    return Json(new { success = false, message = "Doğrulama kodu hatalı" });
+                }
+
+                // Code is correct, remove it from store
+                _smsVerificationStore.Remove(key);
+
+                _logger.LogInformation("SMS verification successful for phone {PhoneNumber}", request.PhoneNumber);
+
+                return Json(new { success = true, message = "SMS doğrulama başarılı" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error verifying SMS code for {PhoneNumber}", request.PhoneNumber);
+                return Json(new { success = false, message = "Doğrulama sırasında bir hata oluştu" });
+            }
+        }
+
+        private string GenerateVerificationCode()
+        {
+            var random = new Random();
+            return random.Next(100000, 999999).ToString();
+        }
     }
 
     public class InvitationRegisterRequest
@@ -151,5 +253,25 @@ namespace ITOVotingApplication.Web.Controllers
         public string LastName { get; set; }
         public int? FieldReferenceCategoryId { get; set; }
         public int? FieldReferenceSubCategoryId { get; set; }
+    }
+
+    public class SendSmsCodeRequest
+    {
+        public string PhoneNumber { get; set; }
+        public string Token { get; set; }
+    }
+
+    public class VerifySmsCodeRequest
+    {
+        public string PhoneNumber { get; set; }
+        public string Token { get; set; }
+        public string Code { get; set; }
+    }
+
+    public class SmsVerificationData
+    {
+        public string Code { get; set; }
+        public DateTime ExpiryTime { get; set; }
+        public string PhoneNumber { get; set; }
     }
 }
