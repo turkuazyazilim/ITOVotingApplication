@@ -218,6 +218,150 @@ namespace ITOVotingApplication.Business.Services
             }
         }
 
+        public async Task<ApiResponse<bool>> SendDocumentEmailAsync(string toEmail, string contactName, string companyName, string documentUrl, string expiresIn)
+        {
+            try
+            {
+                // Validate email configuration
+                if (string.IsNullOrEmpty(_senderEmail) || string.IsNullOrEmpty(_password))
+                {
+                    _logger.LogWarning("Email settings are not configured properly");
+                    return ApiResponse<bool>.ErrorResult("E-posta ayarları yapılandırılmamış.");
+                }
+
+                var subject = "İstanbul Ticaret Odası - Yetki Belgesi Talep Dilekçesi";
+
+                var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }}
+        .header {{
+            background-color: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }}
+        .content {{
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 5px 5px;
+        }}
+        .button {{
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }}
+        .footer {{
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }}
+        .info-box {{
+            background-color: #dbeafe;
+            padding: 15px;
+            border-left: 4px solid #2563eb;
+            margin: 20px 0;
+        }}
+        .warning {{
+            background-color: #fef3c7;
+            padding: 15px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>📄 İstanbul Ticaret Odası</h1>
+            <p>Yetki Belgesi Talep Dilekçesi</p>
+        </div>
+        <div class='content'>
+            <p>Sayın <strong>{contactName}</strong>,</p>
+
+            <p><strong>{companyName}</strong> firması için hazırlanan yetki belgesi talep dilekçesi e-posta ile gönderilmiştir.</p>
+
+            <div class='info-box'>
+                <h3>📋 Belge Bilgileri:</h3>
+                <ul>
+                    <li><strong>Belge Türü:</strong> Yetki Belgesi Talep Dilekçesi</li>
+                    <li><strong>Firma:</strong> {companyName}</li>
+                    <li><strong>Geçerlilik:</strong> {expiresIn}</li>
+                </ul>
+            </div>
+
+            <center>
+                <a href='{documentUrl}' class='button' style='color: white;'>
+                    📥 Belgeyi İndir
+                </a>
+            </center>
+
+            <p style='color: #666; font-size: 14px; text-align: center; margin-top: 10px;'>
+                Veya aşağıdaki linki tarayıcınıza kopyalayabilirsiniz:<br>
+                <a href='{documentUrl}'>{documentUrl}</a>
+            </p>
+
+            <div class='warning'>
+                <p><strong>⚠️ Önemli Bilgiler:</strong></p>
+                <ul>
+                    <li>Bu belge, firmanızın resmi işlemlerinde kullanılmak üzere hazırlanmıştır</li>
+                    <li>Belgeyi indirdikten sonra imzalayıp sisteme yüklemeniz gerekmektedir</li>
+                    <li>Link {expiresIn} süreyle geçerlidir</li>
+                    <li>Herhangi bir sorunuz olması durumunda bizimle iletişime geçebilirsiniz</li>
+                </ul>
+            </div>
+
+            <div class='info-box'>
+                <h4>📝 Sonraki Adımlar:</h4>
+                <ol>
+                    <li>Belgeyi indirin</li>
+                    <li>Gerekli bilgileri kontrol edin</li>
+                    <li>Belgeyi imzalayın</li>
+                    <li>İmzalı belgeyi sisteme yükleyin</li>
+                </ol>
+            </div>
+
+            <p>Saygılarımızla,<br>
+            <strong>İstanbul Ticaret Odası</strong><br>
+            Bilgi İşlem Departmanı</p>
+        </div>
+        <div class='footer'>
+            <p>Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayınız.</p>
+            <p>&copy; 2024 İstanbul Ticaret Odası - Tüm hakları saklıdır.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+                return await SendEmailAsync(toEmail, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating document email for {Email}", toEmail);
+                return ApiResponse<bool>.ErrorResult($"Belge e-postası oluşturulurken hata oluştu: {ex.Message}");
+            }
+        }
+
         private bool IsValidEmail(string email)
         {
             try

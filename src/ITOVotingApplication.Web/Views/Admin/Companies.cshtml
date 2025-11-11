@@ -3110,7 +3110,7 @@ ${result.downloadUrl}
             try {
                 const contactSelect = document.getElementById('contactSelect');
                 const selectedValue = contactSelect.value;
-                
+
                 if (!selectedValue) {
                     alert('Lütfen bir yetkili seçin.');
                     return;
@@ -3118,112 +3118,56 @@ ${result.downloadUrl}
 
                 const contact = JSON.parse(selectedValue);
                 const companyId = document.getElementById('editCompanyId').value;
-                
+
                 if (!contact.email) {
                     alert('Seçilen yetkilinin email adresi bulunmuyor.');
                     return;
                 }
-                
-                console.log('Preparing email with document link for:', contact.email);
-                
-                // İndirilebilir link oluştur
-                const response = await fetch(`/api/company/${companyId}/generate-document-link`, {
-                    method: 'GET',
-                    credentials: 'same-origin'
+
+                console.log('Sending document email to:', contact.email);
+
+                // Show loading indicator (optional - you can add a loading button state here)
+                const emailButton = event.target;
+                const originalHtml = emailButton.innerHTML;
+                emailButton.disabled = true;
+                emailButton.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i>';
+                lucide.createIcons();
+
+                // Send email via backend API
+                const response = await fetch(`/api/company/${companyId}/send-document-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        email: contact.email,
+                        contactName: `${contact.firstName} ${contact.lastName}`
+                    })
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        // Email konusu ve içeriği (link ile)
-                        const subject = `İstanbul Ticaret Odası - Yetki Belgesi Talep Dilekçesi`;
-                        const body = `Sayın ${contact.firstName} ${contact.lastName},
+                const result = await response.json();
 
-İstanbul Ticaret Odası yetki belgesi talep dilekçeniz hazırlandı.
+                // Reset button state
+                emailButton.disabled = false;
+                emailButton.innerHTML = originalHtml;
+                lucide.createIcons();
 
-📄 Belgeyi indirmek için aşağıdaki linki kullanın:
-${result.downloadUrl}
+                if (response.ok && result.success) {
+                    alert(`✅ E-posta başarıyla gönderildi!
 
-⏰ Bu link ${result.expiresIn} süreyle geçerlidir.
+📧 ${contact.email} adresine belge linki içeren e-posta gönderilmiştir.
 
-Bu belge, firmanızın resmi işlemlerinde kullanılmak üzere hazırlanmıştır.
+💡 Yetkili, e-postadaki linki kullanarak belgeyi indirebilecektir.`);
 
-Herhangi bir sorunuz olması durumunda bizimle iletişime geçebilirsiniz.
-
-Saygılarımızla,
-İstanbul Ticaret Odası`;
-
-                        // Email client'ını aç
-                        const mailtoUrl = `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                        
-                        // Mobil cihaz kontrolü
-                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                        
-                        if (isMobile) {
-                            // Mobil için app scheme desteği
-                            // Gmail app scheme
-                            const gmailUrl = `googlegmail://co?to=${contact.email}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                            
-                            // Outlook app scheme  
-                            const outlookUrl = `ms-outlook://compose?to=${contact.email}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-                            
-                            // Email app'i açmaya çalış
-                            try {
-                                // Önce Gmail'i dene
-                                const iframe = document.createElement('iframe');
-                                iframe.style.display = 'none';
-                                iframe.src = gmailUrl;
-                                document.body.appendChild(iframe);
-                                
-                                setTimeout(() => {
-                                    document.body.removeChild(iframe);
-                                    
-                                    // Outlook'u dene
-                                    try {
-                                        window.location.href = outlookUrl;
-                                    } catch (e) {
-                                        // Son çare: varsayılan mailto
-                                        window.location.href = mailtoUrl;
-                                    }
-                                    
-                                    // Varsayılan mailto
-                                    setTimeout(() => {
-                                        window.location.href = mailtoUrl;
-                                    }, 1000);
-                                }, 1000);
-                            } catch (e) {
-                                window.location.href = mailtoUrl;
-                            }
-                            
-                            alert(`📱 Email hazırlandı!
-
-✅ Email uygulamanız açılacak ve belge indirme linki mesaja eklenmiş olacak.
-
-💡 Artık dosya eklemenize gerek yok!`);
-                        } else {
-                            // Masaüstü için
-                            window.open(mailtoUrl, '_blank');
-                            
-                            alert(`✅ Email hazırlandı!
-
-📧 Email programınız açıldı ve belge indirme linki mesaja dahil edildi.
-
-💡 Artık dosya eklemenize gerek yok, doğrudan gönderebilirsiniz!`);
-                        }
-                        
-                        // Modal'ı kapat
-                        closeSendDocumentModal();
-                    } else {
-                        alert('Belge linki oluşturma sırasında hata oluştu.');
-                    }
+                    // Modal'ı kapat
+                    closeSendDocumentModal();
                 } else {
-                    const error = await response.json();
-                    alert(error.message || 'Belge linki oluşturma sırasında hata oluştu.');
+                    alert(result.message || 'E-posta gönderilirken hata oluştu.');
                 }
             } catch (error) {
                 console.error('Email send error:', error);
-                alert('Email hazırlama sırasında hata oluştu.');
+                alert('E-posta gönderilirken hata oluştu. Lütfen tekrar deneyin.');
             }
         }
 

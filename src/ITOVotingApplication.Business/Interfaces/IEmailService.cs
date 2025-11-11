@@ -6,5 +6,6 @@ namespace ITOVotingApplication.Business.Interfaces
     {
         Task<ApiResponse<bool>> SendRegistrationLinkAsync(string email, string registrationLink);
         Task<ApiResponse<bool>> SendEmailAsync(string toEmail, string subject, string body);
+        Task<ApiResponse<bool>> SendDocumentEmailAsync(string toEmail, string contactName, string companyName, string documentUrl, string expiresIn);
     }
 }

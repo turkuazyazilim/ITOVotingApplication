@@ -31,7 +31,9 @@ namespace ITOVotingApplication.Web.Controllers
 		private readonly IWebHostEnvironment _webHostEnvironment;
 		private readonly ICompanyDocumentTransactionService _documentTransactionService;
 		private readonly IContactService _contactService;
-		public CompanyController(ICommitteeService committeeService, ICompanyService companyService, IMapper mapper, IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment, ICompanyDocumentTransactionService documentTransactionService, IContactService contactService)
+		private readonly IEmailService _emailService;
+
+		public CompanyController(ICommitteeService committeeService, ICompanyService companyService, IMapper mapper, IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment, ICompanyDocumentTransactionService documentTransactionService, IContactService contactService, IEmailService emailService)
 		{
 			_committeeService = committeeService;
 			_companyService = companyService;
@@ -40,6 +42,7 @@ namespace ITOVotingApplication.Web.Controllers
 			_webHostEnvironment = webHostEnvironment;
 			_documentTransactionService = documentTransactionService;
 			_contactService = contactService;
+			_emailService = emailService;
 		}
 
 		[HttpGet("dropdown")]
@@ -1180,6 +1183,64 @@ namespace ITOVotingApplication.Web.Controllers
 				return StatusCode(500, new { success = false, message = $"Belge kaydı getirme hatası: {ex.Message}" });
 			}
 		}
+
+		[HttpPost("{id:int}/send-document-email")]
+		public async Task<IActionResult> SendDocumentEmail(int id, [FromBody] SendDocumentEmailRequest request)
+		{
+			try
+			{
+				// Firma bilgilerini getir
+				var company = await _unitOfWork.Companies.GetByIdAsync(id);
+				if (company == null)
+				{
+					return NotFound(ApiResponse<bool>.ErrorResult("Firma bulunamadı."));
+				}
+
+				// Email validation
+				if (string.IsNullOrWhiteSpace(request.Email))
+				{
+					return BadRequest(ApiResponse<bool>.ErrorResult("E-posta adresi gereklidir."));
+				}
+
+				// Generate document link
+				var documentLinkResponse = await GenerateDocumentLink(id);
+
+				if (documentLinkResponse is not OkObjectResult okResult || okResult.Value == null)
+				{
+					return StatusCode(500, ApiResponse<bool>.ErrorResult("Belge linki oluşturulamadı."));
+				}
+
+				// Parse the response to get download URL
+				var documentResult = okResult.Value;
+				var downloadUrl = documentResult.GetType().GetProperty("downloadUrl")?.GetValue(documentResult)?.ToString();
+				var expiresIn = documentResult.GetType().GetProperty("expiresIn")?.GetValue(documentResult)?.ToString();
+
+				if (string.IsNullOrEmpty(downloadUrl))
+				{
+					return StatusCode(500, ApiResponse<bool>.ErrorResult("Belge URL'si alınamadı."));
+				}
+
+				// Send email with document
+				var emailResult = await _emailService.SendDocumentEmailAsync(
+					request.Email,
+					request.ContactName,
+					company.Title,
+					downloadUrl,
+					expiresIn ?? "24 saat"
+				);
+
+				if (!emailResult.Success)
+				{
+					return StatusCode(500, emailResult);
+				}
+
+				return Ok(ApiResponse<bool>.SuccessResult(true, "E-posta başarıyla gönderildi!"));
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, ApiResponse<bool>.ErrorResult($"E-posta gönderilirken hata oluştu: {ex.Message}"));
+			}
+		}
 	}
 
 	// Request Models
@@ -1187,5 +1248,11 @@ namespace ITOVotingApplication.Web.Controllers
 	{
 		public int TransactionId { get; set; }
 		public int ContactId { get; set; }
+	}
+
+	public class SendDocumentEmailRequest
+	{
+		public string Email { get; set; }
+		public string ContactName { get; set; }
 	}
 }
