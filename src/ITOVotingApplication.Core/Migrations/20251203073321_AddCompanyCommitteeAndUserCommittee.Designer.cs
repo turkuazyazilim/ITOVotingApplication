@@ -4,6 +4,7 @@ using ITOVotingApplication.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ITOVotingApplication.Core.Migrations
 {
     [DbContext(typeof(VotingDbContext))]
-    partial class VotingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251203073321_AddCompanyCommitteeAndUserCommittee")]
+    partial class AddCompanyCommitteeAndUserCommittee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,7 +153,7 @@ namespace ITOVotingApplication.Core.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AssignedUserId")
+                    b.Property<int?>("AssignedContactId")
                         .HasColumnType("int");
 
                     b.Property<int>("CompanyId")
@@ -194,7 +197,7 @@ namespace ITOVotingApplication.Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedUserId");
+                    b.HasIndex("AssignedContactId");
 
                     b.HasIndex("CompanyId");
 
@@ -584,10 +587,9 @@ namespace ITOVotingApplication.Core.Migrations
 
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.CompanyDocumentTransaction", b =>
                 {
-                    b.HasOne("ITOVotingApplication.Core.Entities.User", "AssignedUser")
+                    b.HasOne("ITOVotingApplication.Core.Entities.Contact", "AssignedContact")
                         .WithMany()
-                        .HasForeignKey("AssignedUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("AssignedContactId");
 
                     b.HasOne("ITOVotingApplication.Core.Entities.Company", "Company")
                         .WithMany()
@@ -601,7 +603,7 @@ namespace ITOVotingApplication.Core.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AssignedUser");
+                    b.Navigation("AssignedContact");
 
                     b.Navigation("Company");
 

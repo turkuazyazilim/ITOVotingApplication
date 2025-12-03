@@ -54,6 +54,11 @@ namespace ITOVotingApplication.Data.Configurations
 				.WithMany(p => p.ActiveForCompanies)
 				.HasForeignKey(d => d.ActiveContactId);
 
+			builder.HasOne(d => d.Committee)
+				.WithMany(p => p.Companies)
+				.HasForeignKey(d => d.CommitteeId)
+				.OnDelete(DeleteBehavior.SetNull);
+
 			// Index
 			builder.HasIndex(e => e.RegistrationNumber).IsUnique();
 		}

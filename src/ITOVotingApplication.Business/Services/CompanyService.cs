@@ -24,6 +24,7 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var query = _unitOfWork.Companies.Query()
 					.Include(c => c.ActiveContact)
+					.Include(c => c.Committee)
 					.AsQueryable();
 
 				// Search filter
@@ -80,6 +81,7 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var company = await _unitOfWork.Companies.Query()
 					.Include(c => c.ActiveContact)
+					.Include(c => c.Committee)
 					.FirstOrDefaultAsync(c => c.Id == id);
 
 				if (company == null)
@@ -110,6 +112,7 @@ namespace ITOVotingApplication.Business.Services
 				company.Title = dto.Title;
 				company.TradeRegistrationNumber = dto.TradeRegistrationNumber;
 				company.RegistrationAddress = dto.RegistrationAddress;
+				company.CommitteeId = dto.CommitteeId;
 				company.IsActive = dto.IsActive;
 				company.Has2022AuthorizationCertificate = dto.Has2022AuthorizationCertificate;
 
@@ -140,6 +143,22 @@ namespace ITOVotingApplication.Business.Services
 			catch (Exception ex)
 			{
 				return ApiResponse<int>.ErrorResult($"Firma sayısı getirme hatası: {ex.Message}");
+			}
+		}
+
+		public async Task<ApiResponse<int>> GetDocumentDeliveredCountAsync()
+		{
+			try
+			{
+				var count = await _unitOfWork.Companies.Query()
+					.Where(c => c.IsActive && c.DocumentStatus == Core.Enums.DocumentStatus.OnaylanmisYetkiBelgesiYuklendi)
+					.CountAsync();
+
+				return ApiResponse<int>.SuccessResult(count);
+			}
+			catch (Exception ex)
+			{
+				return ApiResponse<int>.ErrorResult($"Belge teslim edilen firma sayısı getirme hatası: {ex.Message}");
 			}
 		}
 	}

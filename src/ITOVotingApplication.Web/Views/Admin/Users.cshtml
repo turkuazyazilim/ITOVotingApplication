@@ -285,10 +285,28 @@
                         <h4 class="text-base font-medium text-gray-900 mb-3">Yetki</h4>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Yetkisi *</label>
-                            <select id="createRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleFieldReferenceSection('create')">
+                            <select id="createRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleFieldReferenceSection('create'); toggleCommitteeSection('create')">
                                 <option value="">Yetki seçiniz</option>
                                 <!-- Roles will be loaded dynamically -->
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Komite Seçimi -->
+                    <div id="createCommitteeSection">
+                        <h4 class="text-base font-medium text-gray-900 mb-3">Komite</h4>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Komite Seçimi</label>
+                            <!-- Tekli seçim (Admin dışı) -->
+                            <select id="createCommitteeSingle" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Komite seçiniz</option>
+                            </select>
+                            <!-- Çoklu seçim (Admin için) -->
+                            <div id="createCommitteeMultiple" class="hidden">
+                                <div id="createCommitteeCheckboxes" class="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2">
+                                    <!-- Checkboxlar dinamik olarak yüklenecek -->
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -422,10 +440,28 @@
                         <h4 class="text-base font-medium text-gray-900 mb-3">Yetki</h4>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Yetkisi *</label>
-                            <select id="editRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleFieldReferenceSection('edit')">
+                            <select id="editRole" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="toggleFieldReferenceSection('edit'); toggleCommitteeSection('edit')">
                                 <option value="">Yetki seçiniz</option>
                                 <!-- Roles will be loaded dynamically -->
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Komite Seçimi -->
+                    <div id="editCommitteeSection">
+                        <h4 class="text-base font-medium text-gray-900 mb-3">Komite</h4>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Komite Seçimi</label>
+                            <!-- Tekli seçim (Admin dışı) -->
+                            <select id="editCommitteeSingle" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Komite seçiniz</option>
+                            </select>
+                            <!-- Çoklu seçim (Admin için) -->
+                            <div id="editCommitteeMultiple" class="hidden">
+                                <div id="editCommitteeCheckboxes" class="max-h-48 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2">
+                                    <!-- Checkboxlar dinamik olarak yüklenecek -->
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -644,6 +680,10 @@
                                     <span class="text-sm">E-posta</span>
                                 </label>
                                 <label class="flex items-center">
+                                    <input type="radio" name="contactMethod" value="sms" class="mr-2">
+                                    <span class="text-sm">SMS</span>
+                                </label>
+                                <label class="flex items-center">
                                     <input type="radio" name="contactMethod" value="phone" class="mr-2">
                                     <span class="text-sm">WhatsApp</span>
                                 </label>
@@ -824,6 +864,7 @@
     let allUsers = [];
     let filteredUsers = [];
     let allRoles = [];
+    let allCommittees = [];
     let allFieldCategories = [];
     let currentPage = 1;
     let pageSize = 10;
@@ -852,6 +893,7 @@
 
         lucide.createIcons();
         loadRoles();
+        loadCommittees();
         loadFieldCategories();
         loadUsers();
         
@@ -953,6 +995,115 @@
                 editRoleSelect.appendChild(option2);
             }
         });
+    }
+
+    // ===== COMMITTEE FUNCTIONS =====
+
+    // Load Committees
+    async function loadCommittees() {
+        try {
+            const response = await fetch('/api/company/committees', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result && result.success && result.data) {
+                    allCommittees = result.data;
+                    populateCommitteeDropdowns();
+                }
+            }
+        } catch (error) {
+            console.error('Error loading committees:', error);
+        }
+    }
+
+    // Populate Committee Dropdowns
+    function populateCommitteeDropdowns() {
+        // Tekli seçim dropdownları
+        const createSingleSelect = document.getElementById('createCommitteeSingle');
+        const editSingleSelect = document.getElementById('editCommitteeSingle');
+
+        const singleOptions = '<option value="">Komite seçiniz</option>' +
+            allCommittees.map(c => `<option value="${c.id}">${c.committeeNum ? c.committeeNum + ' - ' : ''}${c.committeeDescription}</option>`).join('');
+
+        if (createSingleSelect) createSingleSelect.innerHTML = singleOptions;
+        if (editSingleSelect) editSingleSelect.innerHTML = singleOptions;
+
+        // Çoklu seçim checkbox'ları
+        const createCheckboxes = document.getElementById('createCommitteeCheckboxes');
+        const editCheckboxes = document.getElementById('editCommitteeCheckboxes');
+
+        const checkboxHtml = allCommittees.map(c => `
+            <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                <input type="checkbox" value="${c.id}" class="committee-checkbox rounded border-gray-300 text-blue-600">
+                <span class="text-sm text-gray-700">${c.committeeNum ? c.committeeNum + ' - ' : ''}${c.committeeDescription}</span>
+            </label>
+        `).join('');
+
+        if (createCheckboxes) createCheckboxes.innerHTML = checkboxHtml;
+        if (editCheckboxes) editCheckboxes.innerHTML = checkboxHtml;
+    }
+
+    // Toggle Committee Section based on Role
+    function toggleCommitteeSection(prefix) {
+        const roleSelect = document.getElementById(prefix + 'Role');
+        const singleSelect = document.getElementById(prefix + 'CommitteeSingle');
+        const multipleDiv = document.getElementById(prefix + 'CommitteeMultiple');
+
+        const selectedRoleId = parseInt(roleSelect.value);
+        const isAdmin = selectedRoleId === 1; // Admin role id = 1
+
+        if (isAdmin) {
+            // Admin için çoklu seçim göster
+            singleSelect.classList.add('hidden');
+            multipleDiv.classList.remove('hidden');
+        } else {
+            // Diğerleri için tekli seçim göster
+            singleSelect.classList.remove('hidden');
+            multipleDiv.classList.add('hidden');
+        }
+    }
+
+    // Get selected committee IDs
+    function getSelectedCommitteeIds(prefix) {
+        const roleSelect = document.getElementById(prefix + 'Role');
+        const selectedRoleId = parseInt(roleSelect.value);
+        const isAdmin = selectedRoleId === 1;
+
+        if (isAdmin) {
+            // Çoklu seçimden al
+            const checkboxes = document.querySelectorAll('#' + prefix + 'CommitteeCheckboxes .committee-checkbox:checked');
+            return Array.from(checkboxes).map(cb => parseInt(cb.value));
+        } else {
+            // Tekli seçimden al
+            const singleSelect = document.getElementById(prefix + 'CommitteeSingle');
+            const value = singleSelect.value;
+            return value ? [parseInt(value)] : [];
+        }
+    }
+
+    // Set selected committees (for edit modal)
+    function setSelectedCommittees(prefix, committeeIds) {
+        const roleSelect = document.getElementById(prefix + 'Role');
+        const selectedRoleId = parseInt(roleSelect.value);
+        const isAdmin = selectedRoleId === 1;
+
+        if (isAdmin) {
+            // Checkbox'ları işaretle
+            const checkboxes = document.querySelectorAll('#' + prefix + 'CommitteeCheckboxes .committee-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = committeeIds.includes(parseInt(cb.value));
+            });
+        } else {
+            // Tekli seçimi ayarla
+            const singleSelect = document.getElementById(prefix + 'CommitteeSingle');
+            singleSelect.value = committeeIds.length > 0 ? committeeIds[0] : '';
+        }
     }
 
     // ===== FIELD REFERENCE FUNCTIONS =====
@@ -1343,6 +1494,7 @@
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İletişim</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Yetki</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kayıt Tarihi</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
@@ -1371,6 +1523,12 @@
                     <td class="px-4 py-4">
                         <p class="text-sm text-gray-900">${user.email}</p>
                         <p class="text-xs text-gray-500">${user.phoneNumber || '-'}</p>
+                    </td>
+                    <td class="px-4 py-4">
+                        ${user.roles && user.roles.length > 0 ?
+                            user.roles.map(role => `<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 mr-1">${role}</span>`).join('') :
+                            '<span class="text-xs text-gray-400">-</span>'
+                        }
                     </td>
                     <td class="px-4 py-4 text-center">
                         ${user.isActive ?
@@ -1445,6 +1603,11 @@
                             <p class="text-gray-500 mt-1">${createdDate}</p>
                         </div>
                     </div>
+                    ${user.roles && user.roles.length > 0 ? `
+                    <div class="mt-2 flex flex-wrap gap-1">
+                        ${user.roles.map(role => `<span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">${role}</span>`).join('')}
+                    </div>
+                    ` : ''}
                 </div>
             `;
         });
@@ -1624,6 +1787,10 @@
                     toggleFieldReferenceSection('edit');
                     setFieldReferenceValues('edit', user);
 
+                    // Toggle committee section and set values
+                    toggleCommitteeSection('edit');
+                    setSelectedCommittees('edit', user.committeeIds || []);
+
                     // Show modal
                     document.getElementById('editUserModal').classList.remove('hidden');
                     lucide.createIcons();
@@ -1686,6 +1853,7 @@
             password: document.getElementById('createPassword').value,
             isActive: document.getElementById('createIsActive').checked,
             roleIds: roleId ? [parseInt(roleId)] : [],
+            committeeIds: getSelectedCommitteeIds('create'),
             fieldReferenceCategoryId: getFieldReferenceData('create').categoryId,
             fieldReferenceSubCategoryId: getFieldReferenceData('create').subCategoryId
         };
@@ -1730,6 +1898,7 @@
             userName: document.getElementById('editUsername').value,
             isActive: document.getElementById('editIsActive').checked,
             roleIds: roleId ? [parseInt(roleId)] : [],
+            committeeIds: getSelectedCommitteeIds('edit'),
             fieldReferenceCategoryId: getFieldReferenceData('edit').categoryId,
             fieldReferenceSubCategoryId: getFieldReferenceData('edit').subCategoryId
         };
@@ -2327,6 +2496,7 @@
 
     function setupContactMethodToggle() {
         const emailRadio = document.querySelector('input[name="contactMethod"][value="email"]');
+        const smsRadio = document.querySelector('input[name="contactMethod"][value="sms"]');
         const phoneRadio = document.querySelector('input[name="contactMethod"][value="phone"]');
         const emailInput = document.getElementById('emailInput');
         const phoneInput = document.getElementById('phoneInput');
@@ -2336,12 +2506,14 @@
                 emailInput.classList.remove('hidden');
                 phoneInput.classList.add('hidden');
             } else {
+                // SMS ve WhatsApp için telefon inputu göster
                 emailInput.classList.add('hidden');
                 phoneInput.classList.remove('hidden');
             }
         }
 
         emailRadio.addEventListener('change', toggleInputs);
+        smsRadio.addEventListener('change', toggleInputs);
         phoneRadio.addEventListener('change', toggleInputs);
         toggleInputs(); // Initial state
     }
@@ -2364,7 +2536,7 @@
                 return;
             }
 
-            if (contactMethod === 'phone' && !phone) {
+            if ((contactMethod === 'phone' || contactMethod === 'sms') && !phone) {
                 alert('Telefon numarası gereklidir!');
                 return;
             }
@@ -2383,7 +2555,7 @@
             const requestData = {
                 contactMethod: contactMethod,
                 email: contactMethod === 'email' ? email : null,
-                phone: contactMethod === 'phone' ? phone : null,
+                phone: (contactMethod === 'phone' || contactMethod === 'sms') ? phone : null,
                 fieldReferenceCategoryId: fieldReferenceCategoryId ? parseInt(fieldReferenceCategoryId) : null,
                 fieldReferenceSubCategoryId: fieldReferenceSubCategoryId ? parseInt(fieldReferenceSubCategoryId) : null
             };
@@ -2403,6 +2575,10 @@
                 if (contactMethod === 'phone' && result.data && typeof result.data === 'object') {
                     // Show share message modal for WhatsApp
                     showShareMessageModal(result.data);
+                    closeSendLinkModal();
+                } else if (contactMethod === 'sms' && result.data && typeof result.data === 'object') {
+                    // SMS başarıyla gönderildi
+                    alert(result.message || 'SMS başarıyla gönderildi!');
                     closeSendLinkModal();
                 } else if (contactMethod === 'email' && result.data && typeof result.data === 'object') {
                     // Show registration link for email

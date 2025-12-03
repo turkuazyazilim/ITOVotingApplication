@@ -34,7 +34,7 @@ namespace ITOVotingApplication.Business.Services
                     UploadDate = DateTime.Now,
                     UploadedByUserId = userId,
                     WillParticipateInElection = dto.WillParticipateInElection,
-                    AssignedContactId = dto.AssignedContactId,
+                    AssignedUserId = dto.AssignedUserId,
                     CreatedDate = DateTime.Now
                 };
 
@@ -78,7 +78,7 @@ namespace ITOVotingApplication.Business.Services
             }
         }
 
-        public async Task<ApiResponse<CompanyDocumentTransactionDto>> AssignToContactAsync(int transactionId, int contactId)
+        public async Task<ApiResponse<CompanyDocumentTransactionDto>> AssignToUserAsync(int transactionId, int userId)
         {
             try
             {
@@ -88,14 +88,14 @@ namespace ITOVotingApplication.Business.Services
                     return ApiResponse<CompanyDocumentTransactionDto>.ErrorResult("Belge kaydı bulunamadı");
                 }
 
-                // Verify contact exists and is eligible to vote
-                var contact = await _unitOfWork.Contacts.GetByIdAsync(contactId);
-                if (contact == null)
+                // Verify user exists
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
                 {
-                    return ApiResponse<CompanyDocumentTransactionDto>.ErrorResult("Yetkili kişi bulunamadı");
+                    return ApiResponse<CompanyDocumentTransactionDto>.ErrorResult("Kullanıcı bulunamadı");
                 }
 
-                transaction.AssignedContactId = contactId;
+                transaction.AssignedUserId = userId;
                 transaction.UpdatedDate = DateTime.Now;
 
                 _unitOfWork.CompanyDocumentTransactions.Update(transaction);
@@ -168,7 +168,7 @@ namespace ITOVotingApplication.Business.Services
                 var transaction = await _unitOfWork.CompanyDocumentTransactions.Query()
                     .Include(t => t.Company)
                     .Include(t => t.UploadedByUser)
-                    .Include(t => t.AssignedContact)
+                    .Include(t => t.AssignedUser)
                     .FirstOrDefaultAsync(t => t.Id == id);
 
                 if (transaction == null)
@@ -192,7 +192,7 @@ namespace ITOVotingApplication.Business.Services
                 var transactions = await _unitOfWork.CompanyDocumentTransactions.Query()
                     .Include(t => t.Company)
                     .Include(t => t.UploadedByUser)
-                    .Include(t => t.AssignedContact)
+                    .Include(t => t.AssignedUser)
                     .Where(t => t.CompanyId == companyId)
                     .OrderByDescending(t => t.CreatedDate)
                     .ToListAsync();
@@ -213,7 +213,7 @@ namespace ITOVotingApplication.Business.Services
                 var transaction = await _unitOfWork.CompanyDocumentTransactions.Query()
                     .Include(t => t.Company)
                     .Include(t => t.UploadedByUser)
-                    .Include(t => t.AssignedContact)
+                    .Include(t => t.AssignedUser)
                     .Where(t => t.CompanyId == companyId && t.DocumentType == documentType)
                     .OrderByDescending(t => t.CreatedDate)
                     .FirstOrDefaultAsync();
@@ -257,9 +257,9 @@ namespace ITOVotingApplication.Business.Services
                     : null,
                 RejectionNote = transaction.RejectionNote,
                 WillParticipateInElection = transaction.WillParticipateInElection,
-                AssignedContactId = transaction.AssignedContactId,
-                AssignedContactName = transaction.AssignedContact != null
-                    ? $"{transaction.AssignedContact.FirstName} {transaction.AssignedContact.LastName}"
+                AssignedUserId = transaction.AssignedUserId,
+                AssignedUserName = transaction.AssignedUser != null
+                    ? $"{transaction.AssignedUser.FirstName} {transaction.AssignedUser.LastName}"
                     : null,
                 CreatedDate = transaction.CreatedDate,
                 UpdatedDate = transaction.UpdatedDate

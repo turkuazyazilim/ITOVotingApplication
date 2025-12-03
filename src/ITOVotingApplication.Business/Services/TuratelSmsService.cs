@@ -118,8 +118,88 @@ namespace ITOVotingApplication.Business.Services
                 return ApiResponse<TuratelSmsResponse>.ErrorResult($"SMS gönderilirken hata oluştu: {ex.Message}");
             }
         }
+		public async Task<ApiResponse<TuratelSmsResponse>> SendSmsAsync(string phoneNumber, string message)
+		{
+			try
+			{
+				// Validate configuration
+				if (string.IsNullOrEmpty(_username) || string.IsNullOrEmpty(_password))
+				{
+					_logger.LogWarning("Turatel SMS settings are not configured properly");
+					return ApiResponse<TuratelSmsResponse>.ErrorResult("SMS ayarları yapılandırılmamış.");
+				}
 
-        private TuratelSmsResponse ParseTuratelResponse(string responseContent)
+				// Clean phone number (ensure it starts with 90)
+				var cleanedPhone = CleanPhoneNumber(phoneNumber);
+				if (string.IsNullOrEmpty(cleanedPhone))
+				{
+					return ApiResponse<TuratelSmsResponse>.ErrorResult("Geçersiz telefon numarası formatı!");
+				}
+
+				// Prepare message text
+				var messageText = message;
+
+				// Prepare request payload
+				var requestPayload = new
+				{
+					originator = _originator,
+					sendDate = "",
+					validityPeriod = 0,
+					messageText = messageText,
+					receiverList = new[] { cleanedPhone },
+					personalMessages = new string[] { },
+					isCheckBlackList = false,
+					isEncryptedParameter = false,
+					username = _username,
+					password = _password,
+					userCode = _userCode,
+					accountId = _accountId
+				};
+
+				var jsonContent = JsonSerializer.Serialize(requestPayload);
+				var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+				_logger.LogInformation("Sending SMS verification code to {PhoneNumber}", cleanedPhone);
+
+				// Send request to Turatel SMS API
+				var response = await _httpClient.PostAsync(_apiUrl, content);
+				var responseContent = await response.Content.ReadAsStringAsync();
+
+				_logger.LogInformation("Turatel SMS API Response: {Response}", responseContent);
+
+				if (!response.IsSuccessStatusCode)
+				{
+					_logger.LogError("Turatel SMS API returned error status: {StatusCode}", response.StatusCode);
+					return ApiResponse<TuratelSmsResponse>.ErrorResult($"SMS servisi hatası: HTTP {response.StatusCode}");
+				}
+
+				// Parse response
+				var smsResponse = ParseTuratelResponse(responseContent);
+
+				if (smsResponse.IsSuccess)
+				{
+					_logger.LogInformation("SMS sent successfully. PacketId: {PacketId}, MessageId: {MessageId}",
+						smsResponse.PacketId, smsResponse.MessageId);
+					return ApiResponse<TuratelSmsResponse>.SuccessResult(smsResponse, "SMS başarıyla gönderildi!");
+				}
+				else
+				{
+					_logger.LogWarning("SMS sending failed. ErrorCode: {ErrorCode}", smsResponse.ErrorCode);
+					return ApiResponse<TuratelSmsResponse>.ErrorResult($"SMS gönderilemedi. Hata kodu: {smsResponse.ErrorCode}");
+				}
+			}
+			catch (HttpRequestException httpEx)
+			{
+				_logger.LogError(httpEx, "HTTP error while sending SMS to {PhoneNumber}", phoneNumber);
+				return ApiResponse<TuratelSmsResponse>.ErrorResult($"SMS gönderilirken bağlantı hatası oluştu: {httpEx.Message}");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error sending SMS to {PhoneNumber}", phoneNumber);
+				return ApiResponse<TuratelSmsResponse>.ErrorResult($"SMS gönderilirken hata oluştu: {ex.Message}");
+			}
+		}
+		private TuratelSmsResponse ParseTuratelResponse(string responseContent)
         {
             try
             {

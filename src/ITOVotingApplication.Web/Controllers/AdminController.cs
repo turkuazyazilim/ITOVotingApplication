@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace VotingApplication.Web.Controllers
 {
-	[Authorize(Roles = "Admin")]
+	[Authorize(Roles = "İtop Kullanıcısı, Komite Kullanıcısı, Komite Çalışma Grubu Üyesi")]
 	public class AdminController : Controller
 	{
 		private readonly ICompanyService _companyService;

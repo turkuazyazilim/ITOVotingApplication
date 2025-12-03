@@ -1,6 +1,9 @@
 ﻿using ITOVotingApplication.Business.Interfaces;
+using ITOVotingApplication.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ITOVotingApplication.Web.Controllers
 {
@@ -11,17 +14,20 @@ namespace ITOVotingApplication.Web.Controllers
 		private readonly IContactService _contactService;
 		private readonly IVoteService _voteService;
 		private readonly IUserService _userService;
+		private readonly IUnitOfWork _unitOfWork;
 
 		public DashboardController(
 			ICompanyService companyService,
 			IContactService contactService,
 			IVoteService voteService,
-			IUserService userService)
+			IUserService userService,
+			IUnitOfWork unitOfWork)
 		{
 			_companyService = companyService;
 			_contactService = contactService;
 			_voteService = voteService;
 			_userService = userService;
+			_unitOfWork = unitOfWork;
 		}
 
 		[HttpGet]
@@ -67,6 +73,36 @@ namespace ITOVotingApplication.Web.Controllers
 			catch (Exception ex)
 			{
 				return Ok(new { success = false, data = 0, message = "Yetkili sayısı alınamadı" });
+			}
+		}
+
+		[HttpGet]
+		[Route("api/contact/eligible-count")]
+		public async Task<IActionResult> GetEligibleToVoteCount()
+		{
+			try
+			{
+				var result = await _contactService.GetCountAsync(true);
+				return Ok(new { success = result.Success, data = result.Data, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, data = 0, message = "Oy kullanacak sayısı alınamadı" });
+			}
+		}
+
+		[HttpGet]
+		[Route("api/company/document-delivered-count")]
+		public async Task<IActionResult> GetDocumentDeliveredCount()
+		{
+			try
+			{
+				var result = await _companyService.GetDocumentDeliveredCountAsync();
+				return Ok(new { success = result.Success, data = result.Data, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, data = 0, message = "Belge teslim edilen firma sayısı alınamadı" });
 			}
 		}
 
@@ -127,6 +163,80 @@ namespace ITOVotingApplication.Web.Controllers
 			};
 
 			return Ok(new { success = true, data = activities });
+		}
+
+		[HttpGet]
+		[Route("api/dashboard/user-committees")]
+		public async Task<IActionResult> GetUserCommittees()
+		{
+			try
+			{
+				var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+				if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+				{
+					return Ok(new { success = false, message = "Kullanıcı bulunamadı", data = new List<object>() });
+				}
+
+				// Kullanıcının komitelerini al
+				var userCommittees = await _unitOfWork.UserCommittees.Query()
+					.Include(uc => uc.Committee)
+					.Where(uc => uc.UserId == userId)
+					.Select(uc => new
+					{
+						id = uc.CommitteeId,
+						committeeNum = uc.Committee.CommitteeNum,
+						committeeDescription = uc.Committee.CommitteeDescription,
+						companyCount = _unitOfWork.Companies.Query()
+							.Count(c => c.CommitteeId == uc.CommitteeId && c.IsActive)
+					})
+					.ToListAsync();
+
+				return Ok(new { success = true, data = userCommittees });
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, message = $"Komiteler alınamadı: {ex.Message}", data = new List<object>() });
+			}
+		}
+
+		[HttpGet]
+		[Route("api/dashboard/committee-stats/{committeeId}")]
+		public async Task<IActionResult> GetCommitteeStats(int committeeId)
+		{
+			try
+			{
+				// Komiteye bağlı firma sayısı
+				var companyCount = await _unitOfWork.Companies.Query()
+					.CountAsync(c => c.CommitteeId == committeeId && c.IsActive);
+
+				// Komiteye bağlı firmalardaki yetkili sayısı
+				var contactCount = await _unitOfWork.Contacts.Query()
+					.CountAsync(c => c.Company.CommitteeId == committeeId && c.Company.IsActive);
+
+				// Oy kullanabilecek yetkili sayısı
+				var eligibleCount = await _unitOfWork.Contacts.Query()
+					.CountAsync(c => c.Company.CommitteeId == committeeId && c.Company.IsActive && c.EligibleToVote);
+
+				// Belge teslim edilmiş firma sayısı
+				var documentDeliveredCount = await _unitOfWork.Companies.Query()
+					.CountAsync(c => c.CommitteeId == committeeId && c.IsActive && (c.DocumentStatus == Core.Enums.DocumentStatus.OnaylanmisYetkiBelgesiYuklendi || c.DocumentStatus == Core.Enums.DocumentStatus.SahisSirketiOlarakKatilacak));
+
+				return Ok(new
+				{
+					success = true,
+					data = new
+					{
+						companyCount,
+						contactCount,
+						eligibleCount,
+						documentDeliveredCount
+					}
+				});
+			}
+			catch (Exception ex)
+			{
+				return Ok(new { success = false, message = $"İstatistikler alınamadı: {ex.Message}" });
+			}
 		}
 	}
 }

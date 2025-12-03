@@ -4,6 +4,7 @@ namespace ITOVotingApplication.Core.DTOs.Committee
 	public class CommitteeDto
 	{
 		public int Id { get; set; }
+		public string CommitteeNum { get; set; }
 		public string CommitteeDescription { get; set; }
 		public int ContactCount { get; set; } // Komiteye bağlı kişi sayısı
 		public DateTime CreatedDate { get; set; }
@@ -11,11 +12,13 @@ namespace ITOVotingApplication.Core.DTOs.Committee
 	}
 	public class CreateCommitteeDto
 	{
+		public string CommitteeNum { get; set; }
 		public string CommitteeDescription { get; set; }
 	}
 	public class UpdateCommitteeDto
 	{
 		public int Id { get; set; }
+		public string CommitteeNum { get; set; }
 		public string CommitteeDescription { get; set; }
 	}
 }

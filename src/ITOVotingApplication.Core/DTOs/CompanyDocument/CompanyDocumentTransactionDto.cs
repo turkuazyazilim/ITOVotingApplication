@@ -26,9 +26,9 @@ namespace ITOVotingApplication.Core.DTOs.CompanyDocument
         // TC Company Election Participation
         public bool? WillParticipateInElection { get; set; }
 
-        // Assigned Contact
-        public int? AssignedContactId { get; set; }
-        public string? AssignedContactName { get; set; }
+        // Assigned User
+        public int? AssignedUserId { get; set; }
+        public string? AssignedUserName { get; set; }
 
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }

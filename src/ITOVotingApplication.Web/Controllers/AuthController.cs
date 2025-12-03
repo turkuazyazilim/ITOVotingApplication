@@ -28,8 +28,14 @@ namespace ITOVotingApplication.Web.Controllers
 		// GET: /Auth/Login
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Login(string returnUrl = null)
+		public IActionResult Login(string returnUrl = null, bool logout = false)
 		{
+			// Logout'tan geliyorsa authentication kontrolü yapma
+			if (logout)
+			{
+				return View(new LoginViewModel());
+			}
+
 			// Eğer kullanıcı zaten giriş yapmışsa role göre yönlendir
 			if (User.Identity.IsAuthenticated)
 			{
@@ -331,24 +337,24 @@ namespace ITOVotingApplication.Web.Controllers
 			{
 				// Clear authentication cookie
 				await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-				
+
 				// Clear all session data
 				HttpContext.Session.Clear();
-				
+
 				// Clear any response cookies
 				foreach (var cookie in Request.Cookies.Keys)
 				{
 					Response.Cookies.Delete(cookie);
 				}
-				
+
 				_logger.LogInformation("User logged out successfully");
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error during logout");
 			}
-			
-			return RedirectToAction("Login");
+
+			return RedirectToAction("Login", new { logout = true });
 		}
 
 		// POST: /api/auth/logout (API için)

@@ -127,24 +127,50 @@
 
         <!-- Page Content -->
         <div class="p-4 lg:p-6">
-            <!-- Page Header -->
-            <div class="mb-4 lg:mb-6">
-                <h1 class="text-xl lg:text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p class="text-sm lg:text-base text-gray-600 mt-1">Hoş geldiniz! Sistem özeti ve istatistikler</p>
+            <!-- Committee Selection Section -->
+            <div id="committeeSelectionSection">
+                <!-- Page Header -->
+                <div class="mb-4 lg:mb-6">
+                    <h1 class="text-xl lg:text-2xl font-bold text-gray-900">Komite Seçimi</h1>
+                    <p class="text-sm lg:text-base text-gray-600 mt-1">Görüntülemek istediğiniz komiteyi seçiniz</p>
+                </div>
+
+                <!-- Committee Cards Grid -->
+                <div id="committeeCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+                    <!-- Committee cards will be loaded here -->
+                    <div class="col-span-full text-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                        <p class="text-gray-500 mt-2">Komiteler yükleniyor...</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6">
+            <!-- Dashboard Content Section (Initially Hidden) -->
+            <div id="dashboardContentSection" class="hidden">
+                <!-- Back Button & Committee Info -->
+                <div class="mb-4 lg:mb-6">
+                    <button onclick="showCommitteeSelection()" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-3">
+                        <i data-lucide="arrow-left" class="h-4 w-4 mr-1"></i>
+                        <span>Komite Seçimine Dön</span>
+                    </button>
+                    <h1 class="text-xl lg:text-2xl font-bold text-gray-900">
+                        <span id="selectedCommitteeName">Dashboard</span>
+                    </h1>
+                    <p class="text-sm lg:text-base text-gray-600 mt-1">Komite istatistikleri ve özeti</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6">
                 <!-- Total Companies -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation">
+                <div onclick="goToCompanies()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation cursor-pointer">
                     <div class="flex items-center justify-between">
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-medium text-gray-600 truncate">Toplam Firma</p>
                             <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="totalCompanies">0</p>
-                            <p class="text-xs text-green-600 mt-2">
+                            <p class="text-xs text-blue-600 mt-2">
                                 <span class="inline-flex items-center">
-                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1 flex-shrink-0"></i>
-                                    <span class="truncate">+12% bu ay</span>
+                                    <i data-lucide="external-link" class="h-3 w-3 mr-1 flex-shrink-0"></i>
+                                    <span class="truncate">Tüm firmalar</span>
                                 </span>
                             </p>
                         </div>
@@ -154,16 +180,16 @@
                     </div>
                 </div>
 
-                <!-- Total Contacts -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation">
+                <!-- Eligible to Vote Contacts -->
+                <div onclick="goToEligibleContacts()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation cursor-pointer">
                     <div class="flex items-center justify-between">
                         <div class="min-w-0 flex-1">
-                            <p class="text-sm font-medium text-gray-600 truncate">Toplam Yetkili</p>
-                            <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="totalContacts">0</p>
+                            <p class="text-sm font-medium text-gray-600 truncate">Oy Kullanacaklar</p>
+                            <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="eligibleContacts">0</p>
                             <p class="text-xs text-green-600 mt-2">
                                 <span class="inline-flex items-center">
-                                    <i data-lucide="trending-up" class="h-3 w-3 mr-1 flex-shrink-0"></i>
-                                    <span class="truncate">+8% bu ay</span>
+                                    <i data-lucide="external-link" class="h-3 w-3 mr-1 flex-shrink-0"></i>
+                                    <span class="truncate">Yetkili kişiler</span>
                                 </span>
                             </p>
                         </div>
@@ -173,25 +199,27 @@
                     </div>
                 </div>
 
-                <!-- Total Votes -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation">
+                <!-- Document Delivered Companies -->
+                <div onclick="goToDocumentDeliveredCompanies()" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 lg:p-6 hover:shadow-md transition-shadow touch-manipulation cursor-pointer">
                     <div class="flex items-center justify-between">
                         <div class="min-w-0 flex-1">
-                            <p class="text-sm font-medium text-gray-600 truncate">Kullanılan Oy</p>
-                            <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="totalVotes">0</p>
-                            <p class="text-xs text-blue-600 mt-2">
+                            <p class="text-sm font-medium text-gray-600 truncate">Belge Teslimi Yapılmış</p>
+                            <p class="text-xl lg:text-2xl font-bold text-gray-900 mt-1" id="documentDeliveredCompanies">0</p>
+                            <p class="text-xs text-purple-600 mt-2">
                                 <span class="inline-flex items-center">
-                                    <i data-lucide="activity" class="h-3 w-3 mr-1 flex-shrink-0"></i>
-                                    <span class="truncate">%65 katılım</span>
+                                    <i data-lucide="external-link" class="h-3 w-3 mr-1 flex-shrink-0"></i>
+                                    <span class="truncate">Onaylı belgeler</span>
                                 </span>
                             </p>
                         </div>
                         <div class="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0 ml-3">
-                            <i data-lucide="check-square" class="h-5 w-5 lg:h-6 lg:w-6 text-purple-600"></i>
+                            <i data-lucide="file-check" class="h-5 w-5 lg:h-6 lg:w-6 text-purple-600"></i>
                         </div>
                     </div>
                 </div>
             </div>
+            </div>
+            <!-- End of Dashboard Content Section -->
         </div>
     </div>
 
@@ -200,13 +228,162 @@
          class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
     <script>
+        let selectedCommitteeId = null;
+        let userCommittees = [];
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
             loadUserInfo();
-            loadDashboardData();
+            loadUserCommittees();
             initializeTouchGestures();
         });
+
+        // Load User Committees
+        async function loadUserCommittees() {
+            try {
+                const response = await fetch('/api/dashboard/user-committees', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        userCommittees = result.data;
+                        renderCommitteeCards(userCommittees);
+                    } else {
+                        showNoCommitteesMessage();
+                    }
+                } else {
+                    showNoCommitteesMessage();
+                }
+            } catch (error) {
+                console.error('Error loading committees:', error);
+                showNoCommitteesMessage();
+            }
+        }
+
+        // Render Committee Cards
+        function renderCommitteeCards(committees) {
+            const container = document.getElementById('committeeCardsContainer');
+
+            if (!committees || committees.length === 0) {
+                showNoCommitteesMessage();
+                return;
+            }
+
+            // Color palette for cards
+            const colors = [
+                { bg: 'bg-blue-500', light: 'bg-blue-100', text: 'text-blue-600', icon: 'building-2' },
+                { bg: 'bg-green-500', light: 'bg-green-100', text: 'text-green-600', icon: 'users' },
+                { bg: 'bg-purple-500', light: 'bg-purple-100', text: 'text-purple-600', icon: 'briefcase' },
+                { bg: 'bg-orange-500', light: 'bg-orange-100', text: 'text-orange-600', icon: 'landmark' },
+                { bg: 'bg-pink-500', light: 'bg-pink-100', text: 'text-pink-600', icon: 'home' },
+                { bg: 'bg-teal-500', light: 'bg-teal-100', text: 'text-teal-600', icon: 'globe' }
+            ];
+
+            let html = '';
+            committees.forEach((committee, index) => {
+                const color = colors[index % colors.length];
+                const displayName = committee.committeeNum
+                    ? `${committee.committeeNum} - ${committee.committeeDescription}`
+                    : committee.committeeDescription;
+
+                html += `
+                    <div onclick="selectCommittee(${committee.id}, '${displayName.replace(/'/g, "\\'")}')"
+                         class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer group">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-14 h-14 ${color.bg} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                <i data-lucide="${color.icon}" class="h-7 w-7 text-white"></i>
+                            </div>
+                            <div class="flex items-center space-x-1 text-gray-400 group-hover:text-blue-500 transition-colors">
+                                <span class="text-xs">Görüntüle</span>
+                                <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                            </div>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-2">${displayName}</h3>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 ${color.light} rounded-lg flex items-center justify-center">
+                                    <i data-lucide="building-2" class="h-4 w-4 ${color.text}"></i>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold text-gray-900">${committee.companyCount}</p>
+                                    <p class="text-xs text-gray-500">Firma</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // Show No Committees Message
+        function showNoCommitteesMessage() {
+            const container = document.getElementById('committeeCardsContainer');
+            container.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="folder-x" class="h-8 w-8 text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Komite Bulunamadı</h3>
+                    <p class="text-gray-500">Size atanmış bir komite bulunmamaktadır.</p>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Select Committee
+        async function selectCommittee(committeeId, committeeName) {
+            selectedCommitteeId = committeeId;
+
+            // Update header
+            document.getElementById('selectedCommitteeName').textContent = committeeName;
+
+            // Show dashboard content, hide committee selection
+            document.getElementById('committeeSelectionSection').classList.add('hidden');
+            document.getElementById('dashboardContentSection').classList.remove('hidden');
+
+            // Load committee specific stats
+            await loadCommitteeStats(committeeId);
+
+            lucide.createIcons();
+        }
+
+        // Load Committee Stats
+        async function loadCommitteeStats(committeeId) {
+            try {
+                const response = await fetch(`/api/dashboard/committee-stats/${committeeId}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        document.getElementById('totalCompanies').textContent = result.data.companyCount || 0;
+                        document.getElementById('eligibleContacts').textContent = result.data.eligibleCount || 0;
+                        document.getElementById('documentDeliveredCompanies').textContent = result.data.documentDeliveredCount || 0;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading committee stats:', error);
+            }
+        }
+
+        // Show Committee Selection
+        function showCommitteeSelection() {
+            selectedCommitteeId = null;
+            document.getElementById('committeeSelectionSection').classList.remove('hidden');
+            document.getElementById('dashboardContentSection').classList.add('hidden');
+            lucide.createIcons();
+        }
 
         // Touch Gestures for Mobile
         function initializeTouchGestures() {
@@ -364,65 +541,29 @@
             console.log('User info loaded:', { fullName, role, initials, userInfo });
         }
 
-        // Load Dashboard Data
-        async function loadDashboardData() {
-            try {
-                // Load statistics
-                const responses = await Promise.all([
-                    fetchAPI('/api/company/count'),
-                    fetchAPI('/api/contact/count'),
-                    fetchAPI('/api/vote/count'),
-                    fetchAPI('/api/user/count')
-                ]);
-
-                // Safely update elements if they exist
-                const totalCompaniesEl = document.getElementById('totalCompanies');
-                const totalContactsEl = document.getElementById('totalContacts');
-                const totalVotesEl = document.getElementById('totalVotes');
-                const activeUsersEl = document.getElementById('activeUsers');
-
-                // Helper function to get API data value, treating 0 as valid
-                function getApiValue(response, fallback) {
-                    // Check if API call was successful and has data
-                    if (response && response.success && (response.data !== null && response.data !== undefined)) {
-                        return response.data;
-                    }
-                    // Fallback for different response formats
-                    const value = response?.data?.data ?? response?.data;
-                    return (value !== null && value !== undefined) ? value : fallback;
-                }
-
-                if (totalCompaniesEl) {
-                    totalCompaniesEl.textContent = getApiValue(responses[0], '127');
-                }
-                if (totalContactsEl) {
-                    totalContactsEl.textContent = getApiValue(responses[1], '354');
-                }
-                if (totalVotesEl) {
-                    totalVotesEl.textContent = getApiValue(responses[2], '218');
-                }
-                if (activeUsersEl) {
-                    activeUsersEl.textContent = getApiValue(responses[3], '12');
-                }
-
-                console.log('Dashboard data loaded successfully:', responses);
-            } catch (error) {
-                console.error('Dashboard data load error:', error);
-                // Use dummy data for demo - but check if elements exist first
-                const elements = [
-                    { id: 'totalCompanies', value: '127' },
-                    { id: 'totalContacts', value: '354' },
-                    { id: 'totalVotes', value: '218' },
-                    { id: 'activeUsers', value: '12' }
-                ];
-
-                elements.forEach(({ id, value }) => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.textContent = value;
-                    }
-                });
+        // Navigation functions for cards - filtered by selected committee
+        function goToCompanies() {
+            let url = '/Admin/Companies';
+            if (selectedCommitteeId) {
+                url += '?committeeId=' + selectedCommitteeId;
             }
+            window.location.href = url;
+        }
+
+        function goToEligibleContacts() {
+            let url = '/Admin/Contacts?eligibleToVote=true';
+            if (selectedCommitteeId) {
+                url += '&committeeId=' + selectedCommitteeId;
+            }
+            window.location.href = url;
+        }
+
+        function goToDocumentDeliveredCompanies() {
+            let url = '/Admin/Companies?documentStatus=2';
+            if (selectedCommitteeId) {
+                url += '&committeeId=' + selectedCommitteeId;
+            }
+            window.location.href = url;
         }
 
         // Fetch API Helper

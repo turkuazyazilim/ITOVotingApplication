@@ -22,8 +22,8 @@ namespace ITOVotingApplication.Core.Entities
         // TC Company Election Participation
         public bool? WillParticipateInElection { get; set; }
 
-        // Assigned Contact - only for Onaylanmış Yetki Belgesi
-        public int? AssignedContactId { get; set; }
+        // Assigned User - only for Onaylanmış Yetki Belgesi
+        public int? AssignedUserId { get; set; }
 
         // Audit
         public DateTime CreatedDate { get; set; }
@@ -32,6 +32,6 @@ namespace ITOVotingApplication.Core.Entities
         // Navigation Properties
         public virtual Company Company { get; set; }
         public virtual User UploadedByUser { get; set; }
-        public virtual Contact AssignedContact { get; set; }
+        public virtual User AssignedUser { get; set; }
     }
 }

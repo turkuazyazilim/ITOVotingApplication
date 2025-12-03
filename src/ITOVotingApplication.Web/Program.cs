@@ -118,8 +118,8 @@ builder.Services.AddAuthentication(options =>
 // Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
-	options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-	options.AddPolicy("UserOnly", policy => policy.RequireRole("User", "Admin"));
+	options.AddPolicy("AdminOnly", policy => policy.RequireRole("İtop Kullanıcısı"));
+	options.AddPolicy("UserOnly", policy => policy.RequireRole("User", "İtop Kullanıcısı"));
 	options.AddPolicy("ApiUser", policy =>
 	policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
 		  .RequireAuthenticatedUser());

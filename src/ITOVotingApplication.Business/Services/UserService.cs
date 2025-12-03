@@ -63,6 +63,8 @@ namespace ITOVotingApplication.Business.Services
 						.ThenInclude(ur => ur.FieldReferenceCategory)
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.FieldReferenceSubCategory)
+					.Include(u => u.UserCommittees)
+						.ThenInclude(uc => uc.Committee)
 					.FirstOrDefaultAsync(u => u.Id == id);
 
 				if (user == null)
@@ -71,6 +73,14 @@ namespace ITOVotingApplication.Business.Services
 				}
 
 				var result = _mapper.Map<UserDto>(user);
+				// Komite bilgilerini manuel olarak ekle
+				result.CommitteeIds = user.UserCommittees.Select(uc => uc.CommitteeId).ToList();
+				result.Committees = user.UserCommittees.Select(uc => new UserCommitteeDto
+				{
+					CommitteeId = uc.CommitteeId,
+					CommitteeNum = uc.Committee?.CommitteeNum,
+					CommitteeDescription = uc.Committee?.CommitteeDescription
+				}).ToList();
 				return ApiResponse<UserDto>.SuccessResult(result);
 			}
 			catch (Exception ex)
@@ -90,6 +100,8 @@ namespace ITOVotingApplication.Business.Services
 						.ThenInclude(ur => ur.FieldReferenceCategory)
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.FieldReferenceSubCategory)
+					.Include(u => u.UserCommittees)
+						.ThenInclude(uc => uc.Committee)
 					.AsQueryable();
 
 				// Search filter
@@ -131,9 +143,24 @@ namespace ITOVotingApplication.Business.Services
 					.Take(request.PageSize)
 					.ToListAsync();
 
+				var userDtos = _mapper.Map<List<UserDto>>(users);
+
+				// Komite bilgilerini manuel olarak ekle
+				foreach (var userDto in userDtos)
+				{
+					var user = users.First(u => u.Id == userDto.Id);
+					userDto.CommitteeIds = user.UserCommittees.Select(uc => uc.CommitteeId).ToList();
+					userDto.Committees = user.UserCommittees.Select(uc => new UserCommitteeDto
+					{
+						CommitteeId = uc.CommitteeId,
+						CommitteeNum = uc.Committee?.CommitteeNum,
+						CommitteeDescription = uc.Committee?.CommitteeDescription
+					}).ToList();
+				}
+
 				var result = new PagedResult<UserDto>
 				{
-					Items = _mapper.Map<List<UserDto>>(users),
+					Items = userDtos,
 					TotalCount = totalCount,
 					PageNumber = request.PageNumber,
 					PageSize = request.PageSize
@@ -206,6 +233,25 @@ namespace ITOVotingApplication.Business.Services
 					await _unitOfWork.CompleteAsync();
 				}
 
+				// Assign committees
+				if (dto.CommitteeIds != null && dto.CommitteeIds.Any())
+				{
+					foreach (var committeeId in dto.CommitteeIds)
+					{
+						var committee = await _unitOfWork.Committees.GetByIdAsync(committeeId);
+						if (committee != null)
+						{
+							var userCommittee = new UserCommittee
+							{
+								UserId = user.Id,
+								CommitteeId = committeeId
+							};
+							await _unitOfWork.UserCommittees.AddAsync(userCommittee);
+						}
+					}
+					await _unitOfWork.CompleteAsync();
+				}
+
 				var createdUser = await _unitOfWork.Users.Query()
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.Role)
@@ -213,6 +259,8 @@ namespace ITOVotingApplication.Business.Services
 						.ThenInclude(ur => ur.FieldReferenceCategory)
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.FieldReferenceSubCategory)
+					.Include(u => u.UserCommittees)
+						.ThenInclude(uc => uc.Committee)
 					.FirstOrDefaultAsync(u => u.Id == user.Id);
 
 				var result = _mapper.Map<UserDto>(createdUser);
@@ -230,6 +278,7 @@ namespace ITOVotingApplication.Business.Services
 			{
 				var user = await _unitOfWork.Users.Query()
 					.Include(u => u.UserRoles)
+					.Include(u => u.UserCommittees)
 					.FirstOrDefaultAsync(u => u.Id == dto.Id);
 
 				if (user == null)
@@ -255,6 +304,12 @@ namespace ITOVotingApplication.Business.Services
 				user.LastName = dto.LastName;
 				user.IsActive = dto.IsActive;
 				user.PhoneNumber = dto.PhoneNumber;
+
+				// Update password if provided
+				if (!string.IsNullOrWhiteSpace(dto.Password))
+				{
+					user.PasswordHash = CreatePasswordHash(dto.Password);
+				}
 
 				// Update roles
 				if (dto.RoleIds != null)
@@ -283,15 +338,54 @@ namespace ITOVotingApplication.Business.Services
 					}
 				}
 
+				// Update committees
+				if (dto.CommitteeIds != null)
+				{
+					// Remove existing committees
+					var existingCommittees = user.UserCommittees.ToList();
+					foreach (var existingCommittee in existingCommittees)
+					{
+						_unitOfWork.UserCommittees.Remove(existingCommittee);
+					}
+
+					// Add new committees
+					foreach (var committeeId in dto.CommitteeIds)
+					{
+						var committee = await _unitOfWork.Committees.GetByIdAsync(committeeId);
+						if (committee != null)
+						{
+							var userCommittee = new UserCommittee
+							{
+								UserId = user.Id,
+								CommitteeId = committeeId
+							};
+							await _unitOfWork.UserCommittees.AddAsync(userCommittee);
+						}
+					}
+				}
+
 				_unitOfWork.Users.Update(user);
 				await _unitOfWork.CompleteAsync();
 
 				var updatedUser = await _unitOfWork.Users.Query()
 					.Include(u => u.UserRoles)
 						.ThenInclude(ur => ur.Role)
+					.Include(u => u.UserCommittees)
+						.ThenInclude(uc => uc.Committee)
 					.FirstOrDefaultAsync(u => u.Id == user.Id);
 
 				var result = _mapper.Map<UserDto>(updatedUser);
+				// Komite bilgilerini manuel olarak ekle
+				if (updatedUser != null)
+				{
+					result.CommitteeIds = updatedUser.UserCommittees.Select(uc => uc.CommitteeId).ToList();
+					result.Committees = updatedUser.UserCommittees.Select(uc => new UserCommitteeDto
+					{
+						CommitteeId = uc.CommitteeId,
+						CommitteeNum = uc.Committee?.CommitteeNum,
+						CommitteeDescription = uc.Committee?.CommitteeDescription
+					}).ToList();
+				}
 				return ApiResponse<UserDto>.SuccessResult(result, "Kullanıcı başarıyla güncellendi.");
 			}
 			catch (Exception ex)

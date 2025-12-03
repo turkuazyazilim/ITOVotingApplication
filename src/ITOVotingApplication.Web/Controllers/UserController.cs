@@ -22,8 +22,9 @@ namespace ITOVotingApplication.Web.Controllers
         private readonly IWhatsAppService _whatsAppService;
         private readonly IEmailService _emailService;
         private readonly IUserInvitationService _invitationService;
+        private readonly ITuratelSmsService _smsService;
 
-        public UserController(IUserService userService, IUnitOfWork unitOfWork, IMapper mapper, IWhatsAppService whatsAppService, IEmailService emailService, IUserInvitationService invitationService)
+        public UserController(IUserService userService, IUnitOfWork unitOfWork, IMapper mapper, IWhatsAppService whatsAppService, IEmailService emailService, IUserInvitationService invitationService, ITuratelSmsService smsService)
         {
             _userService = userService;
             _unitOfWork = unitOfWork;
@@ -31,6 +32,7 @@ namespace ITOVotingApplication.Web.Controllers
             _whatsAppService = whatsAppService;
             _emailService = emailService;
             _invitationService = invitationService;
+            _smsService = smsService;
         }
 
         [HttpGet("")]
@@ -187,7 +189,7 @@ namespace ITOVotingApplication.Web.Controllers
                 // Create invitation token
                 var invitationResult = await _invitationService.CreateInvitationAsync(
                     dto.ContactMethod == "email" ? dto.Email : null,
-                    dto.ContactMethod == "phone" ? dto.Phone : null,
+                    (dto.ContactMethod == "phone" || dto.ContactMethod == "sms") ? dto.Phone : null,
                     currentUserId,
                     dto.FieldReferenceCategoryId,
                     dto.FieldReferenceSubCategoryId);
@@ -221,6 +223,29 @@ namespace ITOVotingApplication.Web.Controllers
                     else
                     {
                         return ApiResponse<object>.ErrorResult($"E-posta gönderilemedi: {emailResult.Message}");
+                    }
+                }
+                else if (dto.ContactMethod == "sms")
+                {
+                    // Send SMS with registration link
+                    var smsMessage = $"ITO Seçim Sistemi kayıt linkiniz: {registrationLink}";
+                    var smsResult = await _smsService.SendSmsAsync(dto.Phone, smsMessage);
+
+                    if (smsResult.Success && smsResult.Data != null && smsResult.Data.IsSuccess)
+                    {
+                        // Return structured data for SMS
+                        var responseData = new
+                        {
+                            contactMethod = "sms",
+                            phoneNumber = dto.Phone,
+                            registrationLink = registrationLink
+                        };
+
+                        return ApiResponse<object>.SuccessResult(responseData, "SMS başarıyla gönderildi!");
+                    }
+                    else
+                    {
+                        return ApiResponse<object>.ErrorResult($"SMS gönderilemedi: {smsResult.Message}");
                     }
                 }
                 else if (dto.ContactMethod == "phone")

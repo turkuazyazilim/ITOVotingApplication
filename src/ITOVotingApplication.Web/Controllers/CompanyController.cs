@@ -87,6 +87,7 @@ namespace ITOVotingApplication.Web.Controllers
 			{
 				var company = await _unitOfWork.Companies.Query()
 					.Include(c => c.ActiveContact)
+					.Include(c => c.Committee)
 					.FirstOrDefaultAsync(c => c.Id == id);
 
 				if (company == null)
@@ -144,7 +145,7 @@ namespace ITOVotingApplication.Web.Controllers
 					return ApiResponse<CompanyDto>.ErrorResult("Bu sicil numarası ile kayıtlı firma bulunmaktadır.");
 				}
 
-
+				//Komite eklenecek
 				var company = _mapper.Map<Company>(dto);
 				company.IsActive = true;
 
@@ -938,7 +939,19 @@ namespace ITOVotingApplication.Web.Controllers
 				{
 					// TC firmalar için dosya yükleme gerekmiyor, sadece participation durumu
 					filePath = $"TC_Participation_{company.RegistrationNumber}_{DateTime.Now:yyyyMMdd_HHmmss}";
-				fileName = "TC_Participation";
+					fileName = "TC_Participation";
+
+					// Company DocumentStatus güncelle
+					if (willParticipateInElection.Value)
+					{
+						company.DocumentStatus = DocumentStatus.SahisSirketiOlarakKatilacak; // 3
+					}
+					else
+					{
+						company.DocumentStatus = DocumentStatus.None; // 0
+					}
+					_unitOfWork.Companies.Update(company);
+					await _unitOfWork.CompleteAsync();
 				}
 				else
 				{
@@ -1011,6 +1024,23 @@ namespace ITOVotingApplication.Web.Controllers
 					return BadRequest(new { success = false, message = result.Message });
 				}
 
+				// Non-TC firmalar için DocumentStatus güncelle
+				if (isTCParticipation != true)
+				{
+					if (docType == CompanyDocumentType.YetkiBelgesiTalepDilekçesi)
+					{
+						// Yetki Belgesi Talep Dilekçesi yüklendi → DocumentStatus = 1
+						company.DocumentStatus = DocumentStatus.YetkiBelgesiYuklendi;
+					}
+					else if (docType == CompanyDocumentType.OnaylanmisYetkiBelgesi)
+					{
+						// Onaylanmış Yetki Belgesi yüklendi → DocumentStatus = 2
+						company.DocumentStatus = DocumentStatus.OnaylanmisYetkiBelgesiYuklendi;
+					}
+					_unitOfWork.Companies.Update(company);
+					await _unitOfWork.CompleteAsync();
+				}
+
 				return Ok(new
 				{
 					success = true,
@@ -1031,7 +1061,7 @@ namespace ITOVotingApplication.Web.Controllers
 		/// Admin only
 		/// </summary>
 		[HttpPut("document-transaction/{transactionId}/delivery-status")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> UpdateDeliveryStatus(int transactionId, [FromBody] UpdateDeliveryStatusDto dto)
 		{
 			try
@@ -1066,16 +1096,15 @@ namespace ITOVotingApplication.Web.Controllers
 		}
 
 		/// <summary>
-		/// Assign document transaction to a contact
-		/// Admin only
+		/// Assign document transaction to a user
 		/// </summary>
 		[HttpPut("document-transaction/{transactionId}/assign")]
-		[Authorize(Roles = "Admin")]
-		public async Task<IActionResult> AssignDocumentToContact(int transactionId, [FromBody] AssignDocumentRequest request)
+		[Authorize(Roles = "İtop Kullanıcısı,Komite Kullanıcısı,Komite Çalışma Grubu Üyesi")]
+		public async Task<IActionResult> AssignDocumentToUser(int transactionId, [FromBody] AssignDocumentRequest request)
 		{
 			try
 			{
-				var result = await _documentTransactionService.AssignToContactAsync(transactionId, request.ContactId);
+				var result = await _documentTransactionService.AssignToUserAsync(transactionId, request.UserId);
 
 				if (!result.Success)
 				{
@@ -1100,16 +1129,47 @@ namespace ITOVotingApplication.Web.Controllers
 		/// Admin only
 		/// </summary>
 		[HttpDelete("document-transaction/{transactionId}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> DeleteDocumentTransaction(int transactionId)
 		{
 			try
 			{
+				// Önce transaction bilgisini al (company ve type için)
+				var transaction = await _unitOfWork.CompanyDocumentTransactions.GetByIdAsync(transactionId);
+				if (transaction == null)
+				{
+					return NotFound(new { success = false, message = "Belge bulunamadı" });
+				}
+
+				var companyId = transaction.CompanyId;
+				var documentType = transaction.DocumentType;
+
 				var result = await _documentTransactionService.DeleteAsync(transactionId);
 
 				if (!result.Success)
 				{
 					return BadRequest(new { success = false, message = result.Message });
+				}
+
+				// Silme başarılı olduktan sonra firma DocumentStatus'unu güncelle
+				var company = await _unitOfWork.Companies.GetByIdAsync(companyId);
+				if (company != null)
+				{
+					// Silinen belge tipine göre DocumentStatus güncelle
+					if (documentType == CompanyDocumentType.OnaylanmisYetkiBelgesi)
+					{
+						// Onaylanmış Yetki Belgesi silindi → DocumentStatus = 1 (YetkiBelgesiYuklendi)
+						company.DocumentStatus = DocumentStatus.YetkiBelgesiYuklendi;
+						_unitOfWork.Companies.Update(company);
+						await _unitOfWork.CompleteAsync();
+					}
+					else if (documentType == CompanyDocumentType.YetkiBelgesiTalepDilekçesi)
+					{
+						// Yetki Belgesi Talep Dilekçesi silindi → DocumentStatus = 0 (None)
+						company.DocumentStatus = DocumentStatus.None;
+						_unitOfWork.Companies.Update(company);
+						await _unitOfWork.CompleteAsync();
+					}
 				}
 
 				return Ok(new
@@ -1121,6 +1181,68 @@ namespace ITOVotingApplication.Web.Controllers
 			catch (Exception ex)
 			{
 				return StatusCode(500, new { success = false, message = $"Belge silme hatası: {ex.Message}" });
+			}
+		}
+
+		/// <summary>
+		/// Get eligible users for document assignment based on company's committee
+		/// Users must be: İtop Kullanıcısı, Komite Kullanıcısı, or Komite Çalışma Grubu Üyesi
+		/// And their committees must match the company's committee
+		/// </summary>
+		[HttpGet("{companyId}/eligible-users-for-assignment")]
+		[Authorize(Roles = "İtop Kullanıcısı,Komite Kullanıcısı,Komite Çalışma Grubu Üyesi")]
+		public async Task<IActionResult> GetEligibleUsersForAssignment(int companyId)
+		{
+			try
+			{
+				// Get company's committee
+				var company = await _unitOfWork.Companies.GetByIdAsync(companyId);
+				if (company == null)
+				{
+					return NotFound(new { success = false, message = "Firma bulunamadı" });
+				}
+
+				if (!company.CommitteeId.HasValue)
+				{
+					return Ok(new { success = true, data = new List<object>(), message = "Firmaya komite atanmamış" });
+				}
+
+				var committeeId = company.CommitteeId.Value;
+
+				// Role names for document assignment
+				var eligibleRoleNames = new List<string> { "İtop Kullanıcısı", "Komite Kullanıcısı", "Komite Çalışma Grubu Üyesi" };
+
+				// Get user IDs who are assigned to this committee
+				var userIdsInCommittee = await _unitOfWork.UserCommittees.Query()
+					.Where(uc => uc.CommitteeId == committeeId)
+					.Select(uc => uc.UserId)
+					.ToListAsync();
+
+				// Get users with eligible roles
+				var allUsers = await _unitOfWork.Users.Query()
+					.Include(u => u.UserRoles)
+						.ThenInclude(ur => ur.Role)
+					.Where(u => u.IsActive && userIdsInCommittee.Contains(u.Id))
+					.ToListAsync();
+
+				// Filter by role in memory
+				var eligibleUsers = allUsers
+					.Where(u => u.UserRoles.Any(ur => eligibleRoleNames.Contains(ur.Role.RoleDescription)))
+					.Select(u => new
+					{
+						id = u.Id,
+						fullName = $"{u.FirstName} {u.LastName}",
+						userName = u.UserName,
+						roles = u.UserRoles.Select(ur => ur.Role.RoleDescription).ToList()
+					})
+					.OrderBy(u => u.fullName)
+					.ToList();
+
+				return Ok(new { success = true, data = eligibleUsers });
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = $"Kullanıcılar alınamadı: {ex.Message}" });
 			}
 		}
 
@@ -1247,7 +1369,7 @@ namespace ITOVotingApplication.Web.Controllers
 	public class AssignDocumentRequest
 	{
 		public int TransactionId { get; set; }
-		public int ContactId { get; set; }
+		public int UserId { get; set; }
 	}
 
 	public class SendDocumentEmailRequest

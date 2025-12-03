@@ -73,7 +73,7 @@ namespace ITOVotingApplication.Web.Controllers
 		}
 
 		[HttpPost]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> Create([FromBody] CreateContactDto dto)
 		{
 			var result = await _contactService.CreateAsync(dto);
@@ -85,7 +85,7 @@ namespace ITOVotingApplication.Web.Controllers
 		}
 
 		[HttpPut("{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> Update(int id, [FromBody] UpdateContactDto dto)
 		{
 			if (id != dto.Id)
@@ -100,7 +100,7 @@ namespace ITOVotingApplication.Web.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			var result = await _contactService.DeleteAsync(id);

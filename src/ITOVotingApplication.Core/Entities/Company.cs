@@ -17,8 +17,10 @@ namespace ITOVotingApplication.Core.Entities
 		public int? ActiveContactId { get; set; }
 		public bool IsActive { get; set; }
 		public bool Has2022AuthorizationCertificate { get; set; }
+		public int? CommitteeId { get; set; }
 
 		// Navigation Properties
+		public virtual Committee Committee { get; set; }
 		public virtual Contact ActiveContact { get; set; }
 		public virtual ICollection<Contact> Contacts { get; set; }
 		public virtual ICollection<VoteTransaction> VoteTransactions { get; set; }

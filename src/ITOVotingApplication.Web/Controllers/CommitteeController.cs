@@ -37,7 +37,7 @@ namespace ITOVotingApplication.API.Controllers
 		}
 
 		[HttpPost]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> Create([FromBody] CreateCommitteeDto dto)
 		{
 			if (!ModelState.IsValid)
@@ -55,7 +55,7 @@ namespace ITOVotingApplication.API.Controllers
 		}
 
 		[HttpPut("{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> Update(int id, [FromBody] UpdateCommitteeDto dto)
 		{
 			if (id != dto.Id)
@@ -78,7 +78,7 @@ namespace ITOVotingApplication.API.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "İtop Kullanıcısı")]
 		public async Task<IActionResult> Delete(int id)
 		{
 			var result = await _committeeService.DeleteAsync(id);

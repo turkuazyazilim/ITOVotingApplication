@@ -39,6 +39,8 @@ namespace ITOVotingApplication.Data.Configurations
 
 			builder.Property(e => e.WillParticipateInElection);
 
+			builder.Property(e => e.AssignedUserId);
+
 			builder.Property(e => e.CreatedDate)
 				.IsRequired();
 
@@ -55,9 +57,15 @@ namespace ITOVotingApplication.Data.Configurations
 				.HasForeignKey(d => d.UploadedByUserId)
 				.OnDelete(DeleteBehavior.Restrict);
 
+			builder.HasOne(d => d.AssignedUser)
+				.WithMany()
+				.HasForeignKey(d => d.AssignedUserId)
+				.OnDelete(DeleteBehavior.Restrict);
+
 			// Indexes
 			builder.HasIndex(e => e.CompanyId);
 			builder.HasIndex(e => e.UploadedByUserId);
+			builder.HasIndex(e => e.AssignedUserId);
 			builder.HasIndex(e => new { e.CompanyId, e.DocumentType });
 		}
 	}

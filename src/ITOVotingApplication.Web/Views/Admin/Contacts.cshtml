@@ -606,6 +606,10 @@
 
             lucide.createIcons();
             loadUserInfo();
+
+            // URL parametrelerinden filtreleri oku
+            applyFiltersFromURL();
+
             loadCompanies();
             loadCommittees();
             loadContacts();
@@ -859,6 +863,43 @@
                 });
             } catch (error) {
                 console.error('Error loading committees:', error);
+            }
+        }
+
+        // URL parametrelerinden filtreleri uygula
+        function applyFiltersFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // eligibleToVote parametresini kontrol et
+            const eligibleToVote = urlParams.get('eligibleToVote');
+            if (eligibleToVote === 'true') {
+                const eligibilityFilter = document.getElementById('eligibilityFilter');
+                if (eligibilityFilter) {
+                    eligibilityFilter.value = 'eligible';
+                }
+            } else if (eligibleToVote === 'false') {
+                const eligibilityFilter = document.getElementById('eligibilityFilter');
+                if (eligibilityFilter) {
+                    eligibilityFilter.value = 'notEligible';
+                }
+            }
+
+            // voteStatus parametresini kontrol et
+            const voteStatus = urlParams.get('voteStatus');
+            if (voteStatus !== null) {
+                const voteStatusFilter = document.getElementById('voteStatusFilter');
+                if (voteStatusFilter) {
+                    voteStatusFilter.value = voteStatus;
+                }
+            }
+
+            // companyId parametresini kontrol et
+            const companyId = urlParams.get('companyId');
+            if (companyId !== null) {
+                const companyFilter = document.getElementById('companyFilter');
+                if (companyFilter) {
+                    companyFilter.value = companyId;
+                }
             }
         }
 
@@ -1227,7 +1268,7 @@
             displayContacts();
         }
 
-        // Clear Filters  
+        // Clear Filters
         function clearFilters() {
             document.getElementById('companyFilter').value = '';
             document.getElementById('voteStatusFilter').value = '';
@@ -1235,6 +1276,10 @@
             document.getElementById('globalSearch').value = '';
             document.getElementById('mobileGlobalSearch').value = '';
             currentPage = 1;
+
+            // URL parametrelerini temizle
+            window.history.replaceState({}, '', window.location.pathname);
+
             displayContacts();
         }
 

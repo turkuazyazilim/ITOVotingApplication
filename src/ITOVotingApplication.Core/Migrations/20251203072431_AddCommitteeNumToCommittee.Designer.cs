@@ -4,6 +4,7 @@ using ITOVotingApplication.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ITOVotingApplication.Core.Migrations
 {
     [DbContext(typeof(VotingDbContext))]
-    partial class VotingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251203072431_AddCommitteeNumToCommittee")]
+    partial class AddCommitteeNumToCommittee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,9 +74,6 @@ namespace ITOVotingApplication.Core.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("ActiveContactId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CommitteeId")
                         .HasColumnType("int");
 
                     b.Property<string>("CompanyType")
@@ -134,8 +134,6 @@ namespace ITOVotingApplication.Core.Migrations
 
                     b.HasIndex("ActiveContactId");
 
-                    b.HasIndex("CommitteeId");
-
                     b.HasIndex("RegistrationNumber")
                         .IsUnique();
 
@@ -150,7 +148,7 @@ namespace ITOVotingApplication.Core.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AssignedUserId")
+                    b.Property<int?>("AssignedContactId")
                         .HasColumnType("int");
 
                     b.Property<int>("CompanyId")
@@ -194,7 +192,7 @@ namespace ITOVotingApplication.Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedUserId");
+                    b.HasIndex("AssignedContactId");
 
                     b.HasIndex("CompanyId");
 
@@ -394,30 +392,6 @@ namespace ITOVotingApplication.Core.Migrations
                     b.ToTable("cdUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ITOVotingApplication.Core.Entities.UserCommittee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommitteeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommitteeId");
-
-                    b.HasIndex("UserId", "CommitteeId")
-                        .IsUnique();
-
-                    b.ToTable("prUserCommittee", (string)null);
-                });
-
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.UserInvitation", b =>
                 {
                     b.Property<int>("Id")
@@ -572,22 +546,14 @@ namespace ITOVotingApplication.Core.Migrations
                         .WithMany("ActiveForCompanies")
                         .HasForeignKey("ActiveContactId");
 
-                    b.HasOne("ITOVotingApplication.Core.Entities.Committee", "Committee")
-                        .WithMany("Companies")
-                        .HasForeignKey("CommitteeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("ActiveContact");
-
-                    b.Navigation("Committee");
                 });
 
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.CompanyDocumentTransaction", b =>
                 {
-                    b.HasOne("ITOVotingApplication.Core.Entities.User", "AssignedUser")
+                    b.HasOne("ITOVotingApplication.Core.Entities.Contact", "AssignedContact")
                         .WithMany()
-                        .HasForeignKey("AssignedUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("AssignedContactId");
 
                     b.HasOne("ITOVotingApplication.Core.Entities.Company", "Company")
                         .WithMany()
@@ -601,7 +567,7 @@ namespace ITOVotingApplication.Core.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AssignedUser");
+                    b.Navigation("AssignedContact");
 
                     b.Navigation("Company");
 
@@ -628,25 +594,6 @@ namespace ITOVotingApplication.Core.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("ITOVotingApplication.Core.Entities.UserCommittee", b =>
-                {
-                    b.HasOne("ITOVotingApplication.Core.Entities.Committee", "Committee")
-                        .WithMany("UserCommittees")
-                        .HasForeignKey("CommitteeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ITOVotingApplication.Core.Entities.User", "User")
-                        .WithMany("UserCommittees")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Committee");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.UserInvitation", b =>
@@ -752,13 +699,6 @@ namespace ITOVotingApplication.Core.Migrations
                     b.Navigation("VoteTransactions");
                 });
 
-            modelBuilder.Entity("ITOVotingApplication.Core.Entities.Committee", b =>
-                {
-                    b.Navigation("Companies");
-
-                    b.Navigation("UserCommittees");
-                });
-
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.Company", b =>
                 {
                     b.Navigation("Contacts");
@@ -791,8 +731,6 @@ namespace ITOVotingApplication.Core.Migrations
             modelBuilder.Entity("ITOVotingApplication.Core.Entities.User", b =>
                 {
                     b.Navigation("CreatedVoteTransactions");
-
-                    b.Navigation("UserCommittees");
 
                     b.Navigation("UserRoles");
                 });

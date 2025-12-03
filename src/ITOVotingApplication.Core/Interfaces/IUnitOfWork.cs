@@ -10,6 +10,7 @@ namespace ITOVotingApplication.Core.Interfaces
 		IGenericRepository<User> Users { get; }
 		IGenericRepository<Role> Roles { get; }
 		IGenericRepository<UserRole> UserRoles { get; }
+		IGenericRepository<UserCommittee> UserCommittees { get; }
 		IGenericRepository<BallotBox> BallotBoxes { get; }
 		IGenericRepository<VoteTransaction> VoteTransactions { get; }
 		IGenericRepository<FieldReferenceCategory> FieldReferenceCategories { get; }

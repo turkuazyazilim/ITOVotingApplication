@@ -14,11 +14,22 @@
 		public int? FieldReferenceSubCategoryId { get; set; }
 		public string FieldReferenceCategoryName { get; set; }
 		public string FieldReferenceSubCategoryName { get; set; }
+		public List<int> CommitteeIds { get; set; }
+		public List<UserCommitteeDto> Committees { get; set; }
 
 		public UserDto()
 		{
 			Roles = new List<string>();
+			CommitteeIds = new List<int>();
+			Committees = new List<UserCommitteeDto>();
 		}
+	}
+
+	public class UserCommitteeDto
+	{
+		public int CommitteeId { get; set; }
+		public string CommitteeNum { get; set; }
+		public string CommitteeDescription { get; set; }
 	}
 
 	public class CreateUserDto
@@ -33,10 +44,12 @@
 		public List<int> RoleIds { get; set; }
 		public int? FieldReferenceCategoryId { get; set; }
 		public int? FieldReferenceSubCategoryId { get; set; }
+		public List<int> CommitteeIds { get; set; }
 
 		public CreateUserDto()
 		{
 			RoleIds = new List<int>();
+			CommitteeIds = new List<int>();
 		}
 	}
 
@@ -44,7 +57,7 @@
 	{
 		public int Id { get; set; }
 		public string UserName { get; set; }
-		public string Password { get; set; }
+		public string? Password { get; set; }
 		public string Email { get; set; }
 		public string PhoneNumber { get; set; }
 		public string FirstName { get; set; }
@@ -53,10 +66,12 @@
 		public List<int> RoleIds { get; set; }
 		public int? FieldReferenceCategoryId { get; set; }
 		public int? FieldReferenceSubCategoryId { get; set; }
+		public List<int> CommitteeIds { get; set; }
 
 		public UpdateUserDto()
 		{
 			RoleIds = new List<int>();
+			CommitteeIds = new List<int>();
 		}
 	}
 }

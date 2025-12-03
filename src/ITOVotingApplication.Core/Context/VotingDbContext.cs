@@ -18,6 +18,7 @@ namespace ITOVotingApplication.Data.Context
 		public DbSet<User> Users { get; set; }
 		public DbSet<Role> Roles { get; set; }
 		public DbSet<UserRole> UserRoles { get; set; }
+		public DbSet<UserCommittee> UserCommittees { get; set; }
 		public DbSet<BallotBox> BallotBoxes { get; set; }
 		public DbSet<VoteTransaction> VoteTransactions { get; set; }
 		public DbSet<FieldReferenceCategory> FieldReferenceCategories { get; set; }
@@ -36,6 +37,7 @@ namespace ITOVotingApplication.Data.Context
 			modelBuilder.ApplyConfiguration(new UserConfiguration());
 			modelBuilder.ApplyConfiguration(new RoleConfiguration());
 			modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
+			modelBuilder.ApplyConfiguration(new UserCommitteeConfiguration());
 			modelBuilder.ApplyConfiguration(new BallotBoxConfiguration());
 			modelBuilder.ApplyConfiguration(new VoteTransactionConfiguration());
 			modelBuilder.ApplyConfiguration(new FieldReferenceCategoryConfiguration());

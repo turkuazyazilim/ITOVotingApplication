@@ -241,7 +241,7 @@
     <!-- Send Document Modal -->
     <div id="sendDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] overflow-y-auto">
         <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
                 <!-- Modal Header -->
                 <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                     <div class="flex items-center justify-between">
@@ -258,43 +258,203 @@
                 <!-- Modal Content -->
                 <div class="flex-1 overflow-y-auto p-6">
                     <form id="sendDocumentForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Yetkili Seçin</label>
-                            <select id="contactSelect" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Yetkili seçin...</option>
-                            </select>
-                        </div>
-
-                        <div id="selectedContactInfo" class="hidden">
-                            <div class="bg-gray-50 p-3 rounded-lg">
-                                <h4 class="text-sm font-medium text-gray-700 mb-2">Seçilen Yetkili</h4>
-                                <div class="text-sm text-gray-600">
-                                    <p><strong>Ad Soyad:</strong> <span id="contactName"></span></p>
-                                    <p><strong>Telefon:</strong> <span id="contactPhone"></span></p>
-                                    <p><strong>E-posta:</strong> <span id="contactEmail"></span></p>
-                                    <p><strong>Yetki:</strong> <span id="contactType"></span></p>
+                        <!-- Referans 1 -->
+                        <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">1</span>
+                                Referans 1 Bilgileri
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad</label>
+                                    <input type="text" id="sendRef1FirstName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="Ad">
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad</label>
+                                    <input type="text" id="sendRef1LastName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="Soyad">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Telefon</label>
+                                    <input type="tel" id="sendRef1Phone"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="05XX XXX XX XX">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                    <input type="email" id="sendRef1Email"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="ornek@email.com">
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-2 mt-3">
+                                <button type="button" onclick="saveRef1()"
+                                        class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="save" class="w-4 h-4"></i>
+                                    <span>Kaydet</span>
+                                </button>
+                                <button type="button" id="ref1WhatsAppBtn" onclick="sendToRef1ViaWhatsApp()"
+                                        class="hidden px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>WhatsApp</span>
+                                </button>
+                                <button type="button" id="ref1EmailBtn" onclick="sendToRef1ViaEmail()"
+                                        class="hidden px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="mail" class="w-4 h-4"></i>
+                                    <span>E-posta</span>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="flex justify-end space-x-3 pt-4">
+                        <!-- Referans 2 -->
+                        <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">2</span>
+                                Referans 2 Bilgileri (Opsiyonel)
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad</label>
+                                    <input type="text" id="sendRef2FirstName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="Ad">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad</label>
+                                    <input type="text" id="sendRef2LastName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="Soyad">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Telefon</label>
+                                    <input type="tel" id="sendRef2Phone"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="05XX XXX XX XX">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                    <input type="email" id="sendRef2Email"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="ornek@email.com">
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-2 mt-3">
+                                <button type="button" onclick="saveRef2()"
+                                        class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="save" class="w-4 h-4"></i>
+                                    <span>Kaydet</span>
+                                </button>
+                                <button type="button" id="ref2WhatsAppBtn" onclick="sendToRef2ViaWhatsApp()"
+                                        class="hidden px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>WhatsApp</span>
+                                </button>
+                                <button type="button" id="ref2EmailBtn" onclick="sendToRef2ViaEmail()"
+                                        class="hidden px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="mail" class="w-4 h-4"></i>
+                                    <span>E-posta</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-4 border-t border-gray-200">
                             <button type="button" onclick="closeSendDocumentModal()"
                                     class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                                İptal
-                            </button>
-                            <button type="button" onclick="sendDocumentViaWhatsApp()"
-                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center"
-                                    title="WhatsApp'la Gönder">
-                                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                            </button>
-                            <button type="button" onclick="sendDocumentViaEmail()"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-                                    title="Email ile Gönder">
-                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                Kapat
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Document Modal (WhatsApp Paylaşım) -->
+    <div id="shareDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[110] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">WhatsApp ile Belge Gönder</h3>
+                        <button onclick="closeShareDocumentModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-4">
+                    <div class="space-y-4">
+                        <!-- Phone Number Display -->
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="phone" class="h-5 w-5 text-blue-600"></i>
+                                <span class="text-sm font-medium text-blue-800">Alıcı:</span>
+                                <span id="shareRecipientName" class="text-sm text-blue-700 font-medium"></span>
+                                <span class="text-sm text-blue-600">-</span>
+                                <span id="shareRecipientPhone" class="text-sm text-blue-700"></span>
+                            </div>
+                        </div>
+
+                        <!-- Message Content -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Gönderilecek Mesaj:</label>
+                            <textarea id="shareDocumentMessage" readonly rows="8"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-3">
+                            <!-- Copy Message Button -->
+                            <button onclick="copyDocumentMessage()" class="w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                                <i data-lucide="copy" class="h-4 w-4 mr-2"></i>
+                                <span>Mesajı Kopyala</span>
+                            </button>
+
+                            <!-- WhatsApp Buttons -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Desktop WhatsApp -->
+                                <button onclick="openDocWhatsAppDesktop()" class="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                    <i data-lucide="monitor" class="h-4 w-4 mr-2"></i>
+                                    <span class="text-sm">WhatsApp Web</span>
+                                </button>
+
+                                <!-- Mobile WhatsApp -->
+                                <button onclick="openDocWhatsAppMobile()" class="flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                    <i data-lucide="smartphone" class="h-4 w-4 mr-2"></i>
+                                    <span class="text-sm">WhatsApp Mobile</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex">
+                                <i data-lucide="info" class="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0"></i>
+                                <div class="text-sm text-yellow-800">
+                                    <p class="font-medium mb-1">Nasıl Gönderilir:</p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs">
+                                        <li><strong>Mesajı Kopyala:</strong> Mesajı panoya kopyalar, istediğiniz uygulamada paylaşabilirsiniz</li>
+                                        <li><strong>WhatsApp Web:</strong> Masaüstü/laptop için WhatsApp Web'i açar</li>
+                                        <li><strong>WhatsApp Mobile:</strong> Mobil cihazlar için WhatsApp uygulamasını açar</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+                    <button onclick="closeShareDocumentModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Kapat</button>
                 </div>
             </div>
         </div>
@@ -706,7 +866,7 @@
         function createCompanyCard(company) {
             const authBadge = company.has2022AuthorizationCertificate
                 ? '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">2022 Yetkili</span>'
-                : '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">Yetkisiz</span>';
+                : '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">2022 Yetki Yok</span>';
 
             const statusBadge = company.isActive
                 ? '<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">Aktif</span>'
@@ -869,8 +1029,9 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Belge Durumu</label>
                             <select id="editDocumentStatus" disabled class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
                                 <option value="0" ${company.documentStatus === 0 ? 'selected' : ''}>-</option>
-                                <option value="1" ${company.documentStatus === 1 ? 'selected' : ''}>Yetki Belgesi Yüklendi</option>
-                                <option value="2" ${company.documentStatus === 2 ? 'selected' : ''}>Onaylanmış Yetki Belgesi Yüklendi</option>
+                                <option value="1" ${company.documentStatus === 1 ? 'selected' : ''}>Yetki Belge Talep Formu Yüklendi</option>
+                                <option value="2" ${company.documentStatus === 2 ? 'selected' : ''}>Oy Kullanma Belgesi Yüklendi</option>
+                                <option value="3" ${company.documentStatus === 3 ? 'selected' : ''}>Şahıs Şirketi Olarak Katılacak</option>
                             </select>
                         </div>
                     </div>
@@ -938,7 +1099,16 @@
         let currentCompanyId = null;
         let currentCompany = null; // Global company bilgisi
 
+        // Reference IDs for update vs create
+        let currentRef1Id = null;
+        let currentRef2Id = null;
+
+        // Share Document Modal data
+        let currentShareDocData = null;
+
         // Document Management Functions
+        let currentIsTCCompany = false;
+
         function openDocumentManagement() {
             const companyId = document.getElementById('editCompanyId').value;
             if (!companyId) {
@@ -950,6 +1120,7 @@
 
             // Firma tipini kontrol et
             const isTCCompany = currentCompany && currentCompany.companyType === 'TC';
+            currentIsTCCompany = isTCCompany;
 
             console.log('Opening document management for company:', companyId, 'Type:', currentCompany?.companyType);
             document.getElementById('documentManagementModal').classList.remove('hidden');
@@ -957,7 +1128,7 @@
             if (isTCCompany) {
                 loadTCCompanyManagement(companyId);
             } else {
-                loadCompanyDocuments(companyId);
+                loadDocumentTransactions(companyId, false);
             }
         }
 
@@ -1328,118 +1499,125 @@
             }
         }
 
-        // Firma Belgelerini Yükle (Field Worker version - authorization only)
-        async function loadCompanyDocuments(companyId) {
+        // Belge Transaction'larını Yükle (Non-TC Firmalar İçin - Sadece Yetki Belgesi Talep Dilekçesi)
+        async function loadDocumentTransactions(companyId, isTCCompany) {
             try {
-                console.log('Loading documents for company:', companyId);
+                const company = currentCompany;
+                if (!company) {
+                    alert('Firma bilgisi bulunamadı');
+                    return;
+                }
 
-                // Field Worker only sees authorization documents
-                const authDoc = {
-                    id: 1,
-                    type: 'authorization',
-                    name: 'Yetki Belgesi Talep Dilekçesi',
-                    fileName: 'yetki_belgesi_talep_dilekcesi.docx',
-                    size: '45 KB',
-                    uploadDate: new Date(),
-                    status: 'template',
-                    description: 'Firma yetkilileri için resmi yetki belgesi talep dilekçesi'
-                };
+                // Load document transactions
+                const transactionsResponse = await fetch(`/api/company/${companyId}/document-transactions`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
 
-                displayCompanyDocuments([authDoc]);
+                let transactions = [];
+                if (transactionsResponse.ok) {
+                    const result = await transactionsResponse.json();
+                    if (result.success && result.data) {
+                        transactions = result.data;
+                    }
+                }
 
-            } catch (error) {
-                console.error('Error loading documents:', error);
-                displayCompanyDocuments([]);
-            }
-        }
+                // Find latest Talep Dilekçesi transaction
+                const talepTransaction = transactions.find(t => t.documentType === 1); // YetkiBelgesiTalepDilekçesi = 1
 
-        // Belgeleri Görüntüle (Field Worker version - authorization only)
-        function displayCompanyDocuments(documents) {
-            const listContainer = document.getElementById('documentsList');
+                let content = '';
 
-            if (!documents || documents.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i data-lucide="file-x" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
-                        <p>Henüz belge eklenmemiş</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
+                // Non-TC Firma - Sadece Yetki Belgesi Talep Dilekçesi
+                content = `
+                    <div class="space-y-6">
+                        <!-- Yetki Belgesi Talep Dilekçesi -->
+                        <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                <i data-lucide="file-text" class="w-5 h-5 mr-2 text-blue-600"></i>
+                                Yetki Belgesi Talep Dilekçesi
+                            </h4>
 
-            listContainer.innerHTML = documents.map(doc => {
-                if (doc.type !== 'authorization') return ''; // Field Worker only sees authorization docs
-
-                return `
-                <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow relative">
-                    <!-- Mobil Dropdown Buton - Sağ Üst Köşe -->
-                    <div class="lg:hidden absolute top-2 right-2">
-                        <button onclick="toggleDocumentActions(${doc.id})"
-                                class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                                title="İşlemler">
-                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                        </button>
-                        <div id="docActions${doc.id}" class="hidden absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                            <button onclick="downloadTemplateDocument(); toggleDocumentActions(${doc.id})"
-                                    class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-orange-50 flex items-center space-x-2">
-                                <i data-lucide="file-text" class="w-4 h-4 text-orange-600"></i>
-                                <span>Örnek İndir</span>
-                            </button>
-                            <button onclick="openSendDocumentModal(); toggleDocumentActions(${doc.id})"
-                                    class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-green-50 flex items-center space-x-2">
-                                <i data-lucide="send" class="w-4 h-4 text-green-600"></i>
-                                <span>Belgeyi Gönder</span>
-                            </button>
-                            <button onclick="uploadSignedDocument(); toggleDocumentActions(${doc.id})"
-                                    class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-purple-50 flex items-center space-x-2">
-                                <i data-lucide="upload" class="w-4 h-4 text-purple-600"></i>
-                                <span>İmzalı Belge Yükle</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3 pr-8 lg:pr-0">
-                            <div class="flex-shrink-0">
-                                ${getDocumentIcon(doc.type)}
+                            ${talepTransaction ? `
+                            <!-- Mevcut Belge Bilgileri -->
+                            <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+                                        <span class="text-sm font-medium text-green-900">Belge Yüklendi</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button type="button" onclick="downloadUploadedDocument('${talepTransaction.documentUrl}', '${company.registrationNumber}_TalepDilekcesi')"
+                                                class="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center space-x-1">
+                                            <i data-lucide="download" class="w-3 h-3"></i>
+                                            <span>İndir</span>
+                                        </button>
+                                        <button type="button" onclick="deleteDocumentTransaction(${talepTransaction.id})"
+                                                class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">
+                                            <i data-lucide="trash-2" class="w-3 h-3 inline"></i> Sil
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-600">
+                                    Yükleyen: ${talepTransaction.uploadedByUserName}<br>
+                                    Tarih: ${new Date(talepTransaction.uploadDate).toLocaleDateString('tr-TR')}
+                                </p>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <h5 class="text-sm font-medium text-gray-900 truncate">${doc.name}</h5>
-                                <p class="text-xs text-gray-500">${doc.fileName} • ${doc.size} • ${formatDate(doc.uploadDate)}</p>
-                                ${doc.description ? `<p class="text-xs text-gray-600 mt-1">${doc.description}</p>` : ''}
-                            </div>
-                        </div>
-                        <!-- Desktop Butonlar -->
-                        <div class="hidden lg:flex flex-col items-end space-y-1">
-                            <!-- Ana işlem butonları -->
-                            <div class="flex items-center space-x-1 flex-wrap">
-                                <button onclick="downloadTemplateDocument()"
-                                        class="px-3 py-1.5 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors flex items-center space-x-1 whitespace-nowrap"
-                                        title="Örnek Belge İndir">
-                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+
+                            <!-- Örnek İndir ve Gönder Butonları -->
+                            <div class="flex gap-2">
+                                <button type="button" onclick="downloadTemplateDocument()"
+                                        class="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1">
+                                    <i data-lucide="download" class="w-4 h-4"></i>
                                     <span>Örnek İndir</span>
                                 </button>
-                                <button onclick="openSendDocumentModal()"
-                                        class="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center space-x-1 whitespace-nowrap"
-                                        title="Örnek Belgeyi Gönder">
+                                <button type="button" onclick="openSendDocumentModal()"
+                                        class="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-1">
                                     <i data-lucide="send" class="w-4 h-4"></i>
                                     <span>Belgeyi Gönder</span>
                                 </button>
-                                <button onclick="uploadSignedDocument()"
-                                        class="px-3 py-1.5 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors flex items-center space-x-1 whitespace-nowrap"
-                                        title="İmzalı Belge Yükle">
-                                    <i data-lucide="upload" class="w-4 h-4"></i>
-                                    <span>İmzalı Belge Yükle</span>
-                                </button>
                             </div>
+                            ` : `
+                                <!-- Upload Formu -->
+                                <div class="space-y-3">
+                                    <!-- Örnek İndir ve Gönder Butonları -->
+                                    <div class="flex gap-2 mb-3">
+                                        <button type="button" onclick="downloadTemplateDocument()"
+                                                class="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1">
+                                            <i data-lucide="download" class="w-4 h-4"></i>
+                                            <span>Örnek İndir</span>
+                                        </button>
+                                        <button type="button" onclick="openSendDocumentModal()"
+                                                class="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-1">
+                                            <i data-lucide="send" class="w-4 h-4"></i>
+                                            <span>Belgeyi Gönder</span>
+                                        </button>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Belge Dosyası</label>
+                                        <input type="file" id="talepDocumentFile"
+                                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, JPG, JPEG, PNG dosyaları yükleyebilirsiniz</p>
+                                    </div>
+                                    <button type="button" onclick="uploadTalepDilekcesi(${companyId}, false)"
+                                            class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                        <i data-lucide="upload" class="w-4 h-4 inline mr-1"></i>
+                                        Talep Dilekçesi Yükle
+                                    </button>
+                                </div>
+                            `}
                         </div>
                     </div>
-                </div>
-            `;
-            }).join('');
+                `;
 
-            lucide.createIcons();
+                document.getElementById('documentsList').innerHTML = content;
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error('Error loading document transactions:', error);
+                alert('Belge bilgileri yüklenirken hata oluştu');
+            }
         }
 
         // Belge Türü İkonu
@@ -1520,17 +1698,380 @@
             }
         }
 
+        // Talep Dilekçesi Yükle
+        async function uploadTalepDilekcesi(companyId, isTCCompany) {
+            const fileInput = document.getElementById('talepDocumentFile');
+
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert('Lütfen bir dosya seçin');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('document', fileInput.files[0]);
+            formData.append('documentType', '1'); // YetkiBelgesiTalepDilekçesi
+
+            // TC firmaları için WillParticipateInElection bilgisini gönder
+            if (isTCCompany) {
+                const willParticipate = document.getElementById('tcWillParticipate')?.checked || false;
+                formData.append('willParticipateInElection', willParticipate.toString());
+            }
+
+            try {
+                const response = await fetch(`/api/company/${companyId}/document-transaction/upload`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Talep dilekçesi başarıyla yüklendi');
+                        // Reload with correct company type
+                        await loadDocumentTransactions(companyId, isTCCompany);
+                    } else {
+                        alert('Yükleme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Yükleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error uploading talep dilekcesi:', error);
+                alert('Yükleme sırasında hata oluştu');
+            }
+        }
+
+        // Onaylı Belge Yükle
+        async function uploadOnayliBelge(companyId) {
+            const fileInput = document.getElementById('onayliDocumentFile');
+
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alert('Lütfen bir dosya seçin');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('document', fileInput.files[0]);
+            formData.append('documentType', '2'); // OnaylanmisYetkiBelgesi
+
+            try {
+                const response = await fetch(`/api/company/${companyId}/document-transaction/upload`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Onaylı belge başarıyla yüklendi');
+                        await loadDocumentTransactions(companyId, currentIsTCCompany);
+                    } else {
+                        alert('Yükleme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Yükleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error uploading onaylı belge:', error);
+                alert('Yükleme sırasında hata oluştu');
+            }
+        }
+
+        // Teslim Durumu Değiştiğinde
+        function onDeliveryStatusChange(transactionId) {
+            const deliveryStatus = document.getElementById(`deliveryStatus${transactionId}`).value;
+            const rejectionSection = document.getElementById(`rejectionSection${transactionId}`);
+            const updateBtn = document.getElementById(`updateBtn${transactionId}`);
+
+            // Red bölümünü göster/gizle
+            if (deliveryStatus === '3') { // RedEdildi
+                rejectionSection.classList.remove('hidden');
+            } else {
+                rejectionSection.classList.add('hidden');
+            }
+
+            // Güncelleme butonunu göster/gizle
+            if (deliveryStatus) {
+                updateBtn.classList.remove('hidden');
+            } else {
+                updateBtn.classList.add('hidden');
+            }
+        }
+
+        // Teslim Durumunu Güncelle
+        async function updateDeliveryStatus(transactionId) {
+            const deliveryStatus = parseInt(document.getElementById(`deliveryStatus${transactionId}`).value);
+
+            if (!deliveryStatus) {
+                alert('Lütfen bir durum seçin');
+                return;
+            }
+
+            const updateData = {
+                deliveryStatus: deliveryStatus
+            };
+
+            // Eğer Red Edildi seçildiyse, red nedeni zorunlu
+            if (deliveryStatus === 3) {
+                const rejectionReason = parseInt(document.getElementById(`rejectionReason${transactionId}`).value);
+                if (!rejectionReason) {
+                    alert('Red nedeni seçilmelidir');
+                    return;
+                }
+                updateData.rejectionReason = rejectionReason;
+                updateData.rejectionNote = document.getElementById(`rejectionNote${transactionId}`).value || null;
+            }
+
+            try {
+                const response = await fetch(`/api/company/document-transaction/${transactionId}/delivery-status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Teslim durumu güncellendi');
+                        await loadDocumentTransactions(currentCompanyId, currentIsTCCompany);
+                    } else {
+                        alert('Güncelleme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Güncelleme başarısız');
+                }
+            } catch (error) {
+                console.error('Error updating delivery status:', error);
+                alert('Güncelleme sırasında hata oluştu');
+            }
+        }
+
+        // Yüklenen Belgeyi İndir
+        function downloadUploadedDocument(documentUrl, fileName) {
+            try {
+                if (!documentUrl) {
+                    alert('Belge URL\'si bulunamadı.');
+                    return;
+                }
+
+                // Dosya uzantısını URL'den al
+                const extension = documentUrl.split('.').pop();
+                const fullFileName = `${fileName}.${extension}`;
+
+                // Linki oluştur ve indir
+                const link = document.createElement('a');
+                link.href = documentUrl;
+                link.download = fullFileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                console.log('Document downloaded:', documentUrl);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Belge indirme sırasında hata oluştu.');
+            }
+        }
+
+        // Transaction Sil
+        async function deleteDocumentTransaction(transactionId) {
+            if (!confirm('Bu belgeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/company/document-transaction/${transactionId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Belge başarıyla silindi');
+                        await loadDocumentTransactions(currentCompanyId, currentIsTCCompany);
+                    } else {
+                        alert('Silme başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Silme başarısız');
+                }
+            } catch (error) {
+                console.error('Error deleting transaction:', error);
+                alert('Silme sırasında hata oluştu');
+            }
+        }
+
+        // Belge Ataması için Uygun Kullanıcıları Yükle
+        async function loadEligibleUsersForAssignment(companyId, transactionId, assignedUserId) {
+            try {
+                const selectElement = document.getElementById(`assignUser_${transactionId}`);
+                if (!selectElement) {
+                    console.log('Select element not found for transaction:', transactionId);
+                    return;
+                }
+
+                const response = await fetch(`/api/company/${companyId}/eligible-users-for-assignment`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        selectElement.innerHTML = '<option value="">Kullanıcı Seçiniz...</option>';
+                        result.data.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = `${user.fullName} (${user.roleName})`;
+                            if (assignedUserId && user.id === assignedUserId) {
+                                option.selected = true;
+                            }
+                            selectElement.appendChild(option);
+                        });
+                    }
+                } else {
+                    console.error('Failed to load eligible users');
+                }
+            } catch (error) {
+                console.error('Error loading eligible users:', error);
+            }
+        }
+
+        // Belge Atamasını Kaydet
+        async function saveDocumentAssignment(transactionId, companyId) {
+            const selectElement = document.getElementById(`assignUser_${transactionId}`);
+            const userId = selectElement?.value;
+
+            if (!userId) {
+                alert('Lütfen bir kullanıcı seçin');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/company/document-transaction/${transactionId}/assign`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ userId: parseInt(userId) })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Belge ataması başarıyla kaydedildi');
+                        await loadDocumentTransactions(companyId, currentIsTCCompany);
+                    } else {
+                        alert('Atama başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('Atama başarısız');
+                }
+            } catch (error) {
+                console.error('Error saving document assignment:', error);
+                alert('Atama sırasında hata oluştu');
+            }
+        }
+
         // Send Document Modal Functions
-        function openSendDocumentModal() {
+        async function openSendDocumentModal() {
+            // Reset fields and IDs first
+            currentRef1Id = null;
+            currentRef2Id = null;
+            document.getElementById('sendRef1FirstName').value = '';
+            document.getElementById('sendRef1LastName').value = '';
+            document.getElementById('sendRef1Phone').value = '';
+            document.getElementById('sendRef1Email').value = '';
+            document.getElementById('sendRef2FirstName').value = '';
+            document.getElementById('sendRef2LastName').value = '';
+            document.getElementById('sendRef2Phone').value = '';
+            document.getElementById('sendRef2Email').value = '';
+            // Hide send buttons
+            document.getElementById('ref1WhatsAppBtn').classList.add('hidden');
+            document.getElementById('ref1EmailBtn').classList.add('hidden');
+            document.getElementById('ref2WhatsAppBtn').classList.add('hidden');
+            document.getElementById('ref2EmailBtn').classList.add('hidden');
+
+            // Load existing references
+            if (currentCompanyId) {
+                try {
+                    const response = await fetch(`/api/contact/company/${currentCompanyId}`, {
+                        method: 'GET',
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const contacts = result.data || [];
+
+                        // Find Referans 1 (AuthorizationType = 4) and Referans 2 (AuthorizationType = 5)
+                        const ref1 = contacts.find(c => c.authorizationType === 4);
+                        const ref2 = contacts.find(c => c.authorizationType === 5);
+
+                        // Populate Referans 1 fields and store ID
+                        if (ref1) {
+                            currentRef1Id = ref1.id;
+                            document.getElementById('sendRef1FirstName').value = ref1.firstName || '';
+                            document.getElementById('sendRef1LastName').value = ref1.lastName || '';
+                            document.getElementById('sendRef1Phone').value = ref1.mobilePhone || '';
+                            document.getElementById('sendRef1Email').value = ref1.email || '';
+                            // Show send buttons if phone or email exists
+                            if (ref1.mobilePhone) {
+                                document.getElementById('ref1WhatsAppBtn').classList.remove('hidden');
+                            }
+                            if (ref1.email) {
+                                document.getElementById('ref1EmailBtn').classList.remove('hidden');
+                            }
+                        }
+
+                        // Populate Referans 2 fields and store ID
+                        if (ref2) {
+                            currentRef2Id = ref2.id;
+                            document.getElementById('sendRef2FirstName').value = ref2.firstName || '';
+                            document.getElementById('sendRef2LastName').value = ref2.lastName || '';
+                            document.getElementById('sendRef2Phone').value = ref2.mobilePhone || '';
+                            document.getElementById('sendRef2Email').value = ref2.email || '';
+                            // Show send buttons if phone or email exists
+                            if (ref2.mobilePhone) {
+                                document.getElementById('ref2WhatsAppBtn').classList.remove('hidden');
+                            }
+                            if (ref2.email) {
+                                document.getElementById('ref2EmailBtn').classList.remove('hidden');
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading references:', error);
+                }
+            }
+
             document.getElementById('sendDocumentModal').classList.remove('hidden');
-            loadContactsForSending();
+            lucide.createIcons();
         }
 
         function closeSendDocumentModal() {
             document.getElementById('sendDocumentModal').classList.add('hidden');
-            // Reset form
-            document.getElementById('contactSelect').value = '';
-            document.getElementById('selectedContactInfo').classList.add('hidden');
+            // Reset referans fields
+            document.getElementById('sendRef1FirstName').value = '';
+            document.getElementById('sendRef1LastName').value = '';
+            document.getElementById('sendRef1Phone').value = '';
+            document.getElementById('sendRef1Email').value = '';
+            document.getElementById('sendRef2FirstName').value = '';
+            document.getElementById('sendRef2LastName').value = '';
+            document.getElementById('sendRef2Phone').value = '';
+            document.getElementById('sendRef2Email').value = '';
+            // Hide send buttons
+            document.getElementById('ref1WhatsAppBtn').classList.add('hidden');
+            document.getElementById('ref1EmailBtn').classList.add('hidden');
+            document.getElementById('ref2WhatsAppBtn').classList.add('hidden');
+            document.getElementById('ref2EmailBtn').classList.add('hidden');
         }
 
         // Load contacts for sending (ContactController/GetByCompanyId)
@@ -1575,7 +2116,7 @@
             }
         }
 
-        // Contact selection handler (from Companies.cshtml)
+        // Contact selection handler
         document.getElementById('contactSelect').addEventListener('change', function() {
             const selectedValue = this.value;
             const selectedOption = this.options[this.selectedIndex];
@@ -1588,24 +2129,14 @@
                 document.getElementById('contactPhone').textContent = contact.mobilePhone || 'Telefon bilgisi yok';
                 document.getElementById('contactEmail').textContent = contact.email || 'E-posta bilgisi yok';
 
-                // Contact type mapping
-                const contactTypes = {
-                    1: 'Genel Müdür',
-                    2: 'İnsan Kaynakları Müdürü',
-                    3: 'Mali İşler Müdürü',
-                    4: 'Diğer'
-                };
-                const contactTypeName = contactTypes[contact.contactTypeId] || 'Tanımsız';
-                document.getElementById('contactType').textContent = contactTypeName;
-
                 document.getElementById('selectedContactInfo').classList.remove('hidden');
             } else {
                 document.getElementById('selectedContactInfo').classList.add('hidden');
             }
         });
 
-        // Send via Email (exact copy from Companies.cshtml)
-        async function sendDocumentViaEmail() {
+        // Send to Contact via Email
+        async function sendToContactViaEmail() {
             const selectedContact = document.getElementById('contactSelect').value;
             const selectedOption = document.getElementById('contactSelect').options[document.getElementById('contactSelect').selectedIndex];
 
@@ -1632,10 +2163,10 @@
 
                     if (result.success) {
                         // Email konusu ve içeriği (link ile)
-                        const subject = `İstanbul Ticaret Odası - Yetki Belgesi Talep Dilekçesi`;
+                        const subject = `İTOP - Yetki Belgesi Talep Dilekçesi`;
                         const body = `Sayın ${contact.firstName} ${contact.lastName},
 
-İstanbul Ticaret Odası yetki belgesi talep dilekçeniz hazırlandı.
+Yetki belgesi talep dilekçeniz hazırlandı.
 
 📄 Belgeyi indirmek için aşağıdaki linki kullanın:
 ${result.downloadUrl}
@@ -1647,7 +2178,7 @@ Bu belge, firmanızın resmi işlemlerinde kullanılmak üzere hazırlanmıştı
 Herhangi bir sorunuz olması durumunda bizimle iletişime geçebilirsiniz.
 
 Saygılarımızla,
-İstanbul Ticaret Odası`;
+İTOP`;
 
                         // E-posta istemcisini aç
                         const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -1668,16 +2199,462 @@ Saygılarımızla,
             }
         }
 
-        // Send via WhatsApp (placeholder)
-        async function sendDocumentViaWhatsApp() {
+        // Send to Contact via WhatsApp
+        async function sendToContactViaWhatsApp() {
             const selectedContact = document.getElementById('contactSelect').value;
+            const selectedOption = document.getElementById('contactSelect').options[document.getElementById('contactSelect').selectedIndex];
+
             if (!selectedContact) {
                 alert('Lütfen bir yetkili seçin');
                 return;
             }
 
-            alert('WhatsApp entegrasyonu geliştirilecek');
-            closeSendDocumentModal();
+            if (!selectedOption.dataset.contact) {
+                alert('Seçilen yetkili bilgileri bulunamadı');
+                return;
+            }
+
+            const contact = JSON.parse(selectedOption.dataset.contact);
+
+            if (!contact.mobilePhone) {
+                alert('Seçilen yetkilinin telefon numarası bulunamadı');
+                return;
+            }
+
+            try {
+                // Generate document link first
+                const response = await fetch(`/api/company/${currentCompanyId}/generate-document-link`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Send via WhatsApp API
+                        const whatsappResponse = await fetch('/api/whatsapp/send-document', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                phoneNumber: contact.mobilePhone,
+                                recipientName: `${contact.firstName} ${contact.lastName}`,
+                                documentUrl: result.downloadUrl,
+                                companyName: currentCompany?.title || 'Firma'
+                            })
+                        });
+
+                        if (whatsappResponse.ok) {
+                            const whatsappResult = await whatsappResponse.json();
+                            if (whatsappResult.success) {
+                                alert('WhatsApp mesajı başarıyla gönderildi!');
+                            } else {
+                                alert('WhatsApp gönderimi başarısız: ' + whatsappResult.message);
+                            }
+                        } else {
+                            alert('WhatsApp gönderimi başarısız');
+                        }
+                    } else {
+                        alert('Belge linki oluşturulamadı: ' + result.message);
+                    }
+                } else {
+                    alert('Belge linki oluşturulamadı');
+                }
+            } catch (error) {
+                console.error('Error sending WhatsApp:', error);
+                alert('WhatsApp gönderilirken hata oluştu');
+            }
+        }
+
+        // Send to Referans 1 via WhatsApp
+        async function sendToRef1ViaWhatsApp() {
+            const firstName = document.getElementById('sendRef1FirstName').value.trim();
+            const lastName = document.getElementById('sendRef1LastName').value.trim();
+            const phone = document.getElementById('sendRef1Phone').value.trim();
+
+            if (!firstName || !lastName || !phone) {
+                alert('Lütfen Referans 1 bilgilerini eksiksiz doldurun');
+                return;
+            }
+
+            await sendDocumentToPhone(phone, `${firstName} ${lastName}`);
+        }
+
+        // Send to Referans 2 via WhatsApp
+        async function sendToRef2ViaWhatsApp() {
+            const firstName = document.getElementById('sendRef2FirstName').value.trim();
+            const lastName = document.getElementById('sendRef2LastName').value.trim();
+            const phone = document.getElementById('sendRef2Phone').value.trim();
+
+            if (!firstName || !lastName || !phone) {
+                alert('Lütfen Referans 2 bilgilerini eksiksiz doldurun');
+                return;
+            }
+
+            await sendDocumentToPhone(phone, `${firstName} ${lastName}`);
+        }
+
+        // Generic function to send document via WhatsApp to a phone number
+        async function sendDocumentToPhone(phoneNumber, recipientName) {
+            try {
+                // Generate document link first
+                const response = await fetch(`/api/company/${currentCompanyId}/generate-document-link`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const companyName = currentCompany?.title || 'Firma';
+                        const documentUrl = result.downloadUrl;
+
+                        // Generate message
+                        const message = `Sayın ${recipientName},
+
+${companyName} firması adına yetki belgesi taslağı hazırlanmıştır.
+
+Belgeyi aşağıdaki linkten indirebilirsiniz:
+${documentUrl}
+
+Lütfen belgeyi imzalayarak tarafımıza iletiniz.
+
+Saygılarımızla,
+İstanbul Ticaret Odası`;
+
+                        // Show share document modal
+                        showShareDocumentModal({
+                            phoneNumber: phoneNumber,
+                            recipientName: recipientName,
+                            message: message
+                        });
+                    } else {
+                        alert('Belge linki oluşturulamadı: ' + result.message);
+                    }
+                } else {
+                    alert('Belge linki oluşturulamadı');
+                }
+            } catch (error) {
+                console.error('Error preparing WhatsApp message:', error);
+                alert('WhatsApp mesajı hazırlanırken hata oluştu');
+            }
+        }
+
+        function showShareDocumentModal(data) {
+            currentShareDocData = data;
+
+            // Set recipient info
+            document.getElementById('shareRecipientName').textContent = data.recipientName;
+            document.getElementById('shareRecipientPhone').textContent = data.phoneNumber;
+
+            // Set message content
+            document.getElementById('shareDocumentMessage').value = data.message;
+
+            // Show modal
+            document.getElementById('shareDocumentModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeShareDocumentModal() {
+            document.getElementById('shareDocumentModal').classList.add('hidden');
+            currentShareDocData = null;
+        }
+
+        function copyDocumentMessage() {
+            const messageTextarea = document.getElementById('shareDocumentMessage');
+            messageTextarea.select();
+            messageTextarea.setSelectionRange(0, 99999); // For mobile
+
+            try {
+                document.execCommand('copy');
+
+                // Update button text temporarily
+                const copyBtn = event.target.closest('button');
+                const originalHTML = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i data-lucide="check" class="h-4 w-4 mr-2"></i><span>Kopyalandı!</span>';
+                copyBtn.classList.add('bg-green-600');
+                copyBtn.classList.remove('bg-gray-600');
+
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHTML;
+                    copyBtn.classList.remove('bg-green-600');
+                    copyBtn.classList.add('bg-gray-600');
+                    lucide.createIcons();
+                }, 2000);
+
+            } catch (err) {
+                // Fallback for newer browsers
+                navigator.clipboard.writeText(messageTextarea.value).then(() => {
+                    alert('Mesaj kopyalandı!');
+                }).catch(() => {
+                    alert('Kopyalama işlemi başarısız! Lütfen manuel olarak kopyalayın.');
+                });
+            }
+        }
+
+        function openDocWhatsAppDesktop() {
+            if (!currentShareDocData) return;
+
+            const message = encodeURIComponent(currentShareDocData.message);
+            let phoneNumber = currentShareDocData.phoneNumber.replace(/[^\d]/g, '');
+
+            // Add Turkey country code if not present
+            if (phoneNumber.startsWith('0')) {
+                phoneNumber = '90' + phoneNumber.substring(1);
+            } else if (!phoneNumber.startsWith('90')) {
+                phoneNumber = '90' + phoneNumber;
+            }
+
+            // WhatsApp Web URL
+            const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+            window.open(whatsappURL, '_blank');
+        }
+
+        function openDocWhatsAppMobile() {
+            if (!currentShareDocData) return;
+
+            const message = encodeURIComponent(currentShareDocData.message);
+            let phoneNumber = currentShareDocData.phoneNumber.replace(/[^\d]/g, '');
+
+            // Add Turkey country code if not present
+            if (phoneNumber.startsWith('0')) {
+                phoneNumber = '90' + phoneNumber.substring(1);
+            } else if (!phoneNumber.startsWith('90')) {
+                phoneNumber = '90' + phoneNumber;
+            }
+
+            // Check if mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            let whatsappURL;
+            if (isMobile) {
+                // Mobile app URL
+                whatsappURL = `whatsapp://send?phone=${phoneNumber}&text=${message}`;
+            } else {
+                // Fallback to web for desktop
+                whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+            }
+
+            window.open(whatsappURL, '_blank');
+        }
+
+        // Save Referans 1 (AuthorizationType: 4)
+        async function saveRef1() {
+            const firstName = document.getElementById('sendRef1FirstName').value.trim();
+            const lastName = document.getElementById('sendRef1LastName').value.trim();
+            const phone = document.getElementById('sendRef1Phone').value.trim();
+            const email = document.getElementById('sendRef1Email').value.trim();
+
+            if (!firstName || !lastName) {
+                alert('Lütfen Referans 1 Ad ve Soyad bilgilerini doldurun');
+                return;
+            }
+
+            if (!phone && !email) {
+                alert('Lütfen Telefon veya E-posta bilgilerinden en az birini doldurun');
+                return;
+            }
+
+            try {
+                let response;
+                if (currentRef1Id) {
+                    // Update existing reference
+                    response = await fetch('/FieldWorker/UpdateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            id: currentRef1Id,
+                            companyId: parseInt(currentCompanyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 4,
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                } else {
+                    // Create new reference
+                    response = await fetch('/FieldWorker/CreateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            companyId: parseInt(currentCompanyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 4,
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(currentRef1Id ? 'Referans 1 bilgileri güncellendi!' : 'Referans 1 bilgileri kaydedildi!');
+                    // Store the ID if newly created
+                    if (!currentRef1Id && result.data && result.data.id) {
+                        currentRef1Id = result.data.id;
+                    }
+                    // Show send buttons
+                    if (phone) {
+                        document.getElementById('ref1WhatsAppBtn').classList.remove('hidden');
+                    }
+                    if (email) {
+                        document.getElementById('ref1EmailBtn').classList.remove('hidden');
+                    }
+                    lucide.createIcons();
+                } else {
+                    alert('Kayıt başarısız: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving reference 1:', error);
+                alert('Kayıt sırasında hata oluştu');
+            }
+        }
+
+        // Save Referans 2 (AuthorizationType: 5)
+        async function saveRef2() {
+            const firstName = document.getElementById('sendRef2FirstName').value.trim();
+            const lastName = document.getElementById('sendRef2LastName').value.trim();
+            const phone = document.getElementById('sendRef2Phone').value.trim();
+            const email = document.getElementById('sendRef2Email').value.trim();
+
+            if (!firstName || !lastName) {
+                alert('Lütfen Referans 2 Ad ve Soyad bilgilerini doldurun');
+                return;
+            }
+
+            if (!phone && !email) {
+                alert('Lütfen Telefon veya E-posta bilgilerinden en az birini doldurun');
+                return;
+            }
+
+            try {
+                let response;
+                if (currentRef2Id) {
+                    // Update existing reference
+                    response = await fetch('/FieldWorker/UpdateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            id: currentRef2Id,
+                            companyId: parseInt(currentCompanyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 5,
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                } else {
+                    // Create new reference
+                    response = await fetch('/FieldWorker/CreateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            companyId: parseInt(currentCompanyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 5,
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(currentRef2Id ? 'Referans 2 bilgileri güncellendi!' : 'Referans 2 bilgileri kaydedildi!');
+                    // Store the ID if newly created
+                    if (!currentRef2Id && result.data && result.data.id) {
+                        currentRef2Id = result.data.id;
+                    }
+                    // Show send buttons
+                    if (phone) {
+                        document.getElementById('ref2WhatsAppBtn').classList.remove('hidden');
+                    }
+                    if (email) {
+                        document.getElementById('ref2EmailBtn').classList.remove('hidden');
+                    }
+                    lucide.createIcons();
+                } else {
+                    alert('Kayıt başarısız: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving reference 2:', error);
+                alert('Kayıt sırasında hata oluştu');
+            }
+        }
+
+        // Send to Referans 1 via Email
+        async function sendToRef1ViaEmail() {
+            const firstName = document.getElementById('sendRef1FirstName').value.trim();
+            const lastName = document.getElementById('sendRef1LastName').value.trim();
+            const email = document.getElementById('sendRef1Email').value.trim();
+
+            if (!email) {
+                alert('E-posta adresi bulunamadı');
+                return;
+            }
+
+            await sendDocumentToEmail(email, `${firstName} ${lastName}`);
+        }
+
+        // Send to Referans 2 via Email
+        async function sendToRef2ViaEmail() {
+            const firstName = document.getElementById('sendRef2FirstName').value.trim();
+            const lastName = document.getElementById('sendRef2LastName').value.trim();
+            const email = document.getElementById('sendRef2Email').value.trim();
+
+            if (!email) {
+                alert('E-posta adresi bulunamadı');
+                return;
+            }
+
+            await sendDocumentToEmail(email, `${firstName} ${lastName}`);
+        }
+
+        // Generic function to send document via Email
+        async function sendDocumentToEmail(email, recipientName) {
+            try {
+                const response = await fetch(`/api/company/${currentCompanyId}/send-document-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        email: email,
+                        contactName: recipientName
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(`E-posta ${recipientName} kişisine başarıyla gönderildi!`);
+                    } else {
+                        alert('E-posta gönderimi başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('E-posta gönderimi başarısız');
+                }
+            } catch (error) {
+                console.error('Error sending email:', error);
+                alert('E-posta gönderilirken hata oluştu');
+            }
         }
 
         // İmzalı Belge Yükleme Fonksiyonları (from Companies.cshtml)
@@ -1843,10 +2820,10 @@ Saygılarımızla,
                             }
                         }
 
-                        alert('✅ İmzalı belge başarıyla yüklendi ve referans kayıtları oluşturuldu!');
+                        alert('İmzalı belge başarıyla yüklendi ve referans kayıtları oluşturuldu!');
                         closeUploadSignedDocumentModal();
                         // Belge listesini yenile
-                        loadCompanyDocuments(companyId);
+                        loadDocumentTransactions(companyId, currentIsTCCompany);
                     } else {
                         alert(result.message || 'Dosya yüklenirken hata oluştu.');
                     }

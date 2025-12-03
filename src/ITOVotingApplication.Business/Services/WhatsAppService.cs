@@ -20,7 +20,7 @@ namespace ITOVotingApplication.Business.Services
         {
             try
             {
-                var message = $"🎯 *İTO Oylama Sistemi*\n\n" +
+                var message = $"🎯 *İTOP Oylama Sistemi*\n\n" +
                             $"Merhaba! Saha kullanıcısı olarak sisteme kayıt olmanız için size özel bir link gönderiyoruz.\n\n" +
                             $"👤 *Kayıt için:*\n" +
                             $"• Aşağıdaki linke tıklayın\n" +
@@ -28,7 +28,7 @@ namespace ITOVotingApplication.Business.Services
                             $"• Saha referans bilgilerinizi seçin\n\n" +
                             $"🔗 *Kayıt Linki:*\n{registrationLink}\n\n" +
                             $"❓ Herhangi bir sorunuz varsa sistem yöneticisi ile iletişime geçebilirsiniz.\n\n" +
-                            $"*İstanbul Ticaret Odası*";
+                            $"*İTOP*";
 
                 return await SendTextMessageAsync(phoneNumber, message);
             }

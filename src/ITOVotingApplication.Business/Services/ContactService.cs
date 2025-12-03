@@ -190,7 +190,7 @@ namespace ITOVotingApplication.Business.Services
 				}
 
 				// Check for duplicate identity number
-				if (dto.IdentityNum != "11111111111")
+				if (dto.IdentityNum != "11111111111" && dto.IdentityNum != "")
 				{
 					var existingContact = await _unitOfWork.Contacts
 					.SingleOrDefaultAsync(c => c.IdentityNum == dto.IdentityNum && c.Id != dto.Id);

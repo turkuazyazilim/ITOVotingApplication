@@ -28,7 +28,7 @@ namespace ITOVotingApplication.Business.Services
             _smtpServer = _configuration["EmailSettings:SmtpServer"] ?? "smtp.gmail.com";
             _smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"] ?? "587");
             _senderEmail = _configuration["EmailSettings:SenderEmail"] ?? "";
-            _senderName = _configuration["EmailSettings:SenderName"] ?? "İTO Oylama Sistemi";
+            _senderName = _configuration["EmailSettings:SenderName"] ?? "İTOP Oylama Sistemi";
             _username = _configuration["EmailSettings:Username"] ?? "";
             _password = _configuration["EmailSettings:Password"] ?? "";
             _enableSsl = bool.Parse(_configuration["EmailSettings:EnableSsl"] ?? "true");
@@ -45,7 +45,7 @@ namespace ITOVotingApplication.Business.Services
                     return ApiResponse<bool>.ErrorResult("E-posta ayarları yapılandırılmamış. Lütfen sistem yöneticisi ile iletişime geçin.");
                 }
 
-                var subject = "İTO Oylama Sistemi - Saha Kullanıcısı Kayıt Daveti";
+                var subject = "İTOP - Saha Kullanıcısı Kayıt Daveti";
 
                 var body = $@"
 <!DOCTYPE html>
@@ -108,12 +108,12 @@ namespace ITOVotingApplication.Business.Services
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>🎯 İTO Oylama Sistemi</h1>
+            <h1>🎯 İTOP Oylama Sistemi</h1>
             <p>Saha Kullanıcısı Kayıt Daveti</p>
         </div>
         <div class='content'>
             <p>Merhaba,</p>
-            <p>Saha kullanıcısı olarak <strong>İstanbul Ticaret Odası Oylama Sistemi</strong>'ne kayıt olmanız için size özel bir davet linki gönderiyoruz.</p>
+            <p>Saha kullanıcısı olarak <strong>İTOP Oylama Sistemi</strong>'ne kayıt olmanız için size özel bir davet linki gönderiyoruz.</p>
 
             <div class='steps'>
                 <h3>📋 Kayıt Adımları:</h3>
@@ -147,12 +147,12 @@ namespace ITOVotingApplication.Business.Services
             </div>
 
             <p>Saygılarımızla,<br>
-            <strong>İstanbul Ticaret Odası</strong><br>
+            <strong>İTOP</strong><br>
             Bilgi İşlem Departmanı</p>
         </div>
         <div class='footer'>
             <p>Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayınız.</p>
-            <p>&copy; 2024 İstanbul Ticaret Odası - Tüm hakları saklıdır.</p>
+            <p>&copy; 2026 İTOP - Tüm hakları saklıdır.</p>
         </div>
     </div>
 </body>
@@ -229,7 +229,7 @@ namespace ITOVotingApplication.Business.Services
                     return ApiResponse<bool>.ErrorResult("E-posta ayarları yapılandırılmamış.");
                 }
 
-                var subject = "İstanbul Ticaret Odası - Yetki Belgesi Talep Dilekçesi";
+                var subject = "İTOP - Yetki Belgesi Talep Dilekçesi";
 
                 var body = $@"
 <!DOCTYPE html>
@@ -293,7 +293,7 @@ namespace ITOVotingApplication.Business.Services
 <body>
     <div class='container'>
         <div class='header'>
-            <h1>📄 İstanbul Ticaret Odası</h1>
+            <h1>📄 İTOP</h1>
             <p>Yetki Belgesi Talep Dilekçesi</p>
         </div>
         <div class='content'>
@@ -342,12 +342,12 @@ namespace ITOVotingApplication.Business.Services
             </div>
 
             <p>Saygılarımızla,<br>
-            <strong>İstanbul Ticaret Odası</strong><br>
+            <strong>İTOP</strong><br>
             Bilgi İşlem Departmanı</p>
         </div>
         <div class='footer'>
             <p>Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayınız.</p>
-            <p>&copy; 2024 İstanbul Ticaret Odası - Tüm hakları saklıdır.</p>
+            <p>&copy; 2026 İTOP - Tüm hakları saklıdır.</p>
         </div>
     </div>
 </body>

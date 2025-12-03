@@ -6,12 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ITOVotingApplication.Web.Controllers
 {
-	[Authorize(Roles = "Admin,SandikGorevlisi,BallotOfficer")]
+	[Authorize(Roles = "İtop Kullanıcısı,SandikGorevlisi")]
 	public class VoteController : Controller
 	{
 		private readonly IVoteService _voteService;
 		private readonly IContactService _contactService;
-		private readonly ICompanyService _companyService;
 
 		public VoteController(
 			IVoteService voteService,
@@ -20,7 +19,6 @@ namespace ITOVotingApplication.Web.Controllers
 		{
 			_voteService = voteService;
 			_contactService = contactService;
-			_companyService = companyService;
 		}
 
 		[HttpGet]

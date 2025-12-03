@@ -150,7 +150,14 @@
 
             <!-- Filters -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
+                        <select id="committeeFilter" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <!-- Committees will be populated dynamically -->
+                        </select>
+                    </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Durum</label>
                         <select id="statusFilter" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -165,6 +172,16 @@
                             <option value="">Tümü</option>
                             <option value="authorized">Yetkili</option>
                             <option value="notAuthorized">Yetkisiz</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Belge Durumu</label>
+                        <select id="documentStatusFilter" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">Tümü</option>
+                            <option value="0">Belge Yok</option>
+                            <option value="1">Yetki Belgesi Yüklendi</option>
+                            <option value="2">Onaylı Belge Yüklendi</option>
+                            <option value="3">Şahıs Şirketi</option>
                         </select>
                     </div>
                     <div class="flex items-end">
@@ -294,9 +311,16 @@
                                 <option value="KOMAN">KOMAN - Komandit Şirket</option>
                                 <option value="KOOP">KOOP - Kooperatif</option>
                                 <option value="LTD">LTD - Limited Şirket</option>
-                                <option value="TC">TC - Ticari İşletme</option>
+                                <option value="TC">TC - Şahıs Şirketi</option>
                                 <option value="VKF">VKF - Vakıf</option>
                                 <option value="YABMER">YABMER - Yabancı Merkez</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
+                            <select id="editCommitteeId"
+                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Seçiniz</option>
                             </select>
                         </div>
                         <div class="col-span-1">
@@ -317,8 +341,8 @@
                             <select id="editDocumentStatus"
                                     class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 <option value="0">-</option>
-                                <option value="1">Yetki Belgesi Yüklendi</option>
-                                <option value="2">Onaylanmış Yetki Belgesi Yüklendi</option>
+                                        <option value="1">Yetki Belge Talep Formu Yüklendi</option>
+                                        <option value="2">Oy Kullanma Belgesi Yüklendi</option>
                                 <option value="3">Şahıs Şirketi Olarak Katılacak</option>
                             </select>
                         </div>
@@ -488,9 +512,16 @@
                                 <option value="KOMAN">KOMAN - Komandit Şirket</option>
                                 <option value="KOOP">KOOP - Kooperatif</option>
                                 <option value="LTD">LTD - Limited Şirket</option>
-                                <option value="TC">TC - Ticari İşletme</option>
+                                <option value="TC">TC - Şahıs Şirketi</option>
                                 <option value="VKF">VKF - Vakıf</option>
                                 <option value="YABMER">YABMER - Yabancı Merkez</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Komite</label>
+                            <select id="createCommitteeId"
+                                    class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="">Seçiniz</option>
                             </select>
                         </div>
                         <div class="col-span-1">
@@ -511,8 +542,8 @@
                             <select id="createDocumentStatus"
                                     class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
                                 <option value="0">-</option>
-                                <option value="1">Yetki Belgesi Yüklendi</option>
-                                <option value="2">Onaylanmış Yetki Belgesi Yüklendi</option>
+                                        <option value="1">Yetki Belge Talep Formu Yüklendi</option>
+                                        <option value="2">Oy Kullanma Belgesi Yüklendi</option>
                             </select>
                         </div>
                         <div>
@@ -849,8 +880,8 @@
 
     <!-- Send Document Modal -->
     <div id="sendDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[100] overflow-y-auto">
-        <div class="min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col my-8" style="margin-left: auto; margin-right: auto;">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
                 <!-- Modal Header -->
                 <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                     <div class="flex items-center justify-between">
@@ -867,43 +898,203 @@
                 <!-- Modal Content -->
                 <div class="flex-1 overflow-y-auto p-6">
                     <form id="sendDocumentForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Yetkili Seçin</label>
-                            <select id="contactSelect" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Yetkili seçin...</option>
-                            </select>
-                        </div>
-                        
-                        <div id="selectedContactInfo" class="hidden">
-                            <div class="bg-gray-50 p-3 rounded-lg">
-                                <h4 class="text-sm font-medium text-gray-700 mb-2">Seçilen Yetkili</h4>
-                                <div class="text-sm text-gray-600">
-                                    <p><strong>Ad Soyad:</strong> <span id="contactName"></span></p>
-                                    <p><strong>Telefon:</strong> <span id="contactPhone"></span></p>
-                                    <p><strong>E-posta:</strong> <span id="contactEmail"></span></p>
-                                    <p><strong>Yetki:</strong> <span id="contactType"></span></p>
+                        <!-- Referans 1 -->
+                        <div class="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">1</span>
+                                Referans 1 Bilgileri
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad</label>
+                                    <input type="text" id="sendRef1FirstName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="Ad">
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad</label>
+                                    <input type="text" id="sendRef1LastName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="Soyad">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Telefon</label>
+                                    <input type="tel" id="sendRef1Phone"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="05XX XXX XX XX">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                    <input type="email" id="sendRef1Email"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                           placeholder="ornek@email.com">
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-2 mt-3">
+                                <button type="button" onclick="saveRef1()"
+                                        class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="save" class="w-4 h-4"></i>
+                                    <span>Kaydet</span>
+                                </button>
+                                <button type="button" id="ref1WhatsAppBtn" onclick="sendToRef1ViaWhatsApp()"
+                                        class="hidden px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>WhatsApp</span>
+                                </button>
+                                <button type="button" id="ref1EmailBtn" onclick="sendToRef1ViaEmail()"
+                                        class="hidden px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="mail" class="w-4 h-4"></i>
+                                    <span>E-posta</span>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="flex justify-end space-x-3 pt-4">
+                        <!-- Referans 2 -->
+                        <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">2</span>
+                                Referans 2 Bilgileri (Opsiyonel)
+                            </h4>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Ad</label>
+                                    <input type="text" id="sendRef2FirstName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="Ad">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Soyad</label>
+                                    <input type="text" id="sendRef2LastName"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="Soyad">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Telefon</label>
+                                    <input type="tel" id="sendRef2Phone"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="05XX XXX XX XX">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">E-posta</label>
+                                    <input type="email" id="sendRef2Email"
+                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                           placeholder="ornek@email.com">
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-2 mt-3">
+                                <button type="button" onclick="saveRef2()"
+                                        class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="save" class="w-4 h-4"></i>
+                                    <span>Kaydet</span>
+                                </button>
+                                <button type="button" id="ref2WhatsAppBtn" onclick="sendToRef2ViaWhatsApp()"
+                                        class="hidden px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>WhatsApp</span>
+                                </button>
+                                <button type="button" id="ref2EmailBtn" onclick="sendToRef2ViaEmail()"
+                                        class="hidden px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-1">
+                                    <i data-lucide="mail" class="w-4 h-4"></i>
+                                    <span>E-posta</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-4 border-t border-gray-200">
                             <button type="button" onclick="closeSendDocumentModal()"
                                     class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                                İptal
-                            </button>
-                            <button type="button" onclick="sendDocumentViaWhatsApp()"
-                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center" 
-                                    title="WhatsApp'la Gönder">
-                                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                            </button>
-                            <button type="button" onclick="sendDocumentViaEmail()"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center" 
-                                    title="Email ile Gönder">
-                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                Kapat
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Document Modal (WhatsApp Paylaşım) -->
+    <div id="shareDocumentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[110] overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                <!-- Modal Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">WhatsApp ile Belge Gönder</h3>
+                        <button onclick="closeShareDocumentModal()" class="text-gray-400 hover:text-gray-600">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-6 py-4">
+                    <div class="space-y-4">
+                        <!-- Phone Number Display -->
+                        <div class="p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="phone" class="h-5 w-5 text-blue-600"></i>
+                                <span class="text-sm font-medium text-blue-800">Alıcı:</span>
+                                <span id="shareRecipientName" class="text-sm text-blue-700 font-medium"></span>
+                                <span class="text-sm text-blue-600">-</span>
+                                <span id="shareRecipientPhone" class="text-sm text-blue-700"></span>
+                            </div>
+                        </div>
+
+                        <!-- Message Content -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Gönderilecek Mesaj:</label>
+                            <textarea id="shareDocumentMessage" readonly rows="8"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-3">
+                            <!-- Copy Message Button -->
+                            <button onclick="copyDocumentMessage()" class="w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                                <i data-lucide="copy" class="h-4 w-4 mr-2"></i>
+                                <span>Mesajı Kopyala</span>
+                            </button>
+
+                            <!-- WhatsApp Buttons -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- Desktop WhatsApp -->
+                                <button onclick="openDocWhatsAppDesktop()" class="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                    <i data-lucide="monitor" class="h-4 w-4 mr-2"></i>
+                                    <span class="text-sm">WhatsApp Web</span>
+                                </button>
+
+                                <!-- Mobile WhatsApp -->
+                                <button onclick="openDocWhatsAppMobile()" class="flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                    <i data-lucide="smartphone" class="h-4 w-4 mr-2"></i>
+                                    <span class="text-sm">WhatsApp Mobile</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex">
+                                <i data-lucide="info" class="h-5 w-5 text-yellow-600 mr-2 flex-shrink-0"></i>
+                                <div class="text-sm text-yellow-800">
+                                    <p class="font-medium mb-1">Nasıl Gönderilir:</p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs">
+                                        <li><strong>Mesajı Kopyala:</strong> Mesajı panoya kopyalar, istediğiniz uygulamada paylaşabilirsiniz</li>
+                                        <li><strong>WhatsApp Web:</strong> Masaüstü/laptop için WhatsApp Web'i açar</li>
+                                        <li><strong>WhatsApp Mobile:</strong> Mobil cihazlar için WhatsApp uygulamasını açar</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+                    <button onclick="closeShareDocumentModal()" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Kapat</button>
                 </div>
             </div>
         </div>
@@ -1068,6 +1259,7 @@
 
     <script>
         let allCompanies = [];
+        let allCommittees = [];
         let filteredCompanies = [];
         let currentPage = 1;
         let pageSize = 10;
@@ -1078,6 +1270,13 @@
         let isSearching = false;
         let currentCompanyId = null;
         let currentIsTCCompany = false;
+
+        // Reference IDs for update vs create
+        let currentRef1Id = null;
+        let currentRef2Id = null;
+
+        // Share Document Modal data
+        let currentShareDocData = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -1105,6 +1304,11 @@
 
             lucide.createIcons();
             loadUserInfo();
+
+            // URL parametrelerinden filtreleri oku
+            applyFiltersFromURL();
+
+            loadCommittees();
             loadCompanies();
             
             // Global search event handler
@@ -1171,6 +1375,98 @@
 
                 const initials = ((user.firstName || '')[0] + (user.lastName || '')[0]).toUpperCase();
                 document.getElementById('userInitials').textContent = initials || 'KA';
+            }
+        }
+
+        // URL parametrelerinden filtreleri uygula
+        function applyFiltersFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // documentStatus parametresini kontrol et
+            const documentStatus = urlParams.get('documentStatus');
+            if (documentStatus !== null) {
+                const documentStatusFilter = document.getElementById('documentStatusFilter');
+                if (documentStatusFilter) {
+                    documentStatusFilter.value = documentStatus;
+                }
+            }
+
+            // status parametresini kontrol et
+            const status = urlParams.get('status');
+            if (status !== null) {
+                const statusFilter = document.getElementById('statusFilter');
+                if (statusFilter) {
+                    statusFilter.value = status;
+                }
+            }
+
+            // auth parametresini kontrol et
+            const auth = urlParams.get('auth');
+            if (auth !== null) {
+                const authFilter = document.getElementById('authFilter');
+                if (authFilter) {
+                    authFilter.value = auth;
+                }
+            }
+        }
+
+        // Load Committees
+        async function loadCommittees() {
+            try {
+                const response = await fetch('/api/company/committees', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        allCommittees = result.data;
+                        populateCommitteeDropdowns();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading committees:', error);
+            }
+        }
+
+        // Populate Committee Dropdowns
+        function populateCommitteeDropdowns() {
+            const editSelect = document.getElementById('editCommitteeId');
+            const createSelect = document.getElementById('createCommitteeId');
+            const filterSelect = document.getElementById('committeeFilter');
+
+            const options = '<option value="">Seçiniz</option>' +
+                allCommittees.map(c => `<option value="${c.id}">${c.committeeNum ? c.committeeNum + ' - ' : ''}${c.committeeDescription}</option>`).join('');
+
+            const filterOptions = '<option value="">Tümü</option>' +
+                allCommittees.map(c => `<option value="${c.id}">${c.committeeNum ? c.committeeNum + ' - ' : ''}${c.committeeDescription}</option>`).join('');
+
+            if (editSelect) editSelect.innerHTML = options;
+            if (createSelect) createSelect.innerHTML = options;
+            if (filterSelect) {
+                filterSelect.innerHTML = filterOptions;
+                // URL'den committeeId varsa seç
+                applyCommitteeFilterFromURL();
+            }
+        }
+
+        // URL'den committeeId filtresini uygula
+        function applyCommitteeFilterFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const committeeId = urlParams.get('committeeId');
+            if (committeeId) {
+                const filterSelect = document.getElementById('committeeFilter');
+                if (filterSelect) {
+                    filterSelect.value = committeeId;
+                    // Filtre değiştiğinde displayCompanies'i tekrar çağır
+                    if (allCompanies.length > 0) {
+                        displayCompanies();
+                    }
+                }
             }
         }
 
@@ -1418,9 +1714,16 @@
             }
             
             // Apply other filters
+            const committeeFilter = document.getElementById('committeeFilter')?.value;
             const statusFilter = document.getElementById('statusFilter')?.value;
             const authFilter = document.getElementById('authFilter')?.value;
+            const documentStatusFilter = document.getElementById('documentStatusFilter')?.value;
 
+            // Committee filter
+            if (committeeFilter !== '' && committeeFilter !== undefined) {
+                const committeeId = parseInt(committeeFilter);
+                filteredCompanies = filteredCompanies.filter(c => c.committeeId === committeeId);
+            }
 
             if (statusFilter === 'active') {
                 filteredCompanies = filteredCompanies.filter(c => c.isActive);
@@ -1432,6 +1735,11 @@
                 filteredCompanies = filteredCompanies.filter(c => c.has2022AuthorizationCertificate);
             } else if (authFilter === 'notAuthorized') {
                 filteredCompanies = filteredCompanies.filter(c => !c.has2022AuthorizationCertificate);
+            }
+
+            if (documentStatusFilter !== '' && documentStatusFilter !== undefined) {
+                const docStatus = parseInt(documentStatusFilter);
+                filteredCompanies = filteredCompanies.filter(c => c.documentStatus === docStatus);
             }
 
             
@@ -1699,24 +2007,28 @@
             displayCompanies();
         }
 
-        // Clear Filters  
+        // Clear Filters
         function clearFilters() {
             document.getElementById('statusFilter').value = '';
             document.getElementById('authFilter').value = '';
+            document.getElementById('documentStatusFilter').value = '';
             document.getElementById('globalSearch').value = '';
             document.getElementById('mobileGlobalSearch').value = '';
-            
+
             // Arama durumunu temizle
             currentSearchTerm = '';
             isSearching = false;
-            
+
             // Timeout'u temizle
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
             }
-            
+
             currentPage = 1;
-            
+
+            // URL parametrelerini temizle
+            window.history.replaceState({}, '', window.location.pathname);
+
             // İlk veriyi tekrar yükle
             loadCompanies();
         }
@@ -1739,6 +2051,7 @@
                 document.getElementById('editMobilePhone').value = company.mobilePhone || '';
                 document.getElementById('editEmail').value = company.email || '';
                 document.getElementById('editCompanyType').value = company.companyType || '';
+                document.getElementById('editCommitteeId').value = company.committeeId || '';
                 document.getElementById('editRegistrationAddress').value = company.registrationAddress || '';
                 document.getElementById('editDocumentStatus').value = company.documentStatus || '0';
                 document.getElementById('editIsActive').checked = company.isActive;
@@ -2062,12 +2375,12 @@
                                             <div class="mt-3 pt-3 border-t border-green-300">
                                                 <label class="block text-xs font-medium text-gray-700 mb-2">
                                                     <i data-lucide="user-check" class="w-3 h-3 inline mr-1"></i>
-                                                    Belge Atama (✓ işareti oy kullanma yetkisini gösterir)
+                                                    Belge Atama (Komite Kullanıcıları)
                                                 </label>
                                                 <div class="flex gap-2">
-                                                    <select id="assignContact_${onayliTransaction.id}"
+                                                    <select id="assignUser_${onayliTransaction.id}"
                                                             class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                                                        <option value="">Yetkili Seçiniz...</option>
+                                                        <option value="">Kullanıcı Seçiniz...</option>
                                                     </select>
                                                     <button type="button"
                                                             onclick="saveDocumentAssignment(${onayliTransaction.id}, ${companyId})"
@@ -2076,10 +2389,10 @@
                                                         <span>Kaydet</span>
                                                     </button>
                                                 </div>
-                                                ${onayliTransaction.assignedContactName ? `
+                                                ${onayliTransaction.assignedUserName ? `
                                                     <p class="text-xs text-green-700 mt-2">
                                                         <i data-lucide="check" class="w-3 h-3 inline mr-1"></i>
-                                                        Atanan: ${onayliTransaction.assignedContactName}
+                                                        Atanan: ${onayliTransaction.assignedUserName}
                                                     </p>
                                                 ` : ''}
                                             </div>
@@ -2139,7 +2452,7 @@
                 // DOM'un güncellenmesi için kısa bir bekleme
                 if (onayliTransaction) {
                     setTimeout(async () => {
-                        await loadEligibleContactsForAssignment(companyId, onayliTransaction.id, onayliTransaction.assignedContactId);
+                        await loadEligibleUsersForAssignment(companyId, onayliTransaction.id, onayliTransaction.assignedUserId);
                     }, 100);
                 }
 
@@ -2922,32 +3235,59 @@
                 }
 
                 console.log('Opening send document modal for company:', companyId);
-                
-                // Firma yetkililerini yükle
+
+                // Reset fields and IDs first
+                currentRef1Id = null;
+                currentRef2Id = null;
+                document.getElementById('sendRef1FirstName').value = '';
+                document.getElementById('sendRef1LastName').value = '';
+                document.getElementById('sendRef1Phone').value = '';
+                document.getElementById('sendRef1Email').value = '';
+                document.getElementById('sendRef2FirstName').value = '';
+                document.getElementById('sendRef2LastName').value = '';
+                document.getElementById('sendRef2Phone').value = '';
+                document.getElementById('sendRef2Email').value = '';
+                // Hide send buttons
+                document.getElementById('ref1WhatsAppBtn').classList.add('hidden');
+                document.getElementById('ref1EmailBtn').classList.add('hidden');
+                document.getElementById('ref2WhatsAppBtn').classList.add('hidden');
+                document.getElementById('ref2EmailBtn').classList.add('hidden');
+
+                // Firma referanslarını yükle
                 await loadCompanyContactsForSending(companyId);
-                
+
                 // Modal'ı aç
                 document.getElementById('sendDocumentModal').classList.remove('hidden');
                 lucide.createIcons();
             } catch (error) {
                 console.error('Error opening send document modal:', error);
-                alert('Yetkili listesi yüklenirken hata oluştu.');
+                alert('Referans bilgileri yüklenirken hata oluştu.');
             }
         }
 
         function closeSendDocumentModal() {
             document.getElementById('sendDocumentModal').classList.add('hidden');
-            
-            // Form'u resetle
-            document.getElementById('contactSelect').value = '';
-            document.getElementById('selectedContactInfo').classList.add('hidden');
+            // Reset referans fields
+            document.getElementById('sendRef1FirstName').value = '';
+            document.getElementById('sendRef1LastName').value = '';
+            document.getElementById('sendRef1Phone').value = '';
+            document.getElementById('sendRef1Email').value = '';
+            document.getElementById('sendRef2FirstName').value = '';
+            document.getElementById('sendRef2LastName').value = '';
+            document.getElementById('sendRef2Phone').value = '';
+            document.getElementById('sendRef2Email').value = '';
+            // Hide send buttons
+            document.getElementById('ref1WhatsAppBtn').classList.add('hidden');
+            document.getElementById('ref1EmailBtn').classList.add('hidden');
+            document.getElementById('ref2WhatsAppBtn').classList.add('hidden');
+            document.getElementById('ref2EmailBtn').classList.add('hidden');
         }
 
         // Firma yetkililerini gönderme için yükle
         async function loadCompanyContactsForSending(companyId) {
             try {
                 console.log('Loading contacts for sending for company:', companyId);
-                
+
                 const response = await fetch(`/api/contact/company/${companyId}`, {
                     method: 'GET',
                     headers: {
@@ -2960,63 +3300,51 @@
                 if (response.ok) {
                     const result = await response.json();
                     contacts = result.data || [];
-                } else {
-                    console.log('API response not ok, using demo data');
-                    // Demo data
-                    contacts = [
-                        {
-                            id: 1,
-                            firstName: 'Ahmet',
-                            lastName: 'Yılmaz',
-                            mobilePhone: '0532 123 45 67',
-                            eligibleToVote: true
-                        },
-                        {
-                            id: 2,
-                            firstName: 'Mehmet',
-                            lastName: 'Demir',
-                            mobilePhone: '0533 987 65 43',
-                            eligibleToVote: false
-                        }
-                    ];
                 }
 
-                // Combobox'ı doldur
-                const contactSelect = document.getElementById('contactSelect');
-                contactSelect.innerHTML = '<option value="">Yetkili seçin...</option>';
-                
-                contacts.forEach(contact => {
-                    const option = document.createElement('option');
-                    option.value = JSON.stringify(contact);
-                    const contactType = contact.eligibleToVote ? 'Oy Kullanacak Kişi' : 'Bağlantı Kişi';
-                    option.textContent = `${contact.firstName} ${contact.lastName} (${contactType}) - ${contact.mobilePhone}`;
-                    contactSelect.appendChild(option);
-                });
+                // Find Referans 1 (AuthorizationType = 4) and Referans 2 (AuthorizationType = 5)
+                const ref1 = contacts.find(c => c.authorizationType === 4);
+                const ref2 = contacts.find(c => c.authorizationType === 5);
 
-                // Change event listener ekle
-                contactSelect.addEventListener('change', function() {
-                    const selectedValue = this.value;
-                    const contactInfo = document.getElementById('selectedContactInfo');
-                    
-                    if (selectedValue) {
-                        const contact = JSON.parse(selectedValue);
-                        document.getElementById('contactName').textContent = `${contact.firstName} ${contact.lastName}`;
-                        document.getElementById('contactPhone').textContent = contact.mobilePhone || '-';
-                        document.getElementById('contactEmail').textContent = contact.email || '-';
-                        document.getElementById('contactType').textContent = contact.eligibleToVote ? 'Oy Kullanacak Kişi' : 'Bağlantı Kişi';
-                        contactInfo.classList.remove('hidden');
-                    } else {
-                        contactInfo.classList.add('hidden');
+                // Populate Referans 1 fields and store ID
+                if (ref1) {
+                    currentRef1Id = ref1.id;
+                    document.getElementById('sendRef1FirstName').value = ref1.firstName || '';
+                    document.getElementById('sendRef1LastName').value = ref1.lastName || '';
+                    document.getElementById('sendRef1Phone').value = ref1.mobilePhone || '';
+                    document.getElementById('sendRef1Email').value = ref1.email || '';
+                    // Show send buttons if phone or email exists
+                    if (ref1.mobilePhone) {
+                        document.getElementById('ref1WhatsAppBtn').classList.remove('hidden');
                     }
-                });
-                
+                    if (ref1.email) {
+                        document.getElementById('ref1EmailBtn').classList.remove('hidden');
+                    }
+                }
+
+                // Populate Referans 2 fields and store ID
+                if (ref2) {
+                    currentRef2Id = ref2.id;
+                    document.getElementById('sendRef2FirstName').value = ref2.firstName || '';
+                    document.getElementById('sendRef2LastName').value = ref2.lastName || '';
+                    document.getElementById('sendRef2Phone').value = ref2.mobilePhone || '';
+                    document.getElementById('sendRef2Email').value = ref2.email || '';
+                    // Show send buttons if phone or email exists
+                    if (ref2.mobilePhone) {
+                        document.getElementById('ref2WhatsAppBtn').classList.remove('hidden');
+                    }
+                    if (ref2.email) {
+                        document.getElementById('ref2EmailBtn').classList.remove('hidden');
+                    }
+                }
+
             } catch (error) {
                 console.error('Error loading contacts for sending:', error);
             }
         }
 
-        // WhatsApp ile belge gönder
-        async function sendDocumentViaWhatsApp() {
+        // WhatsApp ile firma yetkilisine belge gönder
+        async function sendToContactViaWhatsApp() {
             try {
                 const contactSelect = document.getElementById('contactSelect');
                 const selectedValue = contactSelect.value;
@@ -3052,7 +3380,7 @@
                         // WhatsApp mesaj metni (link ile)
                         const message = `Merhaba ${contact.firstName} ${contact.lastName},
 
-İstanbul Ticaret Odası yetki belgesi talep dilekçeniz hazırlandı.
+Yetki belgesi talep dilekçeniz hazırlandı.
 
 📄 Belgeyi indirmek için aşağıdaki linki kullanın:
 ${result.downloadUrl}
@@ -3105,8 +3433,8 @@ ${result.downloadUrl}
             }
         }
 
-        // Email ile belge gönder
-        async function sendDocumentViaEmail() {
+        // Email ile firma yetkilisine belge gönder
+        async function sendToContactViaEmail() {
             try {
                 const contactSelect = document.getElementById('contactSelect');
                 const selectedValue = contactSelect.value;
@@ -3168,6 +3496,403 @@ ${result.downloadUrl}
             } catch (error) {
                 console.error('Email send error:', error);
                 alert('E-posta gönderilirken hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+
+        // Send to Referans 1 via WhatsApp
+        async function sendToRef1ViaWhatsApp() {
+            const firstName = document.getElementById('sendRef1FirstName').value.trim();
+            const lastName = document.getElementById('sendRef1LastName').value.trim();
+            const phone = document.getElementById('sendRef1Phone').value.trim();
+
+            if (!firstName || !lastName || !phone) {
+                alert('Lütfen Referans 1 bilgilerini eksiksiz doldurun');
+                return;
+            }
+
+            await sendDocumentToPhone(phone, `${firstName} ${lastName}`);
+        }
+
+        // Send to Referans 2 via WhatsApp
+        async function sendToRef2ViaWhatsApp() {
+            const firstName = document.getElementById('sendRef2FirstName').value.trim();
+            const lastName = document.getElementById('sendRef2LastName').value.trim();
+            const phone = document.getElementById('sendRef2Phone').value.trim();
+
+            if (!firstName || !lastName || !phone) {
+                alert('Lütfen Referans 2 bilgilerini eksiksiz doldurun');
+                return;
+            }
+
+            await sendDocumentToPhone(phone, `${firstName} ${lastName}`);
+        }
+
+        // Generic function to send document via WhatsApp to a phone number
+        async function sendDocumentToPhone(phoneNumber, recipientName) {
+            try {
+                const companyId = document.getElementById('editCompanyId').value;
+
+                // Generate document link first
+                const response = await fetch(`/api/company/${companyId}/generate-document-link`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Get company name from hidden field or current data
+                        const companyTitle = document.getElementById('editCompanyTitle')?.value || 'Firma';
+                        const documentUrl = result.downloadUrl;
+
+                        // Generate message
+                        const message = `Sayın ${recipientName},
+
+${companyTitle} firması adına yetki belgesi taslağı hazırlanmıştır.
+
+Belgeyi aşağıdaki linkten indirebilirsiniz:
+${documentUrl}
+
+Lütfen belgeyi imzalayarak tarafımıza iletiniz.
+
+Saygılarımızla,
+İstanbul Ticaret Odası`;
+
+                        // Show share document modal
+                        showShareDocumentModal({
+                            phoneNumber: phoneNumber,
+                            recipientName: recipientName,
+                            message: message
+                        });
+                    } else {
+                        alert('Belge linki oluşturulamadı: ' + result.message);
+                    }
+                } else {
+                    alert('Belge linki oluşturulamadı');
+                }
+            } catch (error) {
+                console.error('Error preparing WhatsApp message:', error);
+                alert('WhatsApp mesajı hazırlanırken hata oluştu');
+            }
+        }
+
+        function showShareDocumentModal(data) {
+            currentShareDocData = data;
+
+            // Set recipient info
+            document.getElementById('shareRecipientName').textContent = data.recipientName;
+            document.getElementById('shareRecipientPhone').textContent = data.phoneNumber;
+
+            // Set message content
+            document.getElementById('shareDocumentMessage').value = data.message;
+
+            // Show modal
+            document.getElementById('shareDocumentModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeShareDocumentModal() {
+            document.getElementById('shareDocumentModal').classList.add('hidden');
+            currentShareDocData = null;
+        }
+
+        function copyDocumentMessage() {
+            const messageTextarea = document.getElementById('shareDocumentMessage');
+            messageTextarea.select();
+            messageTextarea.setSelectionRange(0, 99999); // For mobile
+
+            try {
+                document.execCommand('copy');
+
+                // Update button text temporarily
+                const copyBtn = event.target.closest('button');
+                const originalHTML = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i data-lucide="check" class="h-4 w-4 mr-2"></i><span>Kopyalandı!</span>';
+                copyBtn.classList.add('bg-green-600');
+                copyBtn.classList.remove('bg-gray-600');
+
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHTML;
+                    copyBtn.classList.remove('bg-green-600');
+                    copyBtn.classList.add('bg-gray-600');
+                    lucide.createIcons();
+                }, 2000);
+
+            } catch (err) {
+                // Fallback for newer browsers
+                navigator.clipboard.writeText(messageTextarea.value).then(() => {
+                    alert('Mesaj kopyalandı!');
+                }).catch(() => {
+                    alert('Kopyalama işlemi başarısız! Lütfen manuel olarak kopyalayın.');
+                });
+            }
+        }
+
+        function openDocWhatsAppDesktop() {
+            if (!currentShareDocData) return;
+
+            const message = encodeURIComponent(currentShareDocData.message);
+            let phoneNumber = currentShareDocData.phoneNumber.replace(/[^\d]/g, '');
+
+            // Add Turkey country code if not present
+            if (phoneNumber.startsWith('0')) {
+                phoneNumber = '90' + phoneNumber.substring(1);
+            } else if (!phoneNumber.startsWith('90')) {
+                phoneNumber = '90' + phoneNumber;
+            }
+
+            // WhatsApp Web URL
+            const whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+            window.open(whatsappURL, '_blank');
+        }
+
+        function openDocWhatsAppMobile() {
+            if (!currentShareDocData) return;
+
+            const message = encodeURIComponent(currentShareDocData.message);
+            let phoneNumber = currentShareDocData.phoneNumber.replace(/[^\d]/g, '');
+
+            // Add Turkey country code if not present
+            if (phoneNumber.startsWith('0')) {
+                phoneNumber = '90' + phoneNumber.substring(1);
+            } else if (!phoneNumber.startsWith('90')) {
+                phoneNumber = '90' + phoneNumber;
+            }
+
+            // Check if mobile device
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            let whatsappURL;
+            if (isMobile) {
+                // Mobile app URL
+                whatsappURL = `whatsapp://send?phone=${phoneNumber}&text=${message}`;
+            } else {
+                // Fallback to web for desktop
+                whatsappURL = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${message}`;
+            }
+
+            window.open(whatsappURL, '_blank');
+        }
+
+        // Save Referans 1
+        async function saveRef1() {
+            const firstName = document.getElementById('sendRef1FirstName').value.trim();
+            const lastName = document.getElementById('sendRef1LastName').value.trim();
+            const phone = document.getElementById('sendRef1Phone').value.trim();
+            const email = document.getElementById('sendRef1Email').value.trim();
+            const companyId = document.getElementById('editCompanyId').value;
+
+            if (!firstName || !lastName) {
+                alert('Lütfen Referans 1 Ad ve Soyad bilgilerini doldurun');
+                return;
+            }
+
+            if (!phone && !email) {
+                alert('Lütfen Telefon veya E-posta bilgilerinden en az birini doldurun');
+                return;
+            }
+
+            try {
+                let response;
+                if (currentRef1Id) {
+                    // Update existing reference
+                    response = await fetch('/FieldWorker/UpdateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            id: currentRef1Id,
+                            companyId: parseInt(companyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 4, // Referans 1
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                } else {
+                    // Create new reference
+                    response = await fetch('/FieldWorker/CreateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            companyId: parseInt(companyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 4, // Referans 1
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(currentRef1Id ? 'Referans 1 bilgileri güncellendi!' : 'Referans 1 bilgileri kaydedildi!');
+                    // Store the ID if newly created
+                    if (!currentRef1Id && result.data && result.data.id) {
+                        currentRef1Id = result.data.id;
+                    }
+                    // Show send buttons
+                    if (phone) {
+                        document.getElementById('ref1WhatsAppBtn').classList.remove('hidden');
+                    }
+                    if (email) {
+                        document.getElementById('ref1EmailBtn').classList.remove('hidden');
+                    }
+                    lucide.createIcons();
+                } else {
+                    alert('Kayıt başarısız: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving reference 1:', error);
+                alert('Kayıt sırasında hata oluştu');
+            }
+        }
+
+        // Save Referans 2
+        async function saveRef2() {
+            const firstName = document.getElementById('sendRef2FirstName').value.trim();
+            const lastName = document.getElementById('sendRef2LastName').value.trim();
+            const phone = document.getElementById('sendRef2Phone').value.trim();
+            const email = document.getElementById('sendRef2Email').value.trim();
+            const companyId = document.getElementById('editCompanyId').value;
+
+            if (!firstName || !lastName) {
+                alert('Lütfen Referans 2 Ad ve Soyad bilgilerini doldurun');
+                return;
+            }
+
+            if (!phone && !email) {
+                alert('Lütfen Telefon veya E-posta bilgilerinden en az birini doldurun');
+                return;
+            }
+
+            try {
+                let response;
+                if (currentRef2Id) {
+                    // Update existing reference
+                    response = await fetch('/FieldWorker/UpdateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            id: currentRef2Id,
+                            companyId: parseInt(companyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 5, // Referans 2
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                } else {
+                    // Create new reference
+                    response = await fetch('/FieldWorker/CreateContact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            companyId: parseInt(companyId),
+                            firstName: firstName,
+                            lastName: lastName,
+                            authorizationType: 5, // Referans 2
+                            mobilePhone: phone,
+                            email: email,
+                            identityNum: '',
+                            eligibleToVote: false
+                        })
+                    });
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(currentRef2Id ? 'Referans 2 bilgileri güncellendi!' : 'Referans 2 bilgileri kaydedildi!');
+                    // Store the ID if newly created
+                    if (!currentRef2Id && result.data && result.data.id) {
+                        currentRef2Id = result.data.id;
+                    }
+                    // Show send buttons
+                    if (phone) {
+                        document.getElementById('ref2WhatsAppBtn').classList.remove('hidden');
+                    }
+                    if (email) {
+                        document.getElementById('ref2EmailBtn').classList.remove('hidden');
+                    }
+                    lucide.createIcons();
+                } else {
+                    alert('Kayıt başarısız: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving reference 2:', error);
+                alert('Kayıt sırasında hata oluştu');
+            }
+        }
+
+        // Send to Referans 1 via Email
+        async function sendToRef1ViaEmail() {
+            const firstName = document.getElementById('sendRef1FirstName').value.trim();
+            const lastName = document.getElementById('sendRef1LastName').value.trim();
+            const email = document.getElementById('sendRef1Email').value.trim();
+            const companyId = document.getElementById('editCompanyId').value;
+
+            if (!email) {
+                alert('E-posta adresi bulunamadı');
+                return;
+            }
+
+            await sendDocumentToEmail(email, `${firstName} ${lastName}`, companyId);
+        }
+
+        // Send to Referans 2 via Email
+        async function sendToRef2ViaEmail() {
+            const firstName = document.getElementById('sendRef2FirstName').value.trim();
+            const lastName = document.getElementById('sendRef2LastName').value.trim();
+            const email = document.getElementById('sendRef2Email').value.trim();
+            const companyId = document.getElementById('editCompanyId').value;
+
+            if (!email) {
+                alert('E-posta adresi bulunamadı');
+                return;
+            }
+
+            await sendDocumentToEmail(email, `${firstName} ${lastName}`, companyId);
+        }
+
+        // Generic function to send document via Email
+        async function sendDocumentToEmail(email, recipientName, companyId) {
+            try {
+                const response = await fetch(`/api/company/${companyId}/send-document-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        email: email,
+                        contactName: recipientName
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(`E-posta ${recipientName} kişisine başarıyla gönderildi!`);
+                    } else {
+                        alert('E-posta gönderimi başarısız: ' + result.message);
+                    }
+                } else {
+                    alert('E-posta gönderimi başarısız');
+                }
+            } catch (error) {
+                console.error('Error sending email:', error);
+                alert('E-posta gönderilirken hata oluştu');
             }
         }
 
@@ -3601,6 +4326,7 @@ ${result.downloadUrl}
         document.getElementById('createCompanyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            const createCommitteeIdValue = document.getElementById('createCommitteeId').value;
             const companyData = {
                 title: document.getElementById('createTitle').value,
                 registrationNumber: document.getElementById('createRegistrationNumber').value,
@@ -3610,6 +4336,7 @@ ${result.downloadUrl}
                 mobilePhone: document.getElementById('createMobilePhone').value,
                 email: document.getElementById('createEmail').value,
                 companyType: document.getElementById('createCompanyType').value,
+                committeeId: createCommitteeIdValue ? parseInt(createCommitteeIdValue) : null,
                 registrationAddress: document.getElementById('createRegistrationAddress').value,
                 documentStatus: parseInt(document.getElementById('createDocumentStatus').value),
                 isActive: document.getElementById('createIsActive').checked,
@@ -3663,6 +4390,7 @@ ${result.downloadUrl}
                 documentStatus = parseInt(document.getElementById('editDocumentStatus').value);
             }
 
+            const committeeIdValue = document.getElementById('editCommitteeId').value;
             const updateData = {
                 id: parseInt(companyId),
                 title: document.getElementById('editTitle').value,
@@ -3673,6 +4401,7 @@ ${result.downloadUrl}
                 mobilePhone: document.getElementById('editMobilePhone').value,
                 email: document.getElementById('editEmail').value,
                 companyType: companyType,
+                committeeId: committeeIdValue ? parseInt(committeeIdValue) : null,
                 registrationAddress: document.getElementById('editRegistrationAddress').value,
                 documentStatus: documentStatus,
                 isActive: document.getElementById('editIsActive').checked,
@@ -4321,74 +5050,71 @@ ${result.downloadUrl}
             }
         }
 
-        // Load eligible contacts for assignment dropdown
-        async function loadEligibleContactsForAssignment(companyId, transactionId, assignedContactId) {
+        // Load eligible users for assignment dropdown
+        // Users must be: İtop Kullanıcısı, Komite Kullanıcısı, or Komite Çalışma Grubu Üyesi
+        // And their committees must match the company's committee
+        async function loadEligibleUsersForAssignment(companyId, transactionId, assignedUserId) {
             try {
-                console.log('Loading contacts for company:', companyId, 'transaction:', transactionId);
+                console.log('Loading eligible users for company:', companyId, 'transaction:', transactionId);
 
-                const response = await fetch(`/api/contact/company/${companyId}`, {
+                const response = await fetch(`/api/company/${companyId}/eligible-users-for-assignment`, {
                     method: 'GET',
                     credentials: 'same-origin'
                 });
 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('Contacts response:', result);
+                    console.log('Eligible users response:', result);
 
                     if (result.success) {
-                        // Tüm bağlantıları göster (filtreleme yok)
-                        const allContacts = result.data;
-                        console.log('All contacts:', allContacts);
+                        const eligibleUsers = result.data;
+                        console.log('Eligible users:', eligibleUsers);
 
-                        const selectElement = document.getElementById(`assignContact_${transactionId}`);
+                        const selectElement = document.getElementById(`assignUser_${transactionId}`);
                         console.log('Select element found:', selectElement);
 
                         if (selectElement) {
                             // Clear existing options except first
-                            selectElement.innerHTML = '<option value="">Yetkili Seçiniz...</option>';
+                            selectElement.innerHTML = '<option value="">Kullanıcı Seçiniz...</option>';
 
-                            // Add all contacts
-                            allContacts.forEach(contact => {
+                            // Add all eligible users
+                            eligibleUsers.forEach(user => {
                                 const option = document.createElement('option');
-                                option.value = contact.id;
-                                // İsim, soyisim ve yetki türü göster
-                                let displayText = `${contact.firstName} ${contact.lastName}`;
-                                if (contact.authorizationTypeName) {
-                                    displayText += ` - ${contact.authorizationTypeName}`;
-                                }
-                                // Oy kullanma yetkisi varsa belirt
-                                if (contact.eligibleToVote) {
-                                    displayText += ' ✓';
+                                option.value = user.id;
+                                // İsim ve rol göster
+                                let displayText = user.fullName;
+                                if (user.roles && user.roles.length > 0) {
+                                    displayText += ` (${user.roles.join(', ')})`;
                                 }
                                 option.textContent = displayText;
 
-                                if (assignedContactId && assignedContactId === contact.id) {
+                                if (assignedUserId && assignedUserId === user.id) {
                                     option.selected = true;
                                 }
                                 selectElement.appendChild(option);
                             });
 
-                            console.log('Added', allContacts.length, 'options to select');
+                            console.log('Added', eligibleUsers.length, 'options to select');
                         } else {
-                            console.error('Select element not found with id:', `assignContact_${transactionId}`);
+                            console.error('Select element not found with id:', `assignUser_${transactionId}`);
                         }
                     }
                 } else {
                     console.error('Response not ok:', response.status);
                 }
             } catch (error) {
-                console.error('Error loading eligible contacts:', error);
+                console.error('Error loading eligible users:', error);
             }
         }
 
         // Save document assignment
         async function saveDocumentAssignment(transactionId, companyId) {
             try {
-                const selectElement = document.getElementById(`assignContact_${transactionId}`);
-                const contactId = selectElement.value;
+                const selectElement = document.getElementById(`assignUser_${transactionId}`);
+                const userId = selectElement.value;
 
-                if (!contactId) {
-                    alert('Lütfen bir yetkili seçiniz');
+                if (!userId) {
+                    alert('Lütfen bir kullanıcı seçiniz');
                     return;
                 }
 
@@ -4400,7 +5126,7 @@ ${result.downloadUrl}
                     credentials: 'same-origin',
                     body: JSON.stringify({
                         transactionId: parseInt(transactionId),
-                        contactId: parseInt(contactId)
+                        userId: parseInt(userId)
                     })
                 });
 

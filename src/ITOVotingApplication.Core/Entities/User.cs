@@ -12,11 +12,13 @@
 
 		// Navigation Properties
 		public virtual ICollection<UserRole> UserRoles { get; set; }
+		public virtual ICollection<UserCommittee> UserCommittees { get; set; }
 		public virtual ICollection<VoteTransaction> CreatedVoteTransactions { get; set; }
 
 		public User()
 		{
 			UserRoles = new HashSet<UserRole>();
+			UserCommittees = new HashSet<UserCommittee>();
 			CreatedVoteTransactions = new HashSet<VoteTransaction>();
 		}
 

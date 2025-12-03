@@ -13,6 +13,7 @@ namespace ITOVotingApplication.Data.Repositories
 		private IGenericRepository<User> _users;
 		private IGenericRepository<Role> _roles;
 		private IGenericRepository<UserRole> _userRoles;
+		private IGenericRepository<UserCommittee> _userCommittees;
 		private IGenericRepository<BallotBox> _ballotBoxes;
 		private IGenericRepository<VoteTransaction> _voteTransactions;
 		private IGenericRepository<FieldReferenceCategory> _fieldReferenceCategories;
@@ -42,6 +43,9 @@ namespace ITOVotingApplication.Data.Repositories
 
 		public IGenericRepository<UserRole> UserRoles =>
 			_userRoles ??= new GenericRepository<UserRole>(_context);
+
+		public IGenericRepository<UserCommittee> UserCommittees =>
+			_userCommittees ??= new GenericRepository<UserCommittee>(_context);
 
 		public IGenericRepository<BallotBox> BallotBoxes =>
 			_ballotBoxes ??= new GenericRepository<BallotBox>(_context);

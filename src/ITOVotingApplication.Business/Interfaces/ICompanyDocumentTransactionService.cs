@@ -8,7 +8,7 @@ namespace ITOVotingApplication.Business.Interfaces
     {
         Task<ApiResponse<CompanyDocumentTransactionDto>> CreateAsync(CreateDocumentTransactionDto dto, int userId);
         Task<ApiResponse<CompanyDocumentTransactionDto>> UpdateDeliveryStatusAsync(UpdateDeliveryStatusDto dto);
-        Task<ApiResponse<CompanyDocumentTransactionDto>> AssignToContactAsync(int transactionId, int contactId);
+        Task<ApiResponse<CompanyDocumentTransactionDto>> AssignToUserAsync(int transactionId, int userId);
         Task<ApiResponse<bool>> DeleteAsync(int transactionId);
         Task<ApiResponse<CompanyDocumentTransactionDto>> GetByIdAsync(int id);
         Task<ApiResponse<List<CompanyDocumentTransactionDto>>> GetByCompanyIdAsync(int companyId);

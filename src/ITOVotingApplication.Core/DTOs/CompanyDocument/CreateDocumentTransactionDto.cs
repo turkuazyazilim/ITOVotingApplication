@@ -17,7 +17,7 @@ namespace ITOVotingApplication.Core.DTOs.CompanyDocument
         // For TC companies - only when uploading request petition
         public bool? WillParticipateInElection { get; set; }
 
-        // For Onaylanmış Yetki Belgesi - assign to a contact
-        public int? AssignedContactId { get; set; }
+        // For Onaylanmış Yetki Belgesi - assign to a user
+        public int? AssignedUserId { get; set; }
     }
 }

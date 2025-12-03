@@ -14,7 +14,9 @@ namespace ITOVotingApplication.Business.Mappings
 			// Company Mappings
 			CreateMap<Company, CompanyDto>()
 				.ForMember(dest => dest.ActiveContactName,
-					opt => opt.MapFrom(src => src.ActiveContact != null ? src.ActiveContact.FullName : null));
+					opt => opt.MapFrom(src => src.ActiveContact != null ? src.ActiveContact.FullName : null))
+				.ForMember(dest => dest.CommitteeName,
+					opt => opt.MapFrom(src => src.Committee != null ? src.Committee.CommitteeDescription : null));
 
 			CreateMap<CreateCompanyDto, Company>();
 			CreateMap<UpdateCompanyDto, Company>();
